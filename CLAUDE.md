@@ -33,32 +33,6 @@ vllm-omni-cookbook/
 
 ## Key Patterns
 
-### vLLM-Omni API Usage
-
-When writing code examples, use the vLLM-Omni API:
-
-**Offline Inference:**
-```python
-from vllm_omni.entrypoints.omni import Omni
-
-# Text-to-image generation
-omni = Omni(model="Tongyi-MAI/Z-Image-Turbo")
-outputs = omni.generate("a cup of coffee on the table")
-images = outputs[0].request_output[0].images
-images[0].save("coffee.png")
-```
-
-**Online Serving:**
-```bash
-# Start server
-vllm serve Tongyi-MAI/Z-Image-Turbo --omni --port 8091
-
-# Make request
-curl -s http://localhost:8091/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "prompt"}]}'
-```
-
 ### Adding New Recipes
 
 1. Use `templates/recipe-template.md` as the starting point
@@ -96,12 +70,6 @@ Each recipe should include:
 6. Create associated code files
 7. Update index and README files
 
-### Adding a DiT model example:
-1. Place in `04-hardware/` category
-2. Include DiT-specific configuration
-3. Document parallel generation parameters
-4. Compare with AR models where relevant
-
 ### When asked to improve documentation:
 1. Read the existing content
 2. Identify gaps or unclear sections
@@ -121,5 +89,5 @@ Each recipe should include:
 
 ## Resources
 
-- vLLM Documentation: https://docs.vllm.ai
-- GitHub: https://github.com/vllm-project/vllm
+- vLLM-Omni Documentation: https://docs.vllm.ai/projects/vllm-omni/en/latest/
+- GitHub: https://github.com/vllm-project/vllm-omni
