@@ -14,11 +14,67 @@ Diffusion Transformer (DiT) family for text-to-video, image-to-video, text-image
 
 | Track | Hardware | Primary workloads |
 |-------|----------|-------------------|
-| **GPU nightly** | NVIDIA H100 80GB | I2V perf regression (`test_wan22_i2v_vllm_omni.json`) |
-| **GPU dashboard** | NVIDIA A100-SXM4-80GB | T2V serving (`wan_2_2_serving_performance.md`) |
+| **GPU nightly (upstream CI)** | NVIDIA H100 80GB | I2V perf regression ([`test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json)) |
+| **Cookbook 4×GPU** | 4× NVIDIA H200 | Same workload as CI; 4-card parallel layout — [benchmark-config-4xh200.json](./benchmark-config-4xh200.json) |
+| **GPU dashboard** | NVIDIA A100-SXM4-80GB | T2V serving ([`wan_2_2_serving_performance.md`](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md)) |
 | **NPU** | 8× Ascend A2 / A3 | I2V/T2V with mindie-sd + MXFP8 ([recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md#npu)) |
 
 Record **CFG**, **USP** (`--usp`), **TP**, **HSDP**, and **VAE patch parallel** when comparing numbers across releases.
+
+## Standardized performance test (4× H200)
+
+Use the **same benchmark harness and workload** as vLLM-Omni nightly CI, with a **4-GPU serve layout** scaled from the 8-GPU recipe (`cfg × usp = 4`).
+
+### What exists in `vllm-omni/tests`
+
+| Path | Role | Use for perf? |
+|------|------|----------------|
+| [`tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json) | **Official I2V perf regression** (Buildkite nightly) | **Yes — source of truth** |
+| [`tests/dfx/perf/scripts/run_diffusion_benchmark.py`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/scripts/run_diffusion_benchmark.py) | Pytest runner → `diffusion_benchmark_serving.py` | **Yes — how to run** |
+| [`tests/e2e/online_serving/test_wan22_expansion.py`](https://github.com/vllm-project/vllm-omni/blob/main/tests/e2e/online_serving/test_wan22_expansion.py) | Feature matrix (Cache-DiT, SP, TP, …) on 1–2× H100 | No — correctness only |
+| [`tests/e2e/accuracy/wan22_i2v/`](https://github.com/vllm-project/vllm-omni/tree/main/tests/e2e/accuracy/wan22_i2v) | Video SSIM/PSNR vs Diffusers (50 steps, 2× GPU) | No — accuracy only |
+| [`tests/dfx/stability/tests/test_wan22.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/stability/tests/test_wan22.json) | 24h stability (USP2 + VAE-pp2 + HSDP) | No — soak test |
+| [`benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md`](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md) | **T2V** manual dashboard (A100, CFG2 USP2) | Optional second track (different model/task) |
+
+### Recommended config for 4× H200
+
+| Item | Choice |
+|------|--------|
+| **Model** | `Wan-AI/Wan2.2-I2V-A14B-Diffusers` |
+| **Harness** | `run_diffusion_benchmark.py` + cookbook [`benchmark-config-4xh200.json`](./benchmark-config-4xh200.json) |
+| **Primary workload** | 832×480, 81 frames, 4 steps, concurrency 1, negative prompt (matches CI `832x480_frames81_steps4`) |
+| **Secondary workload** | 1280×720, 121 frames, 4 steps (matches CI high-res case) |
+| **Serve (official weights + CFG)** | `--cfg-parallel-size 2 --usp 2 --vae-patch-parallel-size 4 --use-hsdp --vae-use-tiling` |
+| **Metrics** | `latency_mean`, `throughput_qps`, `peak_memory_mb_mean` (from runner output JSON) |
+| **Baselines** | Do **not** reuse H100 numbers; record first H200 run, then set `baseline` in JSON |
+
+Upstream CI case `test_wan22_i2v_usp2_vae_patch2_hsdp_slicing` uses only **2+2** parallel degrees (USP2, VAE-pp2) and fits 2–4 GPUs; the cookbook config **uses all 4 H200s** for DiT (`cfg=2`, `usp=2`) and VAE decode (`vae-pp=4`), aligned with the NPU 4-card pattern in `test_wan22_expansion.py`.
+
+### How to run
+
+```bash
+cd /path/to/vllm-omni
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export DIFFUSION_ATTENTION_BACKEND=FLASH_ATTN
+export VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+pytest -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
+  --test-config-file /path/to/vllm-omni-cookbook/diffusion/wan2.2/benchmark-config-4xh200.json
+```
+
+Results are written under `tests/dfx/perf/results/` (or `DIFFUSION_BENCHMARK_DIR`).
+
+### Optional: compare against upstream H100 CI
+
+Run the upstream file on H200 **only for relative A/B** (same commit, two serve configs). H100 baselines in upstream JSON (26.0s / 21.6s mean) are **not** valid regression thresholds on H200.
+
+```bash
+pytest -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
+  --test-config-file tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json \
+  -k "usp2_vae_patch2"
+```
+
+Add `"skip-performance-assertion": true` to upstream JSON locally if H200 latencies differ from H100 baselines.
 
 ## Release timeline (overview)
 
