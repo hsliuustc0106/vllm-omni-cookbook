@@ -39,8 +39,9 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 
 | Model      | Category   | Key Metric | Value | Delta from v0.16.0 |
 |------------|------------|------------|-------|---------------------|
-| WAN2.2     | diffusion  | Online I2V e2e (one config) | 31.0 s | **−17.5%** vs 37.5 s ([#1715](https://github.com/vllm-project/vllm-omni/pull/1715)) |
-| WAN2.2     | diffusion  | 14B weight load | faster | parallel safetensors ([#1504](https://github.com/vllm-project/vllm-omni/pull/1504)) |
+| WAN2.2     | diffusion  | Standardized I2V JSON (`832×480`, 4 steps) | — | JSON not shipped until [#3063](https://github.com/vllm-project/vllm-omni/pull/3063) (after v0.18.0) |
+| WAN2.2     | diffusion  | Online I2V e2e ([#1715](https://github.com/vllm-project/vllm-omni/pull/1715), other workload) | 31.0 s | **−17.5%** vs 37.5 s (IPC fix) |
+| WAN2.2     | diffusion  | 14B weight load | faster | ([#1504](https://github.com/vllm-project/vllm-omni/pull/1504)) |
 
 ### Highlights
 

@@ -60,12 +60,54 @@ pytest -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
 
 Results: `tests/dfx/perf/results/` (override with `DIFFUSION_BENCHMARK_DIR`).
 
-### Baselines on H200
+### Baselines on H200 / L20X
 
-JSON `baseline` fields are calibrated on **H100**. On H200:
+JSON `baseline` fields are calibrated on **H100**. On H200 / L20X:
 
 - If assertions fail, add `"skip-performance-assertion": true` on the relevant `benchmark_params` entries **in the vllm-omni repo** (or open a PR to add H200 baselines), not in this cookbook.
 - For the performance ledger, record `latency_mean`, `throughput_qps`, and `peak_memory_mb_mean` from the result JSON and note hardware + vLLM-Omni version.
+
+### v0.18.0 vs v0.20.0 on the **same** workload
+
+The **26.0 s / 21.6 s** rows in the v0.20.0 table come from [`test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json), added in [#3063](https://github.com/vllm-project/vllm-omni/pull/3063) (**2026-04-24**). That file is **not present** on the [v0.18.0 tag](https://github.com/vllm-project/vllm-omni/releases/tag/v0.18.0) (released **2026-03-28**), so there are **no official H100 baselines** for this workload at v0.18.0.
+
+| Release | Standardized I2V perf JSON | Comparable `latency_mean` (832×480, 4 steps) |
+|---------|---------------------------|-----------------------------------------------|
+| **v0.18.0** | Not shipped | **Not published** — use retro run below |
+| **v0.20.0** | Shipped ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063)) | **26.0 s** (1 GPU) / **21.6 s** (USP2+VAE-pp2+HSDP) on H100 |
+
+**What v0.18.0 *does* document (different workload):** [#1715](https://github.com/vllm-project/vllm-omni/pull/1715) reports online I2V **37.5 s → 31.0 s** e2e (−17.5%) after IPC fixes — not the same prompt/resolution/steps as the JSON above.
+
+**Retro benchmark (apples-to-apples):** checkout `v0.18.0`, reuse **main’s** JSON (copy or symlink), run with the v0.18.0 pytest flag name `--config-file`:
+
+```bash
+cd /path/to/vllm-omni
+git worktree add ../vllm-omni-v018 v0.18.0
+cd ../vllm-omni-v018
+
+# Use a dedicated venv + vLLM version matching the v0.18.0 era (see that tag’s README / pyproject).
+# export HF_HOME=/models
+# uv venv --python 3.12 .venv && source .venv/bin/activate && uv pip install -e .
+
+cp ../vllm-omni/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json /tmp/wan22_retro.json
+# Strip or relax "baseline" / add "skip-performance-assertion": true per benchmark_params entry.
+
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export DIFFUSION_ATTENTION_BACKEND=FLASH_ATTN
+export VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+pytest -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
+  --config-file /tmp/wan22_retro.json \
+  -k "usp2_vae_patch2"
+```
+
+Record results under `tests/dfx/perf/results/`, then fill **Delta from v0.18.0** in the v0.20.0 table:
+
+```text
+delta_latency_mean = (v0.20 - v0.18) / v0.18
+```
+
+Between v0.18.0 and v0.20.0, expect gains from fused norms ([#2583](https://github.com/vllm-project/vllm-omni/pull/2583), [#2585](https://github.com/vllm-project/vllm-omni/pull/2585)), rotary/SP tweaks ([#2393](https://github.com/vllm-project/vllm-omni/pull/2393), [#2459](https://github.com/vllm-project/vllm-omni/pull/2459)), and preprocess/VAE fixes ([#2963](https://github.com/vllm-project/vllm-omni/pull/2963), [#2852](https://github.com/vllm-project/vllm-omni/pull/2852), [#2391](https://github.com/vllm-project/vllm-omni/pull/2391)) — all merged **after** v0.18.0.
 
 ### Other `tests/` paths (not the perf standard)
 
@@ -147,8 +189,8 @@ Workload: random dataset, **832×480**, **81 frames**, **4 steps**, concurrency 
 
 | Config | E2E latency (mean) | Throughput | Peak GPU memory (mean) | Delta from v0.18.0 |
 |--------|-------------------|------------|------------------------|---------------------|
-| Single device | **26.0 s** | 0.034 qps | ~80 GB | — (first measured) |
-| USP=2, VAE-pp=2, HSDP, VAE slicing | **21.6 s** | 0.042 qps | ~55 GB | — (first measured) |
+| Single device | **26.0 s** | 0.034 qps | ~80 GB | **TBD** — no JSON at v0.18.0; [retro run](#v0180-vs-v0200-on-the-same-workload) |
+| USP=2, VAE-pp=2, HSDP, VAE slicing | **21.6 s** | 0.042 qps | ~55 GB | **TBD** — no JSON at v0.18.0; [retro run](#v0180-vs-v0200-on-the-same-workload) |
 
 1280×720, 121 frames, 4 steps (USP=2, VAE-pp=2, HSDP, slicing): **101.6 s** mean.
 
@@ -201,15 +243,23 @@ _None yet._
 
 ## v0.18.0 (2026-03-28)
 
-[v0.18.0 release](https://github.com/vllm-project/vllm-omni/releases/tag/v0.18.0) — focus on **online serving latency** and **operational reliability** for Wan2.2 at scale.
+[v0.18.0 release](https://github.com/vllm-project/vllm-omni/releases/tag/v0.18.0) — focus on **online serving latency** and **operational reliability** for Wan2.2 at scale. The **standardized I2V perf JSON did not exist yet** ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063) landed 2026-04-24).
 
 ### Performance
 
+**Standardized workload** (`832×480`, 81 frames, 4 steps — same as v0.20.0 JSON):
+
+| Config | E2E latency (mean) | Throughput | Peak GPU memory | Notes |
+|--------|-------------------|------------|-----------------|-------|
+| Single device | — | — | — | Not in upstream at v0.18.0; [retro benchmark](#v0180-vs-v0200-on-the-same-workload) |
+| USP=2, VAE-pp=2, HSDP, VAE slicing | — | — | — | Serve flags supported on tag; numbers **TBD** on your hardware |
+
+**Other metrics (not comparable to 26.0 s / 21.6 s):**
+
 | Metric | Value | Delta from v0.16.0 |
 |--------|-------|---------------------|
-| I2V E2E latency | — | Not measured in cookbook |
-| Online I2V e2e (one config, [#1715](https://github.com/vllm-project/vllm-omni/pull/1715)) | **37.5s → 31.0s** | **−17.5%** (IPC overhead removed) |
-| 14B I2V weight load time | ~5 min → faster | Multi-thread shard load ([#1504](https://github.com/vllm-project/vllm-omni/pull/1504)) |
+| Online I2V e2e ([#1715](https://github.com/vllm-project/vllm-omni/pull/1715), different workload) | **37.5s → 31.0s** | **−17.5%** (IPC overhead removed) |
+| 14B I2V weight load ([#1504](https://github.com/vllm-project/vllm-omni/pull/1504)) | ~5 min → faster | Multi-thread safetensors load |
 
 ### Optimization Notes
 
