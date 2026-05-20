@@ -291,25 +291,78 @@ _None._
 
 ## Appendix: GPU vs NPU deployment
 
+Serve commands below are aligned with [**standardized perf tests**](#standardized-performance-test-reuse-vllm-omnitests) in `tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json`. For **8-card production** layouts, see the [Wan2.2 I2V recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md).
+
 | Dimension | GPU (CUDA) | NPU (Ascend) |
 |-----------|------------|--------------|
-| Fused ops (v0.20.0+) | In-repo RMSNorm / AdaLN | mindie-sd + [#3067](https://github.com/vllm-project/vllm-omni/pull/3067) |
-| Quantization (v0.21.0+) | FP8 in progress | **MXFP8** ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)) |
-| 8-card I2V + CFG | `--cfg-parallel-size 2 --usp 4` | `--cfg 2 --usp 4` |
-| Extra env | — | `MINDIE_SD_FA_TYPE=ascend_laser_attention`, `MULTI_STREAM_MEMORY_REUSE=2` |
+| **Perf config file** | [`test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json) | Same model; NPU uses recipe + expansion tests (no H100 baselines in JSON) |
+| **Standard perf `test_name`** | `test_wan22_i2v_usp2_vae_patch2_hsdp_slicing` | `test_wan22_expansion` → `npu_i2v_combined` (4-card) |
+| **Fused ops (v0.20.0+)** | In-repo RMSNorm / AdaLN | mindie-sd + [#3067](https://github.com/vllm-project/vllm-omni/pull/3067) |
+| **Quantization (v0.21.0+)** | FP8 in progress | **MXFP8** ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)) |
+| **Extra env** | `DIFFUSION_ATTENTION_BACKEND=FLASH_ATTN` | `MINDIE_SD_FA_TYPE=ascend_laser_attention`, `MULTI_STREAM_MEMORY_REUSE=2` |
 
-**8× GPU (official I2V + CFG):**
+### GPU: upstream perf serve args (matches JSON)
+
+**Single-device** (`test_wan22_i2v_single_device`) — 1× GPU (e.g. one H200):
 
 ```bash
+export DIFFUSION_ATTENTION_BACKEND=FLASH_ATTN
+
+vllm serve Wan-AI/Wan2.2-I2V-A14B-Diffusers --omni \
+  --enable-diffusion-pipeline-profiler
+```
+
+**Multi-GPU standard** (`test_wan22_i2v_usp2_vae_patch2_hsdp_slicing`) — **4× H200** (set `CUDA_VISIBLE_DEVICES=0,1,2,3`):
+
+```bash
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+export DIFFUSION_ATTENTION_BACKEND=FLASH_ATTN
+export VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+vllm serve Wan-AI/Wan2.2-I2V-A14B-Diffusers --omni \
+  --usp 2 \
+  --vae-patch-parallel-size 2 \
+  --use-hsdp \
+  --vae-use-slicing \
+  --enable-diffusion-pipeline-profiler
+```
+
+Then run the benchmark runner (same flags as CI):
+
+```bash
+pytest -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
+  --test-config-file tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json \
+  -k "usp2_vae_patch2"
+```
+
+### NPU: recipe / expansion layout (not in perf JSON today)
+
+4-card pattern from [`test_wan22_expansion.py`](https://github.com/vllm-project/vllm-omni/blob/main/tests/e2e/online_serving/test_wan22_expansion.py) (`npu_i2v_combined`):
+
+```bash
+export MINDIE_SD_FA_TYPE=ascend_laser_attention
+export MULTI_STREAM_MEMORY_REUSE=2
+
+vllm serve Wan-AI/Wan2.2-I2V-A14B-Diffusers --omni \
+  --cfg-parallel-size 2 \
+  --usp 2 \
+  --vae-patch-parallel-size 4 \
+  --use-hsdp \
+  --hsdp-shard-size 4
+```
+
+### 8-card production (recipe only — not the perf regression config)
+
+From [Wan2.2 I2V recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md) for full 14B + CFG throughput:
+
+```bash
+# GPU
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 vllm serve Wan-AI/Wan2.2-I2V-A14B-Diffusers --omni \
   --use-hsdp --cfg-parallel-size 2 --usp 4 \
   --vae-patch-parallel-size 8 --vae-use-tiling
-```
 
-**8× NPU (official I2V + CFG):**
-
-```bash
+# NPU
 export MINDIE_SD_FA_TYPE=ascend_laser_attention
 export MULTI_STREAM_MEMORY_REUSE=2
 
