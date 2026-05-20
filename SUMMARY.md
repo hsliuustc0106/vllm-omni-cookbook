@@ -24,14 +24,16 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 |------------|------------|------------|-------|---------------------|
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | Qwen3-TTS  | tts        | —          | —     | —                   |
-| WAN2.2     | diffusion  | I2V E2E (832×480, 4 steps, 1×H100) | **26.0 s** | first measured |
-| WAN2.2     | diffusion  | I2V E2E (USP2+HSDP+VAE-pp2) | **21.6 s** | first measured |
+| WAN2.2     | diffusion  | I2V E2E (832×480, 4 steps, 2×H100 CI) | **26.0 s** | first measured |
+| WAN2.2     | diffusion  | I2V E2E (USP2+HSDP+VAE-pp2, H100 CI) | **21.6 s** | first measured |
+| WAN2.2     | diffusion  | I2V E2E (832×480, 4×H200 retro) | **22.17 s** | **−5.9%** vs v0.18 H200 |
+| WAN2.2     | diffusion  | I2V E2E (USP2, 480p, 4×H200 retro) | **16.43 s** | **−18.9%** vs v0.18 H200 |
 | WAN2.2     | diffusion  | T2V mean (480p, VAE-pp=4) | **21.68 s** | first measured |
 
 ### Highlights
 
 - **WAN2.2:** First cookbook release with GPU perf baselines; fused DiT kernels (GPU + NPU), pipeline refactor, nightly I2V CI ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063)).
-- **v0.18.0 → v0.20.0:** Kernel fusion, NPU operator path, preprocess/VAE optimizations, S2V ([#2751](https://github.com/vllm-project/vllm-omni/pull/2751)).
+- **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#v0160--v0180--v0200-on-4-h200-retro) on standardized I2V workloads.
 
 ---
 
@@ -40,8 +42,12 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 | Model      | Category   | Key Metric | Value | Delta from v0.16.0 |
 |------------|------------|------------|-------|---------------------|
 | WAN2.2     | diffusion  | Standardized I2V JSON (`832×480`, 4 steps) | — | JSON not shipped until [#3063](https://github.com/vllm-project/vllm-omni/pull/3063) (after v0.18.0) |
+| WAN2.2     | diffusion  | I2V E2E (832×480, 4×H200 retro) | **23.56 s** | **−24.8%** vs v0.16 H200 single |
+| WAN2.2     | diffusion  | I2V E2E (USP2, 480p, 4×H200 retro) | **20.26 s** | **−8.7%** vs v0.16 H200 USP2 † |
 | WAN2.2     | diffusion  | Online I2V e2e ([#1715](https://github.com/vllm-project/vllm-omni/pull/1715), other workload) | 31.0 s | **−17.5%** vs 37.5 s (IPC fix) |
 | WAN2.2     | diffusion  | 14B weight load | faster | ([#1504](https://github.com/vllm-project/vllm-omni/pull/1504)) |
+
+† v0.16 retro USP2 lacked VAE patch-parallel CLI; see [WAN2.2 index](diffusion/wan2.2/index.md#v0160--v0180--v0200-on-4-h200-retro).
 
 ### Highlights
 
@@ -53,11 +59,13 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 
 | Model      | Category   | Key Metric | Value | Delta from v0.14.0 |
 |------------|------------|------------|-------|---------------------|
-| WAN2.2     | diffusion  | —          | —     | Online API + TP shipped |
+| WAN2.2     | diffusion  | I2V E2E (832×480, 4×H200 retro) | **31.33 s** | first retro baseline |
+| WAN2.2     | diffusion  | I2V E2E (USP2, 480p, 4×H200 retro) | **22.20 s** | — |
+| WAN2.2     | diffusion  | I2V E2E (USP2, 720p, 4×H200 retro) | **133.94 s** | — |
 
 ### Highlights
 
-- **WAN2.2:** `/v1/videos` online serving ([#1073](https://github.com/vllm-project/vllm-omni/pull/1073)), tensor parallelism ([#964](https://github.com/vllm-project/vllm-omni/pull/964)).
+- **WAN2.2:** `/v1/videos` online serving ([#1073](https://github.com/vllm-project/vllm-omni/pull/1073)), tensor parallelism ([#964](https://github.com/vllm-project/vllm-omni/pull/964)). H200 retro: [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md#v0160--v0180--v0200-on-4-h200-retro).
 
 ---
 
