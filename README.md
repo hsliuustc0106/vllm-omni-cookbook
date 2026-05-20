@@ -16,6 +16,8 @@ Versioning mirrors vLLM-Omni stable releases.
 
 See [SUMMARY.md](SUMMARY.md) for the cross-model release overview.
 
+**WAN2.2** has measured I2V/T2V baselines and a full optimization ledger — start at [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+
 ## Metrics
 
 | Model Type | Primary Metrics                    |
