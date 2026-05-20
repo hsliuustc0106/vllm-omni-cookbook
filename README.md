@@ -12,11 +12,11 @@ Versioning mirrors vLLM-Omni stable releases.
 | Qwen3-TTS   | [tts](tts/qwen3-tts/)             | Text-to-speech             |
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
 
-## Latest Release: v0.20.0 (Baseline)
+## Latest Tracked Release: v0.20.0
 
-See [SUMMARY.md](SUMMARY.md) for the cross-model release overview.
+See [SUMMARY.md](SUMMARY.md) for the cross-model release overview (v0.14.0 → v0.21.0).
 
-**WAN2.2** has measured I2V/T2V baselines and a full optimization ledger — start at [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+**WAN2.2** ledgers improvements **per stable release** (v0.14.0 initial support through v0.21.0 pipeline parallel) — [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 
 ## Metrics
 
