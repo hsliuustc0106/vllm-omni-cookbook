@@ -3,7 +3,8 @@
 **Category:** Diffusion (image / video generation)  
 **Models:** `Wan-AI/Wan2.2-T2V-A14B-Diffusers`, `Wan-AI/Wan2.2-I2V-A14B-Diffusers`, `Wan-AI/Wan2.2-TI2V-5B-Diffusers`, Wan2.2-S2V
 
-**Blog (narrative):** [Optimizing Wan2.2 I2V in vLLM-Omni](wan22-i2v-performance.html) — pipeline walkthrough, release comparison, and reproduction guide.
+**Blog (narrative):** [Optimizing Wan2.2 I2V in vLLM-Omni](wan22-i2v-performance.html) — pipeline walkthrough, release comparison, and reproduction guide.  
+**Zhihu draft (中文):** [wan22-i2v-performance-zhihu.md](wan22-i2v-performance-zhihu.md)
 
 **Recipes:** [I2V](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md) · [S2V](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-S2V.md) · [T2V dashboard](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md)
 
