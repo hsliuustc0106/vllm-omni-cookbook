@@ -16,7 +16,7 @@ Versioning mirrors vLLM-Omni stable releases.
 
 See [SUMMARY.md](SUMMARY.md) for the cross-model release overview (v0.14.0 → v0.21.0).
 
-**WAN2.2** ledgers improvements **per stable release** (v0.14.0 initial support through v0.21.0 pipeline parallel) — [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+**WAN2.2** ledgers improvements **per stable release** (v0.14.0 initial support through v0.21.0 pipeline parallel) — [index](diffusion/wan2.2/index.md) · [I2V performance blog](diffusion/wan2.2/wan22-i2v-performance.html).
 
 ## Metrics
 

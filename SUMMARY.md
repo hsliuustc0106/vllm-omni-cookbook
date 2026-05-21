@@ -33,7 +33,7 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 ### Highlights
 
 - **WAN2.2:** First cookbook release with GPU perf baselines; fused DiT kernels (GPU + NPU), pipeline refactor, nightly I2V CI ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063)).
-- **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#v0160--v0180--v0200-on-4-h200-retro) on standardized I2V workloads.
+- **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#h200-retro-comparison) on standardized I2V workloads. [Blog post](diffusion/wan2.2/wan22-i2v-performance.html).
 
 ---
 
@@ -47,7 +47,7 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 | WAN2.2     | diffusion  | Online I2V e2e ([#1715](https://github.com/vllm-project/vllm-omni/pull/1715), other workload) | 31.0 s | **−17.5%** vs 37.5 s (IPC fix) |
 | WAN2.2     | diffusion  | 14B weight load | faster | ([#1504](https://github.com/vllm-project/vllm-omni/pull/1504)) |
 
-† v0.16 retro USP2 lacked VAE patch-parallel CLI; see [WAN2.2 index](diffusion/wan2.2/index.md#v0160--v0180--v0200-on-4-h200-retro).
+† v0.16 retro USP2 lacked VAE patch-parallel CLI; see [WAN2.2 index](diffusion/wan2.2/index.md#h200-retro-comparison).
 
 ### Highlights
 
@@ -65,7 +65,7 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 
 ### Highlights
 
-- **WAN2.2:** `/v1/videos` online serving ([#1073](https://github.com/vllm-project/vllm-omni/pull/1073)), tensor parallelism ([#964](https://github.com/vllm-project/vllm-omni/pull/964)). H200 retro: [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md#v0160--v0180--v0200-on-4-h200-retro).
+- **WAN2.2:** `/v1/videos` online serving ([#1073](https://github.com/vllm-project/vllm-omni/pull/1073)), tensor parallelism ([#964](https://github.com/vllm-project/vllm-omni/pull/964)). H200 retro: [index](diffusion/wan2.2/index.md#h200-retro-comparison) · [blog](diffusion/wan2.2/wan22-i2v-performance.html).
 
 ---
 
