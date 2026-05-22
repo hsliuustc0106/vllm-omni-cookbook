@@ -11,6 +11,7 @@ Versioning mirrors vLLM-Omni stable releases.
 | Qwen3-Omni  | [omni](omni/qwen3-omni/)          | Omni-modal / any-to-any    |
 | Qwen3-TTS   | [tts](tts/qwen3-tts/)             | Text-to-speech             |
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
+| Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
 
 ## Latest Tracked Release: v0.20.0
 
