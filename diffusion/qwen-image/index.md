@@ -14,7 +14,7 @@ Retro benchmark harness (v0.18 / v0.20): `vllm-omni/benchmark_results/qwen_image
 | Track | Hardware | Source |
 |-------|----------|--------|
 | **Standardized T2I (CI)** | 2× H100 (nightly) | [`test_qwen_image_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_qwen_image_vllm_omni.json) |
-| **v0.18 / v0.20 retro** | 4× L20X (measured) | [Table below](#l20x-retro-comparison) · [Retro README](https://github.com/vllm-project/vllm-omni/blob/main/benchmark_results/qwen_image_retro/README.md) |
+| **v0.18 / v0.20 / main retro** | 4× L20X (measured) | [Table below](#l20x-retro-comparison) · [Retro README](https://github.com/vllm-project/vllm-omni/blob/main/benchmark_results/qwen_image_retro/README.md) |
 
 ---
 
@@ -43,22 +43,29 @@ Measured **2026-05-22** on **4× NVIDIA L20X**. Metric: **`latency_mean`** (seco
 
 Protocol: **`num-prompts=3`**, **`warmup-requests=1`** (first request excluded from measurement — avoids `torch.compile` / resolution-transition inflation).
 
-| Config | Workload | v0.18.0 | v0.20.0 | Δ v0.18→v0.20 |
-|--------|----------|---------|---------|---------------|
-| Single device | 512×512, 20 steps | **2.20** | 2.39 | +8.6% |
-| Single device | 1536×1536, 35 steps | **23.96** | 24.48 | +2.2% |
-| Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps | **8.16** | 8.42 | +3.2% |
+| Config | Workload | v0.18.0 | v0.20.0 | main (`89e389cf`) | Δ v0.20→main |
+|--------|----------|---------|---------|-------------------|--------------|
+| Single device | 512×512, 20 steps | **2.20** | 2.39 | 2.40 | +0.4% |
+| Single device | 1536×1536, 35 steps | **23.96** | 24.48 | 24.46 | −0.1% |
+| Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps | **8.16** | 8.42 | 8.56 | +1.7% |
 
-**Takeaway:** v0.18 and v0.20 are roughly at parity on `vllm-omni`; v0.18 is marginally faster on all three workloads here (~2–9%).
+**Takeaway:** Latest **main** tracks **v0.20** within ~2% on these workloads. **v0.18** remains marginally fastest on this L20X retro (~2–9% vs v0.20/main).
 
-**Stacks:** v0.18 → `vllm==0.18.0`; v0.20 → `vllm==0.20.0`.
+**Stacks:**
+
+| Source | vLLM-Omni | vLLM | API path |
+|--------|-----------|------|----------|
+| v0.18.0 tag | 0.18.0 | 0.18.0 | `vllm-omni` |
+| v0.20.0 tag | 0.20.0 | 0.20.0 | `vllm-omni` |
+| main `89e389cf` | 0.20.1.dev167 | 0.21.0 | `/v1/chat/completions` |
 
 **Artifacts (warmup=1 reruns):**
 
 - `v0.18.0/benchmark_results_qwen_image_retro_v018_rerun_20260522-013621.json`
 - `v0.20.0/diffusion_result_qwen_image_retro_v020_rerun_20260522-020009.json`
+- `main/diffusion_result_qwen_image_retro_main_rerun_20260522-101723.json`
 
-Retro runners: `benchmark_results/qwen_image_retro/v0.{18,20}.0/run_benchmark_rerun.sh`.
+Retro runners: `benchmark_results/qwen_image_retro/{v0.18.0,v0.20.0,main}/run_benchmark_rerun.sh`.
 
 > **Note:** v0.16.0 is omitted — no upstream perf JSON, different `openai` backend, SDPA fallback, and incomplete parallel CLI. Not comparable to v0.18/v0.20.
 
