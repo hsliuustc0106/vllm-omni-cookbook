@@ -58,17 +58,32 @@ pytest -s tests/dfx/perf/scripts/run_benchmark.py \
 
 ---
 
-## L20X retro — status
+## L20X retro — v0.18.0 vs v0.20.0 (in progress)
 
-**In progress.** Phase-1 subset (2× L20X, `CUDA_VISIBLE_DEVICES=2,3`, `--async-chunk`):
+**Protocol:** shared workload on 2× L20X — text+audio random **2500/900**, `--async-chunk`.
 
-| Phase | c | prompts | Workload |
-|-------|--:|--------:|----------|
-| latency | 1 | 4 | text+audio random 2500/900 |
-| throughput | 10 | 40 | text+audio (matches [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) PR smoke) |
-| throughput | 4 | 16 | text+audio mid-concurrency |
+| Phase | c | prompts |
+|-------|--:|--------:|
+| latency | 1 | 4 |
+| throughput | 10 | 40 |
+| throughput | 4 | 16 |
 
-Results table: _pending first run._
+**Note:** Tag-native CI JSON differs (v0.18 used 100/100 tokens; v0.20 uses 2500/900). Retro uses **v0.20 workload on both tags** for fair comparison.
+
+| Metric | v0.18.0 | v0.20.0 | Δ |
+|--------|--------:|--------:|--:|
+| TTFP @ c=1 | _pending_ | _pending_ | — |
+| TTFP @ c=10 | _pending_ | _pending_ | — |
+| RTF @ c=10 | _pending_ | _pending_ | — |
+| E2EL @ c=10 | _pending_ | _pending_ | — |
+| audio_throughput @ c=10 | _pending_ | _pending_ | — |
+
+Harness: `benchmark_results/qwen3_omni_retro/` · Config: `qwen3_omni_retro_v018.json` / `qwen3_omni_retro_v020.json`
+
+```bash
+bash benchmark_results/qwen3_omni_retro/v0.18.0/run_benchmark.sh
+bash benchmark_results/qwen3_omni_retro/v0.20.0/run_benchmark.sh
+```
 
 ---
 
@@ -98,8 +113,8 @@ Post-[#3732](https://github.com/vllm-project/vllm-omni/pull/3732): Code2Wav inne
 ## Reproduce retro
 
 ```bash
-bash benchmark_results/qwen3_omni_retro/main/run_benchmark.sh
-bash benchmark_results/qwen3_omni_retro/main/run_benchmark_throughput.sh
+bash benchmark_results/qwen3_omni_retro/v0.18.0/run_benchmark.sh
+bash benchmark_results/qwen3_omni_retro/v0.20.0/run_benchmark.sh
 bash benchmark_results/qwen3_omni_retro/cleanup.sh
 ```
 
