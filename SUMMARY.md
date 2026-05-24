@@ -11,8 +11,8 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=1, 2×L20X) | **47 ms** | **−21%** vs v0.20 L20X |
 | Qwen3-TTS  | tts        | RTF default_voice (c=1, 2×L20X) | **0.145** | ~flat vs v0.20 L20X |
-| Qwen3-TTS  | tts        | TTFP default_voice (c=8, std deploy, 2×L20X) | **82 ms** | **−62%** vs v0.20 L20X |
-| Qwen3-TTS  | tts        | Throughput default_voice (c=8, std, 2×L20X) | **28.4 audio-s/s** | **+43%** vs v0.20 L20X |
+| Qwen3-TTS  | tts        | TTFP default_voice (c=8, std deploy, 2×L20X) | **81 ms** | **−62%** vs v0.20 L20X |
+| Qwen3-TTS  | tts        | Throughput default_voice (c=8, std, 2×L20X) | **31.4 audio-s/s** | **+59%** vs v0.20 L20X |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=64, hiconc deploy, 2×L20X) | **351 ms** | **−96%** vs main std L20X |
 | Qwen3-TTS  | tts        | RTF default_voice (c=64, hiconc deploy, 2×L20X) | **0.996** | **−35%** vs main std L20X |
 | Qwen3-TTS  | tts        | Throughput default_voice (c=64, hiconc, 2×L20X) | **60.8 audio-s/s** | **+66%** vs main std L20X |
@@ -21,7 +21,7 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 
 ### Highlights
 
-- **Qwen3-TTS:** Track **TTFP** (latency), **RTF** (efficiency), **throughput** (sustained load). v0.20→main wins TTFP at c=1/c=8 on std deploy; [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) hiconc unlocks c=16/64 (TTFP −85–96%, tp +50–75%). See [tts/qwen3-tts/index.md](tts/qwen3-tts/index.md).
+- **Qwen3-TTS:** Track **TTFP**, **RTF**, **throughput**. v0.20→main wins at c=1/c=8 on std deploy; [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) adds Code2Wav cudagraph default-on (+11% tp at c=8); [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) hiconc unlocks c=16/64. See [tts/qwen3-tts/index.md](tts/qwen3-tts/index.md).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 
 ---

@@ -90,8 +90,8 @@ https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
 |------|------|
 | 模型 | Qwen3-TTS-12Hz-1.7B-**CustomVoice** |
 | GPU | `CUDA_VISIBLE_DEVICES=2,3`（Talker → 逻辑 GPU0，Code2Wav → 逻辑 GPU1） |
-| 对比版本 | **v0.20.0 tag** vs **main `e7644daa`**（vLLM **0.21.0**） |
-| 低延迟 | c=1，`num-prompts=3`，bundled smoke/design 数据集 |
+| 对比版本 | **v0.20.0 tag** vs **main `28ce618f`**（vLLM **0.21.0**，含 #3732） |
+| 低延迟 | c=1，`num-prompts=3`，bundled smoke/design 数据集（**2026-05-24 复测**） |
 | 高并发 | c=**8 / 16 / 64**，prompts **80 / 128 / 128**（与 CI throughput 一致） |
 | Deploy | 默认 `qwen3_tts.yaml`；另测 main 专用 **`qwen3_tts_high_concurrency.yaml`**（#3662） |
 
@@ -108,8 +108,8 @@ https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
 
 | 任务 | v0.20.0 TTFP | main TTFP | Δ TTFP | v0.20 RTF | main RTF | Δ RTF |
 |------|-------------:|----------:|-------:|----------:|---------:|------:|
-| default_voice | 59 ms | **47 ms** | **−21%** | 0.145 | 0.145 | ~持平 |
-| voice_design | 63 ms | **47 ms** | **−25%** | 0.148 | 0.139 | **−6%** |
+| default_voice | 59 ms | **48 ms** | **−19%** | 0.145 | 0.147 | ~持平 |
+| voice_design | 63 ms | **46 ms** | **−27%** | 0.148 | 0.147 | ~持平 |
 
 **一句话：** main + vLLM 0.21 在 **TTFP** 上稳定快 **~20%**；**RTF** 持平或略好。c=1 不看 throughput。
 
@@ -117,34 +117,36 @@ https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
 
 | 任务 | c | v0.20.0 | main（标准 deploy） | main（#3662 高并发） |
 |------|--:|--------:|--------------------:|---------------------:|
-| default_voice | 8 | 214 | **82** | 83 |
-| default_voice | 16 | 1179 | 935 | **118** |
-| default_voice | 64 | 7805 | 7852 | **351** |
-| voice_design | 8 | 216 | **82** | 84 |
-| voice_design | 16 | 1089 | 839 | **127** |
-| voice_design | 64 | 7207 | 6908 | **386** |
+| default_voice | 8 | 214 | **81** | 83 |
+| default_voice | 16 | 1179 | 974 | **118** |
+| default_voice | 64 | 7805 | 7861 | **351** |
+| voice_design | 8 | 216 | **81** | 84 |
+| voice_design | 16 | 1089 | 817 | **127** |
+| voice_design | 64 | 7207 | 6743 | **386** |
 
 ### 2.3 高并发 RTF（越低越好）
 
 | 任务 | c | v0.20.0 | main（标准） | main（#3662 高并发） |
 |------|--:|--------:|-------------:|---------------------:|
-| default_voice | 8 | 0.249 | **0.246** | 0.243 |
-| default_voice | 16 | 0.436 | 0.423 | **0.357** |
-| default_voice | 64 | 1.554 | 1.533 | **0.996** |
-| voice_design | 8 | 0.251 | **0.251** | 0.250 |
-| voice_design | 16 | 0.447 | 0.437 | **0.374** |
-| voice_design | 64 | 1.641 | 1.628 | **1.093** |
+| default_voice | 8 | 0.249 | **0.245** | 0.243 |
+| default_voice | 16 | 0.436 | 0.426 | **0.357** |
+| default_voice | 64 | 1.554 | 1.443 | **0.996** |
+| voice_design | 8 | 0.251 | **0.244** | 0.250 |
+| voice_design | 16 | 0.447 | 0.430 | **0.374** |
+| voice_design | 64 | 1.641 | 1.557 | **1.093** |
 
 ### 2.4 高并发 throughput（audio-s / s，越高越好）
 
 | 任务 | c | v0.20.0 | main（标准） | main（#3662 高并发） |
 |------|--:|--------:|-------------:|---------------------:|
-| default_voice | 8 | 19.8 | **28.4** | 29.2 |
-| default_voice | 16 | 35.9 | 36.5 | **40.9** |
-| default_voice | 64 | 36.0 | 36.6 | **60.8** |
-| voice_design | 8 | 31.2 | 30.0 | 30.8 |
-| voice_design | 16 | 34.9 | 35.3 | **41.6** |
-| voice_design | 64 | 33.7 | 35.0 | **55.0** |
+| default_voice | 8 | 19.8 | **31.4** | 29.2 |
+| default_voice | 16 | 35.9 | 37.0 | **40.9** |
+| default_voice | 64 | 36.0 | 36.9 | **60.8** |
+| voice_design | 8 | 31.2 | **31.6** | 30.8 |
+| voice_design | 16 | 34.9 | 36.0 | **41.6** |
+| voice_design | 64 | 33.7 | 36.1 | **55.0** |
+
+‡ **#3662 高并发列** 来自 **`e7644daa`** 复测（hiconc stage-1 仍为 `enforce_eager: true`）。
 
 ### 2.5 c=64 直观对比（建议作配图）
 
@@ -154,7 +156,7 @@ https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
 default_voice @ c=64  TTFP
 
 v0.20.0          ████████████████████████████████████████  7805 ms
-main 标准 deploy  ████████████████████████████████████████  7852 ms
+main 标准 deploy  ████████████████████████████████████████  7861 ms
 main 高并发 #3662  ██                                       351 ms
 ```
 
@@ -163,19 +165,19 @@ main 高并发 #3662  ██                                       351 ms
 | 版本 | RTF | throughput |
 |------|----:|-----------:|
 | v0.20.0 | 1.554 | 36.0 |
-| main 标准 | 1.533 | 36.6 |
+| main 标准 | 1.443 | 36.9 |
 | main 高并发 | **0.996** | **60.8** |
 
 ### 2.6 三指标结论汇总
 
 | 对比 | c=8 | c=16 | c=64 |
 |------|-----|------|------|
-| v0.20 → main（标准 deploy） | TTFP **−62%**；RTF ~持平；tp **+43%** | TTFP **−21%**；RTF ~持平 | 三项 ~持平 |
+| v0.20 → main（标准 deploy） | TTFP **−62%**；RTF ~持平；tp **+59%** | TTFP **−21–25%**；RTF ~持平 | 三项 ~持平 |
 | main 标准 → main 高并发（#3662） | 三项 ~持平 | TTFP **−85–87%**，RTF **−14–16%**，tp **+12%** | TTFP **−94–96%**，RTF **−33–35%**，tp **+50–75%** |
 
 **三句话结论：**
 
-1. **v0.20 → main（标准 deploy）**：c=8 是最大赢家 — TTFP **−62%**，throughput **+43%**；c=64 三项几乎不变。
+1. **v0.20 → main（标准 deploy，`28ce618f`）**：c=8 是最大赢家 — TTFP **−62%**，throughput **+59%**；c=64 三项几乎不变。
 2. **main 标准 → main 高并发（#3662）**：c=8 三项持平；**c=16/64** 三项齐升 — TTFP **−85–96%**，RTF **−14–35%**，throughput **+12–75%**。
 3. **做线上高并发，务必换 deploy 配置** — 默认 yaml 下 TTFP 爆炸、throughput 平台化（[#272](https://github.com/vllm-project/vllm-omni/issues/272)）。
 
@@ -208,8 +210,8 @@ main 高并发 #3662  ██                                       351 ms
 
 ```
 c=1   TTFP  ~47–59 ms   RTF ~0.15        throughput N/A
-c=8   v0.20  214 ms      main 标准 82 ms  tp 19.8 → 28.4 (+43%)
-c=64  v0.20  7805 ms     main 标准 ~7850 ms  tp ~36（标准 deploy 几乎救不回来）
+c=8   v0.20  214 ms      main 标准 81 ms   tp 19.8 → 31.4 (+59%)
+c=64  v0.20  7805 ms     main 标准 ~7860 ms  tp ~37（标准 deploy 几乎救不回来）
       main 高并发 351 ms                    tp 60.8（#3662 三项齐升）
 ```
 
@@ -231,7 +233,7 @@ CI 在 **c=8** 设了 throughput 回归哨兵 — 同时记录 TTFP / RTF / thro
 
 | PR | 内容 | retro 信号（TTFP / RTF / throughput） |
 |----|------|--------------------------------------|
-| #3485 | Qwen3-TTS 延迟回归修复 | c=1 TTFP **−21–25%**；c=8 TTFP **−62%**，tp **+43%** |
+| #3485 | Qwen3-TTS 延迟回归修复 | c=1 TTFP **−19–27%**；c=8 TTFP **−62%**，tp **+59%** |
 | #2376 | Code2Wav CUDA graph | 解码路径加速 |
 | #3232 | rebase vLLM 0.21.0 | 运行时栈升级 |
 
@@ -258,6 +260,22 @@ vllm serve Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --omni \
   --deploy-config vllm_omni/deploy/qwen3_tts_high_concurrency.yaml
 ```
 
+### 5.4 main：Code2Wav CUDA graph 默认开启（#3732，2026-05-23）
+
+**PR [#3732](https://github.com/vllm-project/vllm-omni/pull/3732)** 把 Code2Wav 内层 CUDA graph 与 stage `enforce_eager` 挂钩，并把 `qwen3_tts.yaml` stage-1 默认改为 **`enforce_eager: false`**。
+
+**同 harness 复测**（`e7644daa` → `28ce618f`，标准 deploy）：
+
+| 任务 | c | 指标 | 合并前 | 合并后 | Δ |
+|------|--:|------|-------:|-------:|--:|
+| default_voice | 8 | TTFP | 82 ms | 81 ms | ~持平 |
+| default_voice | 8 | throughput | 28.4 | **31.4** | **+11%** |
+| default_voice | 64 | RTF | 1.533 | **1.443** | **−6%** |
+
+**PR 分支 c=10 A/B**（40 prompts，仅切换 stage-1 eager/cudagraph）：TTFP **509 → 117 ms（−77%）**，RTF **0.30 → 0.21**，throughput **30.6 → 43.8 audio-s/s**。
+
+**结论：** 在完整 CI 矩阵里，#3485 已吃掉大部分 c=8 TTFP 收益；#3732 主要再抬 **c=8 throughput（+11%）**。若 Code2Wav 被强制 eager，三项指标会明显退化 — 可用 `--stage-overrides '{"1": {"enforce_eager": true}}'` 回退。
+
 ---
 
 ## 六、发版 / 分支对照
@@ -265,7 +283,7 @@ vllm serve Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --omni \
 | 来源 | vLLM-Omni | vLLM | 高并发 deploy |
 |------|-----------|------|---------------|
 | v0.20.0 tag | 0.20.0 | 0.20.0 | ❌ |
-| main `e7644daa` | 0.20.1.dev171 | **0.21.0** | ✅ #3662 |
+| main `28ce618f` | 0.20.1.dev175 | **0.21.0** | ✅ #3662 + **#3732** |
 
 ---
 
@@ -283,12 +301,16 @@ pytest -s tests/dfx/perf/scripts/run_benchmark.py \
 ### 7.2 本文 retro 脚本
 
 ```bash
-# 低延迟 c=1
+# v0.20.0 baseline
 bash benchmark_results/qwen3_tts_retro/v0.20.0/run_benchmark.sh
-bash benchmark_results/qwen3_tts_retro/main/run_benchmark.sh
-
-# 高并发 c=8/16/64（标准 deploy）
 bash benchmark_results/qwen3_tts_retro/v0.20.0/run_benchmark_throughput.sh
+
+# main post-#3732（28ce618f）
+bash benchmark_results/qwen3_tts_retro/main-post3732/run_benchmark.sh
+bash benchmark_results/qwen3_tts_retro/main-post3732/run_benchmark_throughput.sh
+
+# 合并前 baseline（e7644daa）
+bash benchmark_results/qwen3_tts_retro/main/run_benchmark.sh
 bash benchmark_results/qwen3_tts_retro/main/run_benchmark_throughput.sh
 
 # 高并发 + #3662 deploy（仅 main）
@@ -324,8 +346,9 @@ python benchmarks/tts/bench_tts.py \
 
 ## 九、总结
 
-- **v0.20 → main（标准 deploy）**：c=1 **TTFP −21–25%**；c=8 **TTFP −62% + throughput +43%**；c=64 三项 ~持平。
-- **#3662 高并发 profile** 才是 c=16/64 的钥匙：TTFP 从 **~7–8 s → ~0.35 s**，RTF 从 **~1.6 → ~1.0**，throughput 从 **~36 → ~61 audio-s/s**。
+- **v0.20 → main（标准 deploy，`28ce618f`）**：c=1 **TTFP −19–27%**；c=8 **TTFP −62% + throughput +59%**；c=64 三项 ~持平。
+- **#3732** 默认开启 Code2Wav inner cudagraph：完整矩阵 c=8 **throughput +11%** vs 合并前；c=10 微基准 TTFP **−77%**。
+- **#3662 高并发 profile** 才是 c=16/64 的钥匙：TTFP 从 **~7–8 s → ~0.35 s**，RTF 从 **~1.6 → ~1.0**，throughput 从 **~37 → ~61 audio-s/s**。
 - TTS 优化要 **分场景、分 metric**：低延迟调 talker batch（TTFP）；高并发调 **S0=64 + prefix CUDA graphs + Code2Wav graphs**（三项齐升）。
 - 与 [#3812](https://github.com/vllm-project/vllm-omni/issues/3812) 里报告的离线 Omni 2× 回归不同路径 — serving benchmark + 正确 deploy 是 apples-to-apples 对比方式。
 
