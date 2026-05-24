@@ -30,7 +30,9 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 
 | Model      | Category   | Key Metric | Value | Delta from v0.18.0 |
 |------------|------------|------------|-------|---------------------|
-| Qwen3-Omni | omni       | —          | —     | —                   |
+| Qwen3-Omni | omni       | TTFP (c=1, 2500/900, 2×L20X retro) | **1325 ms** | v0.18 blocked on L20X |
+| Qwen3-Omni | omni       | RTF (c=1, 2500/900, 2×L20X retro) | **0.175** | v0.18 blocked on L20X |
+| Qwen3-Omni | omni       | E2EL (c=1, 2500/900, 2×L20X retro) | **20.1 s** | v0.18 blocked on L20X |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=1, 2×L20X retro) | **59 ms** | first L20X retro |
 | Qwen3-TTS  | tts        | RTF default_voice (c=1, 2×L20X retro) | **0.145** | first L20X retro |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=8, 2×L20X retro) | **214 ms** | first L20X retro |
