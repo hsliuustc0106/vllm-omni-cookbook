@@ -70,18 +70,25 @@ pytest -s tests/dfx/perf/scripts/run_benchmark.py \
 
 **Note:** Tag-native CI JSON differs (v0.18 used 100/100 tokens; v0.20 uses 2500/900). Retro uses **v0.20 workload on both tags** for fair comparison.
 
-### c=1 latency (2500/900) — primary anchor
+### c=1 latency (2500/900, async-chunk) — primary anchor
 
-| Metric | v0.18.0 | v0.20.0 | Δ (v0.20 vs v0.18) |
-|--------|--------:|--------:|-------------------:|
-| TTFT (mean) | _blocked_ | **721 ms** | — |
-| TTFP (mean) | _blocked_ | **1325 ms** | — |
-| TPOT (mean) | _blocked_ | **31 ms** | — |
-| RTF (mean) | _blocked_ | **0.175** | — |
-| E2EL (mean) | _blocked_ | **20.1 s** | — |
-| audio_throughput | _blocked_ | **6.0 audio-s/s** | — |
+| Metric | v0.18.0 | v0.20.0 | main @ `28ce618f` | Δ v0.18→v0.20 | Δ v0.20→main |
+|--------|--------:|--------:|------------------:|--------------:|-------------:|
+| TTFT (mean) | 248 ms | 721 ms | 803 ms | +191% | +11% |
+| TTFP (mean) | **736 ms** | 1325 ms | 1417 ms | +80% | +7% |
+| TPOT (mean) | 20 ms | 31 ms | 43 ms | +55% | +41% |
+| RTF (mean) | **0.157** | 0.175 | 0.206 | +11% | +18% |
+| E2EL (mean) | 37.7 s | **20.1 s** | 33.2 s | −47% | +65%* |
+| audio_throughput | 6.3 audio-s/s | 6.0 | 5.1 | −5% | −15% |
+| mean audio duration | 239 s | 121 s | 171 s | −49% | +41%* |
 
-v0.20.0 run: `v0.20.0` tag · 2× L20X · 4/4 prompts completed · harness `result_test_qwen3_omni_chunk_random_1_4_in2500_out900_20260524-150548.json`
+\* Cross-run output length varies (random decode); E2EL and audio-duration deltas are **not strictly apples-to-apples**. TTFP/RTF on shorter outputs tend to look better — interpret TTFP/RTF together with mean audio duration.
+
+**Takeaways (c=1, same workload config):**
+- **v0.18→v0.20:** TTFP regressed ~80% on this sample, but v0.20 finished requests ~2× faster wall-clock (E2EL 20 s vs 38 s) because it generated ~half the audio.
+- **v0.20→main (`28ce618f`):** TTFP +7%, RTF +18%, throughput −15% — modest regression on this L20X snapshot; #3732 Code2Wav cudagraph not isolated here.
+
+Result files: `v0.18.0/result_*_164613.json` · `v0.20.0/result_*_150548.json` · `main/result_*_163106.json`
 
 ### c=10 throughput — unstable on L20X (2026-05-24)
 
@@ -94,11 +101,12 @@ v0.20.0 run: `v0.20.0` tag · 2× L20X · 4/4 prompts completed · harness `resu
 
 Server exited under c=10 load before c=4 phase; treat throughput rows as **indicative only** until stability is fixed.
 
-### v0.18.0 blockers (same hardware)
+### v0.18.0 blockers (resolved for c=1)
 
-1. **flashinfer** version skew in v018 venv (`flashinfer 0.6.6` vs `flashinfer-cubin 0.6.8.post1`) — workaround: `FLASHINFER_DISABLE_VERSION_CHECK=1`
-2. **`vllm` CLI** does not register `openai-chat-omni` backend — workaround: PATH wrapper to `python -m vllm_omni.entrypoints.cli.main`
-3. **Server init crash** on 2500/900 + async-chunk (stage worker died during init); native 100/100 also failed stage init on L20X
+1. **flashinfer** version skew — `FLASHINFER_DISABLE_VERSION_CHECK=1` in run script
+2. **`openai-chat-omni` backend** — PATH wrapper to `python -m vllm_omni.entrypoints.cli.main`
+3. **GPU memory at init** — `stage_overrides` lower utilization; ensure clean GPUs before run
+4. **async-chunk required** — without it TTFP ~45 s (non-comparable)
 
 Harness: `benchmark_results/qwen3_omni_retro/` · Config: `qwen3_omni_retro_v018.json` / `qwen3_omni_retro_v020.json`
 
