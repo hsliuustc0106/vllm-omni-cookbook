@@ -123,16 +123,37 @@ At **c≥16**, use the **high-concurrency deploy** on main — standard deploy s
 
 [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) gates inner Code2Wav CUDA graph capture on stage `enforce_eager` and flips **`qwen3_tts.yaml` stage-1 default to `enforce_eager: false`**. Opt-out: `--stage-overrides '{"1": {"enforce_eager": true}}'`.
 
-**Re-run std deploy** on same L20X harness (`main-post3732/` vs pre-merge `e7644daa`):
+### Isolated A/B on `28ce618f` (same commit, std deploy)
 
-| Task | c | Metric | `e7644daa` | `28ce618f` (+#3732) | Δ |
-|------|--:|--------|----------:|--------------------:|--:|
-| default_voice | 8 | TTFP | 82 ms | 81 ms | ~flat |
-| default_voice | 8 | throughput | 28.4 | **31.4** | **+11%** |
-| default_voice | 64 | RTF | 1.533 | **1.443** | **−6%** |
-| voice_design | 64 | TTFP | 6908 ms | **6743 ms** | **−2%** |
+Only variable: stage-1 **eager** vs **Code2Wav cudagraph** (`main-post3732-eager/` vs `main-post3732/`).
 
-**Takeaway:** In the full CI throughput matrix, [#3485](https://github.com/vllm-project/vllm-omni/pull/3485) already captured most c=8 TTFP wins; #3732 adds **~10% throughput at c=8** and modest RTF gains at c=64. A tighter **c=10 A/B** on the PR branch (40 prompts, eager vs cudagraph toggle) showed larger Code2Wav-specific wins: TTFP **509 → 117 ms (−77%)**, RTF **0.30 → 0.21**, throughput **30.6 → 43.8 audio-s/s**.
+**default_voice:**
+
+| c | TTFP eager | TTFP cudagraph | Δ TTFP | RTF eager | RTF cudagraph | Δ RTF | tp eager | tp cudagraph | Δ tp |
+|--:|-----------:|---------------:|-------:|----------:|--------------:|------:|---------:|-------------:|-----:|
+| 1 | 52 ms | **48 ms** | **−8%** | 0.153 | **0.147** | **−4%** | 6.6 | 6.8 | +3% |
+| 8 | 92 ms | **81 ms** | **−12%** | 0.248 | **0.245** | −1% | 30.7 | **31.4** | **+3%** |
+| 16 | 955 ms | 974 ms | ~flat | 0.428 | 0.426 | ~flat | 36.7 | 37.0 | +1% |
+| 64 | 8085 ms | **7861 ms** | **−3%** | 1.549 | **1.443** | **−7%** | 36.5 | 36.9 | +1% |
+
+**voice_design:** same pattern — c=1 TTFP **−14%**, c=8 TTFP **−13%**, c=64 RTF **−1%** (TTFP −1%).
+
+**Takeaway:** #3732 helps at **all c levels**, but unevenly:
+
+| c | #3732 impact |
+|---|--------------|
+| **c=1** | TTFP **−8–14%**, RTF **−4%** — modest but real on Code2Wav path |
+| **c=8** | TTFP **−12–13%**, throughput **+3–4%** — largest TTFP win in std matrix |
+| **c=16** | ~neutral (talker/queue dominates) |
+| **c=64** | TTFP **−1–3%**, RTF **−1–7%** — efficiency gain, not cliff fix |
+
+At **c=64**, #3732 does **not** replace [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) hiconc (TTFP still ~7.9 s std vs **351 ms** hiconc).
+
+### Commit-level delta (`e7644daa` → `28ce618f`)
+
+Pre-merge main already ran Code2Wav eager by default, so commit-to-commit delta understates #3732 when talker-side wins ([#3485](https://github.com/vllm-project/vllm-omni/pull/3485)) overlap. See isolated A/B above for Code2Wav-only effect.
+
+**Supplemental PR-review A/B** (c=10, 40 prompts): TTFP **509 → 117 ms (−77%)**, RTF **0.30 → 0.21**, throughput **30.6 → 43.8 audio-s/s**.
 
 ---
 
@@ -176,7 +197,7 @@ vllm serve Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --omni --port 8000 \
 
 | PR | Area | Retro impact (TTFP / RTF / throughput) |
 |----|------|----------------------------------------|
-| [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) | Code2Wav cudagraph default-on | std c=8 tp **+11%** vs pre-merge; c=10 A/B TTFP **−77%** |
+| [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) | Code2Wav cudagraph default-on | c=1 TTFP **−8–14%**; c=8 TTFP **−12%** + tp **+3%**; c=64 RTF **−7%** (isolated A/B) |
 | [#3485](https://github.com/vllm-project/vllm-omni/pull/3485) | Latency regression fix | c=1 TTFP −19–27%; c=8 TTFP −62%, tp +59% (std deploy) |
 | [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) | High-concurrency serving | c=16/64 TTFP −85–96%, RTF −14–35%, tp +50–75% vs std main |
 | [#2376](https://github.com/vllm-project/vllm-omni/pull/2376) | Code2Wav CUDA graphs | Decoder path |
@@ -193,7 +214,11 @@ vllm serve Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --omni --port 8000 \
 bash benchmark_results/qwen3_tts_retro/v0.20.0/run_benchmark.sh
 bash benchmark_results/qwen3_tts_retro/v0.20.0/run_benchmark_throughput.sh
 
-# main post-#3732 (28ce618f) — standard deploy
+# #3732 isolated A/B — eager vs cudagraph (28ce618f)
+bash benchmark_results/qwen3_tts_retro/main-post3732-eager/run_benchmark.sh
+bash benchmark_results/qwen3_tts_retro/main-post3732-eager/run_benchmark_throughput.sh
+
+# main post-#3732 cudagraph default
 bash benchmark_results/qwen3_tts_retro/main-post3732/run_benchmark.sh
 bash benchmark_results/qwen3_tts_retro/main-post3732/run_benchmark_throughput.sh
 

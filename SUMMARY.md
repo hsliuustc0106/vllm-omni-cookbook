@@ -21,7 +21,7 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 
 ### Highlights
 
-- **Qwen3-TTS:** Track **TTFP**, **RTF**, **throughput**. v0.20→main wins at c=1/c=8 on std deploy; [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) adds Code2Wav cudagraph default-on (+11% tp at c=8); [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) hiconc unlocks c=16/64. See [tts/qwen3-tts/index.md](tts/qwen3-tts/index.md).
+- **Qwen3-TTS:** Track **TTFP**, **RTF**, **throughput**. [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) helps at c=1/c=8/c=64 (isolated A/B: TTFP −8–14% @ c=1, −12% @ c=8, RTF −7% @ c=64); [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) hiconc still required for c=16/64 TTFP cliff. See [tts/qwen3-tts/index.md](tts/qwen3-tts/index.md).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 
 ---
