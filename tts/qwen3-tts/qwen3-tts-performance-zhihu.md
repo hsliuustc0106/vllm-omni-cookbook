@@ -2,15 +2,15 @@
 知乎发布备忘（发布前可删除本注释块）
 
 【推荐标题】
-vLLM-Omni 优化 Qwen3-TTS：v0.20 → main e7644daa（vLLM 0.21.0）实测，高并发怎么快 10 倍？
+vLLM-Omni 优化 Qwen3-TTS：v0.20 → main 28ce618f（vLLM 0.21.0 + #3732）实测，高并发怎么快 10 倍？
 
 【备选标题】
-Qwen3-TTS 在 vLLM-Omni 里怎么测性能？TTFP / RTF / 并发悬崖与 #3662 高并发配置
+Qwen3-TTS 性能怎么测？TTFP / RTF / throughput、#3732 Code2Wav 与 #3662 高并发
 
 【封面图建议】
 - 三指标并排：c=64 下 TTFP / RTF / throughput 柱状图（v0.20 vs main 标准 vs main 高并发）
 - c=64 TTFP 对比：v0.20（7.8s）vs main 标准（7.9s）vs main 高并发（351ms）
-- c=8 并发悬崖：v0.20 214ms vs main 82ms 柱状图
+- #3732 A/B：c=1 TTFP 52→48 ms；c=8 92→81 ms；c=64 RTF 1.55→1.44
 
 【话题标签】
 #vLLM #大模型推理 #语音合成 #TTS #Qwen3 #AIGC
@@ -18,7 +18,7 @@ Qwen3-TTS 在 vLLM-Omni 里怎么测性能？TTFP / RTF / 并发悬崖与 #3662 
 【置顶评论模板】见文末
 -->
 
-# vLLM-Omni 优化 Qwen3-TTS：v0.20 → main e7644daa（vLLM 0.21.0）实测，高并发怎么快 10 倍？
+# vLLM-Omni 优化 Qwen3-TTS：v0.20 → main 28ce618f（vLLM 0.21.0 + #3732）实测，高并发怎么快 10 倍？
 
 **模型：** Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice  
 **框架：** vLLM-Omni + vLLM  
@@ -56,14 +56,15 @@ Talker（文本 → 8 层 RVQ codec）→ Code2Wav（codec → 波形）
 
 在线 serving 走 OpenAI 兼容接口 `POST /v1/audio/speech`，支持 **预设音色（CustomVoice）**、**音色设计（VoiceDesign）**、**声音克隆（Base）** 等任务。
 
-v0.20.0 合入了通用 TTS benchmark（`test_tts.json`，PR #2835）；main 分支在 vLLM 0.21.0 上继续优化延迟与高并发（#3485、#3662）。
+v0.20.0 合入了通用 TTS benchmark（`test_tts.json`，PR #2835）；main 在 vLLM 0.21.0 上持续优化：**#3485**（延迟修复）、**#3662**（高并发 deploy）、**#3732**（Code2Wav CUDA graph 默认开启，2026-05-23 合入）。
 
-这篇文章回答四个问题：
+这篇文章回答五个问题：
 
-1. **v0.20.0 → main，TTFP / RTF / throughput 各改善多少？**
-2. **为什么 c=8 是「并发悬崖」？**
-3. **#3662 高并发 deploy 对三项指标分别解决了什么？**
-4. **读者如何复现？**
+1. **v0.20.0 → main（`28ce618f`），TTFP / RTF / throughput 各改善多少？**
+2. **#3732 在 c=1 / c=8 / c=64 分别带来什么？**
+3. **为什么 c=8 是「并发悬崖」？**
+4. **#3662 高并发 deploy 对三项指标分别解决了什么？**
+5. **读者如何复现？**
 
 英文数据表与完整 JSON：  
 https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
@@ -84,7 +85,7 @@ https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
 
 任务类型：`default_voice`（预设音色）、`voice_design`（自然语言描述音色）、`voice_clone`（Base 模型 + 参考音频）。
 
-### 1.2 本文 L20X retro（2× L20X，2026-05-22）
+### 1.2 本文 L20X retro（2× L20X，2026-05-24）
 
 | 维度 | 设置 |
 |------|------|
@@ -103,6 +104,8 @@ https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/tts/qwen3-tts
 ---
 
 ## 二、核心结果（TTFP / RTF / throughput）
+
+**main（标准 deploy）** 列 = **`28ce618f`**，含 [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) Code2Wav cudagraph 默认开启（`qwen3_tts.yaml` stage-1 `enforce_eager: false`）。
 
 ### 2.1 单请求（c=1）：TTFP + RTF
 
@@ -181,6 +184,32 @@ main 高并发 #3662  ██                                       351 ms
 2. **main 标准 → main 高并发（#3662）**：c=8 三项持平；**c=16/64** 三项齐升 — TTFP **−85–96%**，RTF **−14–35%**，throughput **+12–75%**。
 3. **做线上高并发，务必换 deploy 配置** — 默认 yaml 下 TTFP 爆炸、throughput 平台化（[#272](https://github.com/vllm-project/vllm-omni/issues/272)）。
 
+### 2.7 #3732 增量：Code2Wav eager vs cudagraph（同 commit 完整 A/B）
+
+[#3732](https://github.com/vllm-project/vllm-omni/pull/3732)（2026-05-23 合入）把 Code2Wav 内层 CUDA graph 与 `enforce_eager` 挂钩，并 flip 默认 deploy。**§2.1–2.4 的 main 列已包含 #3732**；下表是 **同 commit `28ce618f` 上仅切换 stage-1 eager/cudagraph** 的隔离 A/B（`main-post3732-eager/` vs `main-post3732/`）。
+
+**default_voice：**
+
+| c | TTFP eager | TTFP cudagraph | Δ TTFP | RTF eager | RTF cudagraph | Δ RTF | tp eager | tp cudagraph | Δ tp |
+|--:|-----------:|---------------:|-------:|----------:|--------------:|------:|---------:|-------------:|-----:|
+| 1 | 52 ms | **48 ms** | **−8%** | 0.153 | **0.147** | **−4%** | 6.6 | 6.8 | +3% |
+| 8 | 92 ms | **81 ms** | **−12%** | 0.248 | **0.245** | −1% | 30.7 | **31.4** | **+3%** |
+| 16 | 955 ms | 974 ms | ~持平 | 0.428 | 0.426 | ~持平 | 36.7 | 37.0 | +1% |
+| 64 | 8085 ms | **7861 ms** | **−3%** | 1.549 | **1.443** | **−7%** | 36.5 | 36.9 | +1% |
+
+**voice_design** 同趋势：c=1 TTFP **−14%**，c=8 **−13%**，c=64 RTF **−1%**。
+
+| c | #3732 效果 | 能否替代 #3662？ |
+|---|-----------|-----------------|
+| **c=1** | TTFP **−8–14%**，RTF **−4%** | — |
+| **c=8** | TTFP **−12%**，tp **+3%** | 否（悬崖仍在） |
+| **c=16** | ~持平 | 否 |
+| **c=64** | RTF **−7%**；TTFP 仅 **−3%** | **否** — std TTFP 仍 ~7.9 s，hiconc **351 ms** |
+
+Opt-out：`--stage-overrides '{"1": {"enforce_eager": true}}'`
+
+**PR 分支 c=10 微基准**（40 prompts，更极端对比）：TTFP **509 → 117 ms（−77%）**，RTF **0.30 → 0.21**，throughput **30.6 → 43.8 audio-s/s**。
+
 ---
 
 ## 三、一条 TTS 请求怎么走
@@ -233,7 +262,8 @@ CI 在 **c=8** 设了 throughput 回归哨兵 — 同时记录 TTFP / RTF / thro
 
 | PR | 内容 | retro 信号（TTFP / RTF / throughput） |
 |----|------|--------------------------------------|
-| #3485 | Qwen3-TTS 延迟回归修复 | c=1 TTFP **−19–27%**；c=8 TTFP **−62%**，tp **+59%** |
+| #3485 | Qwen3-TTS 延迟回归修复 | c=1 TTFP **−19–27%**；c=8 TTFP **−62%**，tp **+59%**（含后续 #3732 的 main 列） |
+| #3732 | Code2Wav cudagraph 默认开启 | 见 **§2.7**：c=1 TTFP **−8–14%**；c=8 **−12%**；c=64 RTF **−7%** |
 | #2376 | Code2Wav CUDA graph | 解码路径加速 |
 | #3232 | rebase vLLM 0.21.0 | 运行时栈升级 |
 
@@ -260,37 +290,11 @@ vllm serve Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --omni \
   --deploy-config vllm_omni/deploy/qwen3_tts_high_concurrency.yaml
 ```
 
-### 5.4 main：Code2Wav CUDA graph 默认开启（#3732，2026-05-23）
+### 5.4 #3732 技术细节
 
-**PR [#3732](https://github.com/vllm-project/vllm-omni/pull/3732)** 把 Code2Wav 内层 CUDA graph 与 stage `enforce_eager` 挂钩，并把 `qwen3_tts.yaml` stage-1 默认改为 **`enforce_eager: false`**。
+PR [#3732](https://github.com/vllm-project/vllm-omni/pull/3732) 实现 `_maybe_enable_decoder_cudagraph()`，当 stage-1 `enforce_eager: false` 时捕获 Code2Wav inner CUDA graph（11 shapes）。**完整 c=1/8/16/64 A/B 数据见 §2.7**。
 
-**同 commit 完整 A/B**（`28ce618f`，仅切换 stage-1 eager / cudagraph）：
-
-**default_voice：**
-
-| c | TTFP eager | TTFP cudagraph | Δ | RTF eager | RTF cudagraph | Δ | tp eager | tp cudagraph | Δ |
-|--:|-----------:|---------------:|--:|----------:|--------------:|--:|---------:|-------------:|--:|
-| 1 | 52 ms | **48 ms** | **−8%** | 0.153 | **0.147** | **−4%** | 6.6 | 6.8 | +3% |
-| 8 | 92 ms | **81 ms** | **−12%** | 0.248 | **0.245** | −1% | 30.7 | **31.4** | **+3%** |
-| 16 | 955 ms | 974 ms | ~持平 | 0.428 | 0.426 | ~持平 | 36.7 | 37.0 | +1% |
-| 64 | 8085 ms | **7861 ms** | **−3%** | 1.549 | **1.443** | **−7%** | 36.5 | 36.9 | +1% |
-
-**voice_design** 同趋势：c=1 TTFP **−14%**，c=8 **−13%**，c=64 RTF **−1%**。
-
-**结论（按 c）：**
-
-| c | #3732 效果 |
-|---|-----------|
-| **c=1** | TTFP **−8–14%**，RTF **−4%** — 有帮助，但幅度小于 c=8 |
-| **c=8** | TTFP **−12%**，throughput **+3%** — std deploy 最大收益点 |
-| **c=16** | ~持平（Talker 排队主导） |
-| **c=64** | RTF **−1–7%** — 效率小幅提升；**不能替代 #3662**（std TTFP 仍 ~7.9 s） |
-
-**PR 分支 c=10 微基准**（40 prompts）：TTFP **509 → 117 ms（−77%）**，RTF **0.30 → 0.21**，throughput **30.6 → 43.8**。
-
-Opt-out：`--stage-overrides '{"1": {"enforce_eager": true}}'`
-
----
+与 #2376 的关系：#2376 提供 graph 基础设施；#3732 将其 **接入 deploy 默认值** 并支持 eager 回退。
 
 ## 六、发版 / 分支对照
 
@@ -386,6 +390,9 @@ https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_tt
 
 Retro 结果与脚本：
 vllm-omni/benchmark_results/qwen3_tts_retro/
+
+#3732 PR（Code2Wav cudagraph 默认开启）：
+https://github.com/vllm-project/vllm-omni/pull/3732
 
 高并发 deploy（#3662，main only）：
 vllm_omni/deploy/qwen3_tts_high_concurrency.yaml
