@@ -9,15 +9,19 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 | Model      | Category   | Key Metric | Value | Delta from v0.20.0 |
 |------------|------------|------------|-------|---------------------|
 | Qwen3-Omni | omni       | —          | —     | —                   |
-| Qwen3-TTS  | tts        | TTFP default_voice (c=1, 2×L20X retro) | **47 ms** | **−21%** vs v0.20 L20X |
+| Qwen3-TTS  | tts        | TTFP default_voice (c=1, 2×L20X) | **47 ms** | **−21%** vs v0.20 L20X |
+| Qwen3-TTS  | tts        | RTF default_voice (c=1, 2×L20X) | **0.145** | ~flat vs v0.20 L20X |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=8, std deploy, 2×L20X) | **82 ms** | **−62%** vs v0.20 L20X |
+| Qwen3-TTS  | tts        | Throughput default_voice (c=8, std, 2×L20X) | **28.4 audio-s/s** | **+43%** vs v0.20 L20X |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=64, hiconc deploy, 2×L20X) | **351 ms** | **−96%** vs main std L20X |
+| Qwen3-TTS  | tts        | RTF default_voice (c=64, hiconc deploy, 2×L20X) | **0.996** | **−35%** vs main std L20X |
+| Qwen3-TTS  | tts        | Throughput default_voice (c=64, hiconc, 2×L20X) | **60.8 audio-s/s** | **+66%** vs main std L20X |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×L20X retro) | — | — (to be measured) |
 
 ### Highlights
 
-- **Qwen3-TTS:** v0.20→main (vllm 0.21) wins at c=1/c=8 on standard deploy; [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) high-concurrency profile unlocks c=16/64 (TTFP −85–96%). See [tts/qwen3-tts/index.md](tts/qwen3-tts/index.md).
+- **Qwen3-TTS:** Track **TTFP** (latency), **RTF** (efficiency), **throughput** (sustained load). v0.20→main wins TTFP at c=1/c=8 on std deploy; [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) hiconc unlocks c=16/64 (TTFP −85–96%, tp +50–75%). See [tts/qwen3-tts/index.md](tts/qwen3-tts/index.md).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 
 ---
@@ -28,8 +32,9 @@ Cross-model performance deltas across vLLM-Omni stable releases. For per-model d
 |------------|------------|------------|-------|---------------------|
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | Qwen3-TTS  | tts        | TTFP default_voice (c=1, 2×L20X retro) | **59 ms** | first L20X retro |
-| Qwen3-TTS  | tts        | TTFP default_voice (c=8, 2×L20X retro) | **214 ms** | first L20X retro |
 | Qwen3-TTS  | tts        | RTF default_voice (c=1, 2×L20X retro) | **0.145** | first L20X retro |
+| Qwen3-TTS  | tts        | TTFP default_voice (c=8, 2×L20X retro) | **214 ms** | first L20X retro |
+| Qwen3-TTS  | tts        | Throughput default_voice (c=8, 2×L20X retro) | **19.8 audio-s/s** | first L20X retro |
 | WAN2.2     | diffusion  | I2V E2E (832×480, 4 steps, 2×H100 CI) | **26.0 s** | first measured |
 | WAN2.2     | diffusion  | I2V E2E (USP2+HSDP+VAE-pp2, H100 CI) | **21.6 s** | first measured |
 | WAN2.2     | diffusion  | I2V E2E (832×480, 4×H200 retro) | **22.17 s** | **−5.9%** vs v0.18 H200 |

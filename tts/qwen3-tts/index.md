@@ -9,6 +9,20 @@
 
 ---
 
+## Key metrics
+
+Qwen3-TTS perf is tracked on **three metrics** (see [benchmarks/tts/README.md](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/tts/README.md)):
+
+| Metric | Definition | Lower / higher? | When it matters |
+|--------|------------|-----------------|-----------------|
+| **TTFP** | Time to first audio packet (ms) | **Lower** is better | Interactive / streaming UX; latency SLO at **c=1** |
+| **RTF** | Wall time ÷ generated audio duration | **Lower** is better (<1 = faster than realtime) | End-to-end generation efficiency per request |
+| **Throughput** | Total audio duration served per wall second (`audio_throughput`, audio-s / s) | **Higher** is better | Sustained load at **c≥8** |
+
+CI uses **median** TTFP / RTF for latency and throughput phases; retro tables below follow the same convention.
+
+---
+
 ## Performance tracks
 
 | Track | Hardware | Source |
@@ -20,15 +34,15 @@
 
 ## Standardized perf test (CI)
 
-| Task | Model | Phase | c | CI baseline TTFP | CI baseline RTF |
-|------|-------|-------|--:|-----------------:|----------------:|
-| voice_clone | Base | latency | 1 | **350 ms** | **0.25** |
-| default_voice | CustomVoice | latency | 1 | **150 ms** | **0.15** |
-| voice_design | CustomVoice | latency | 1 | **150 ms** | **0.15** |
-| default_voice | CustomVoice | throughput | 8 | 1500 ms | 0.30 |
-| voice_design | CustomVoice | throughput | 8 | 1500 ms | 0.35 |
+| Task | Model | Phase | c | TTFP | RTF | Throughput |
+|------|-------|-------|--:|-----:|----:|-----------:|
+| voice_clone | Base | latency | 1 | **350 ms** | **0.25** | — |
+| default_voice | CustomVoice | latency | 1 | **150 ms** | **0.15** | — |
+| voice_design | CustomVoice | latency | 1 | **150 ms** | **0.15** | — |
+| default_voice | CustomVoice | throughput | 8 | 1500 ms | 0.30 | tracked |
+| voice_design | CustomVoice | throughput | 8 | 1500 ms | 0.35 | tracked |
 
-Throughput CI also sweeps **c=16, 64** with **80 / 128 / 128** prompts — see `test_tts.json`.
+Throughput CI also sweeps **c=16, 64** with **80 / 128 / 128** prompts — TTFP / RTF / throughput are all recorded; see `test_tts.json`.
 
 ```bash
 cd /path/to/vllm-omni
@@ -44,19 +58,19 @@ pytest -s tests/dfx/perf/scripts/run_benchmark.py \
 Measured **2026-05-22** on **2× NVIDIA L20X** (`CUDA_VISIBLE_DEVICES=2,3`).  
 Protocol: **`num-prompts=3`**, **`num-warmups=2`**, standard deploy (`qwen3_tts.yaml` + 2-GPU stage split).
 
-| Task | v0.20.0 TTFP | main (`e7644daa`) TTFP | Δ | v0.20.0 RTF | main RTF |
-|------|-------------:|-----------------------:|--:|------------:|---------:|
-| default_voice | **59 ms** | **47 ms** | **−21%** | 0.145 | 0.145 |
-| voice_design | **63 ms** | **47 ms** | **−25%** | 0.148 | 0.139 |
+| Task | v0.20.0 TTFP | main TTFP | Δ TTFP | v0.20.0 RTF | main RTF | Δ RTF |
+|------|-------------:|----------:|-------:|------------:|---------:|------:|
+| default_voice | **59 ms** | **47 ms** | **−21%** | 0.145 | 0.145 | ~flat |
+| voice_design | **63 ms** | **47 ms** | **−25%** | 0.148 | 0.139 | **−6%** |
 
-**Takeaway:** **main + vllm 0.21.0** improves **TTFP ~21–25%** at c=1; **RTF** flat to slightly better.
+**Takeaway (c=1):** **main + vllm 0.21.0** wins on **TTFP** (~21–25%); **RTF** flat to slightly better. Throughput is not meaningful at c=1.
 
 ---
 
 ## L20X retro — throughput (c=8 / 16 / 64)
 
 CI throughput matrix: **80 / 128 / 128** prompts at **c=8 / 16 / 64**.  
-Metric: **median** TTFP / RTF (lower is better); **audio_throughput** (higher is better).
+All three metrics below: **TTFP**, **RTF**, **throughput** (median unless noted).
 
 ### TTFP (ms)
 
@@ -93,14 +107,14 @@ Metric: **median** TTFP / RTF (lower is better); **audio_throughput** (higher is
 
 ‡ **main (hiconc)** = [`qwen3_tts_high_concurrency.yaml`](https://github.com/vllm-project/vllm-omni/blob/main/vllm_omni/deploy/qwen3_tts_high_concurrency.yaml) ([#3662](https://github.com/vllm-project/vllm-omni/pull/3662)): S0=64 talker, code-predictor prefix CUDA graphs, tuned Code2Wav graph buckets. **main-only** — not on v0.20.0 tag.
 
-**Takeaways:**
+**Takeaways (TTFP / RTF / throughput):**
 
 | Comparison | c=8 | c=16 | c=64 |
 |------------|-----|------|------|
-| v0.20 → main (std deploy) | TTFP **−62%** | TTFP **−21%** | ~parity |
-| main std → main hiconc | ~neutral | TTFP **−85–87%**, RTF **−14–16%** | TTFP **−94–96%**, RTF **−33–35%**, audio_tp **+50–75%** |
+| v0.20 → main (std) | TTFP **−62%**; RTF ~flat; tp **+43%** | TTFP **−21%**; RTF ~flat | TTFP ~parity; tp ~flat |
+| main std → main hiconc | ~neutral on all three | TTFP **−85–87%**, RTF **−14–16%**, tp **+12%** | TTFP **−94–96%**, RTF **−33–35%**, tp **+50–75%** |
 
-At **c≥16**, use the **high-concurrency deploy** on main — standard deploy still hits the codec-batching cliff ([#272](https://github.com/vllm-project/vllm-omni/issues/272)).
+At **c≥16**, use the **high-concurrency deploy** on main — standard deploy still hits the codec-batching cliff ([#272](https://github.com/vllm-project/vllm-omni/issues/272)): TTFP spikes while throughput plateaus.
 
 ---
 
@@ -141,10 +155,10 @@ vllm serve Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice --omni --port 8000 \
 
 ## Optimization index
 
-| PR | Area | Retro impact |
-|----|------|--------------|
-| [#3485](https://github.com/vllm-project/vllm-omni/pull/3485) | Latency regression fix | c=1 TTFP −21–25%; c=8 TTFP −62% (std deploy) |
-| [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) | High-concurrency serving | c=16/64 TTFP −85–96% vs std main; hiconc deploy |
+| PR | Area | Retro impact (TTFP / RTF / throughput) |
+|----|------|----------------------------------------|
+| [#3485](https://github.com/vllm-project/vllm-omni/pull/3485) | Latency regression fix | c=1 TTFP −21–25%; c=8 TTFP −62%, tp +43% (std deploy) |
+| [#3662](https://github.com/vllm-project/vllm-omni/pull/3662) | High-concurrency serving | c=16/64 TTFP −85–96%, RTF −14–35%, tp +50–75% vs std main |
 | [#2376](https://github.com/vllm-project/vllm-omni/pull/2376) | Code2Wav CUDA graphs | Decoder path |
 | [#2341](https://github.com/vllm-project/vllm-omni/pull/2341) | Native Code2Wav decoder | Stage-1 refactor |
 | [#2835](https://github.com/vllm-project/vllm-omni/pull/2835) | Universal TTS benchmark | `test_tts.json`, `bench_tts.py` |
