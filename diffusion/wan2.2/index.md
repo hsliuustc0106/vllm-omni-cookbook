@@ -92,7 +92,7 @@ Step-by-step walkthrough, profiler checklist, and PR deep-dives: **[blog post](w
 
 | Release | Date | I2V perf highlight |
 |---------|------|-------------------|
-| [v0.21.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | Pipeline parallel #2322, FP8 #2920 |
+| [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | Pipeline parallel #2322, FP8 #2920 |
 | [v0.20.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.20.0) | 2026-05-07 | Fused DiT + CI JSON; H200 **22.17 / 16.43 / 79.19 s** |
 | [v0.18.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.18.0) | 2026-03-28 | IPC −17.5% (other workload); H200 **23.56 / 20.26 / 93.67 s** |
 | [v0.16.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.16.0) | 2026-02-28 | `/v1/videos` API; H200 retro **31.33 / 22.20 / 133.94 s** |

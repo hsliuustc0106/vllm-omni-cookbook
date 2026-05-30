@@ -1,11 +1,13 @@
 ---
 name: cookbook-add-model
 description: >-
-  Add a new model performance ledger to vllm-omni-cookbook. Use when onboarding
-  a model (omni, TTS, diffusion) that is not yet in omni/, tts/, or diffusion/.
+  Add a new model to vllm-omni-cookbook with a release-by-release improvement ledger
+  (index.md). Use when onboarding a model not yet tracked under omni/, tts/, or diffusion/.
 ---
 
 # Add a New Model Ledger
+
+Create `{category}/{model}/index.md` as the model's **improvement timeline** — one `## vX.Y.Z` section per release going forward, each summarizing metrics, deltas, and optimization PRs for that release.
 
 ## Prerequisites
 
@@ -26,7 +28,7 @@ Fill this checklist (copy into the new `index.md` draft or retro README in vllm-
 | Primary metric | `latency_mean` / `median_audio_ttfp_ms` / `mean_ttfp` |
 | CI hardware | 2× H100 |
 | Retro hardware | 4× H200 |
-| Release tags to compare | v0.18.0, v0.20.0, main |
+| Release tags to compare | v0.18.0, v0.20.0, v0.22.0 (even minors only) |
 
 ## Step 2 — Scaffold cookbook dirs
 
@@ -62,7 +64,7 @@ Copy tone and structure from the closest existing model:
 ## Step 4 — Update root docs
 
 - Add the model row to [README.md](../../README.md) “Models Tracked” table
-- Add placeholder rows to [SUMMARY.md](../../SUMMARY.md) for the next release section (`—` until measured)
+- Add placeholder rows to [SUMMARY.md](../../SUMMARY.md) for the next **even** release section (`—` until measured)
 
 ## Step 5 — Optional narrative layer
 

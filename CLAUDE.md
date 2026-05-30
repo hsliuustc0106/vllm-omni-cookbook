@@ -1,6 +1,10 @@
 # vLLM-Omni Performance Cookbook — Guidance for Claude Code
 
-This is a performance tracking repository — not a how-to cookbook. Each model folder contains a performance ledger (`index.md`) that records measured performance and optimization deltas across vLLM-Omni stable releases.
+Release-by-release **performance improvement summary** for vLLM-Omni models — not a how-to cookbook.
+
+**Even releases only:** update on v0.18.0, v0.20.0, v0.22.0, … Skip odd minors. Deltas vs the previous even release.
+
+Each `{category}/{model}/index.md` is one model's timeline: a `## vX.Y.Z` section per **even** stable release with measured metrics, delta vs the prior even release, and optimization notes (PR links). `SUMMARY.md` aggregates headline numbers across models for each even release.
 
 ## Repository Structure
 
@@ -19,8 +23,10 @@ This is a performance tracking repository — not a how-to cookbook. Each model 
 
 ## Adding Performance Data for a New Release
 
-1. In each model's `index.md`, add a new `## vX.Y.Z (YYYY-MM-DD)` section
-2. Include: performance table with deltas, optimization notes (PRs/issues/docs links), figures
+Only when vLLM-Omni ships an **even** minor release (v0.22.0, …):
+
+1. In each model's `index.md`, add `## vX.Y.Z (YYYY-MM-DD)` — delta vs the **previous even** release
+2. Include: performance table, optimization notes (PR links), figures
 3. Update `SUMMARY.md` with the cross-model release table
 
 ## Adding a New Model

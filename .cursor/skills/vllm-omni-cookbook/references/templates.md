@@ -90,16 +90,16 @@ Perf ledger update for vX.Y.Z — {model(s)}.
 
 ## Models updated
 
-- `diffusion/wan2.2/index.md`: v0.21 retro table + optimization notes
-- `SUMMARY.md`: v0.21 release section
+- `diffusion/wan2.2/index.md`: v0.22 retro table + optimization notes
+- `SUMMARY.md`: v0.22 release section
 
 ## Evidence
 
 | Field | Value |
 |-------|-------|
 | vllm-omni baseline SHA | `abc1234` (v0.20.0 tag) |
-| vllm-omni candidate SHA | `def5678` (v0.21.0 tag) |
-| vLLM / vLLM-Omni | 0.21.0 / 0.21.0 |
+| vllm-omni candidate SHA | `def5678` (v0.22.0 tag) |
+| vLLM / vLLM-Omni | 0.22.0 / 0.22.0 |
 | GPUs | 4× H200, `CUDA_VISIBLE_DEVICES=0,1,2,3` |
 | Upstream JSON | `tests/dfx/perf/tests/test_....json` |
 

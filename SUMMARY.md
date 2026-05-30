@@ -1,10 +1,10 @@
 # vLLM-Omni Performance Summary
 
-Cross-model performance deltas across vLLM-Omni stable releases. For per-model details, see the model index files.
+Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v0.20, v0.22, …). Odd minors are not cookbook releases. Each row is a snapshot at that even release; full history lives in each model's `index.md`.
 
 ---
 
-## v0.21.0 (upcoming)
+## v0.22.0 (upcoming)
 
 | Model      | Category   | Key Metric | Value | Delta from v0.20.0 |
 |------------|------------|------------|-------|---------------------|

@@ -1,6 +1,11 @@
 # Contributing to vLLM-Omni Performance Cookbook
 
-This repository tracks **measured performance and optimization deltas** for vLLM-Omni models across stable releases. It is **not** a how-to recipe book — deployment recipes and benchmark JSON live in [vllm-project/vllm-omni](https://github.com/vllm-project/vllm-omni).
+This repository is the **release-by-release performance summary** for vLLM-Omni models on **even stable releases only** (v0.18.0, v0.20.0, v0.22.0, …). At each even tag, document what got faster (or slower), the measured delta vs the **previous even** release, and which PRs drove the change. Odd minors (v0.19, v0.21, …) are not cookbook updates. Recipes and benchmark JSON live in [vllm-project/vllm-omni](https://github.com/vllm-project/vllm-omni).
+
+**Two files to update per even release:**
+
+- `{category}/{model}/index.md` — append the model's improvement summary for `vX.Y.Z`
+- `SUMMARY.md` — one cross-model table for that release
 
 ## Agent skills (recommended)
 
@@ -10,7 +15,7 @@ Cursor and compatible agents can load project skills from `.cursor/skills/`:
 |-------|-------------|
 | [vllm-omni-cookbook](.cursor/skills/vllm-omni-cookbook/SKILL.md) | Start here — overview and PR checklist |
 | [cookbook-add-model](.cursor/skills/cookbook-add-model/SKILL.md) | First ledger for a new model |
-| [cookbook-add-release](.cursor/skills/cookbook-add-release/SKILL.md) | New `vX.Y.Z` section + `SUMMARY.md` |
+| [cookbook-add-release](.cursor/skills/cookbook-add-release/SKILL.md) | New even release (`v0.22.0`) section + `SUMMARY.md` |
 | [cookbook-write-narrative](.cursor/skills/cookbook-write-narrative/SKILL.md) | Optional Zhihu draft |
 
 Templates: [.cursor/skills/vllm-omni-cookbook/references/templates.md](.cursor/skills/vllm-omni-cookbook/references/templates.md)
@@ -30,7 +35,7 @@ Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
 | Change | Files |
 |--------|-------|
 | New model | `{omni,tts,diffusion}/{model}/index.md`, `README.md`, `SUMMARY.md` placeholders |
-| New release | Each tracked model's `index.md` + root `SUMMARY.md` |
+| New even release | Each tracked model's `index.md` + root `SUMMARY.md` (skip odd minors) |
 | Retro numbers | Tables in `index.md` with SHAs, GPU SKU, footnotes |
 | Optional Zhihu draft | `*-performance-zhihu.md` |
 

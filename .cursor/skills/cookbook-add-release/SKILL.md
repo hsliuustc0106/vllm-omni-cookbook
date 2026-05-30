@@ -1,14 +1,25 @@
 ---
 name: cookbook-add-release
 description: >-
-  Document a new vLLM-Omni stable release in vllm-omni-cookbook: add vX.Y.Z sections
-  to model index.md files and update SUMMARY.md. Use when v0.21.0 ships or backfilling
-  release performance tables.
+  Append improvement summary for an even vLLM-Omni release (v0.22.0, …): add vX.Y.Z
+  to each model index.md and update SUMMARY.md. Skip odd minors. Use when v0.22.0 ships
+  or backfilling even-release summaries.
 ---
 
-# Add a Release Section
+# Add a Release Improvement Summary
 
-Trigger: vLLM-Omni tag `vX.Y.Z` is released **and** retro numbers exist (or CI baselines updated).
+## Gate — even minor only
+
+Update the cookbook **only** when the release minor version is **even** (v0.18.0, v0.20.0, v0.22.0, …).
+
+| Minor (Y in v0.Y.Z) | Cookbook update? | Delta baseline |
+|---------------------|------------------|----------------|
+| Even (18, 20, 22) | **Yes** | Previous even release (20 → 18, 22 → 20) |
+| Odd (19, 21, 23) | **No** — wait for next even | — |
+
+Trigger: even tag `vX.Y.Z` is released **and** measured numbers exist (retro or CI).
+
+Goal: document **this release's performance improvement** for each tracked model — what got better, by how much vs the **previous even** release, and which PRs explain it.
 
 ## Step 1 — Gather evidence
 
@@ -46,7 +57,7 @@ Add a new section **below the header, above older releases** (newest first):
 Rules:
 
 - Bold the metric values readers compare (`**26.0 s**`)
-- Deltas are vs **immediately prior stable release** on the **same hardware track**
+- Deltas are vs **immediately prior even release** on the **same hardware track** (not the last odd tag)
 - Link PRs/issues; do not paste long changelogs
 - If not measured yet, omit the section — use `—` in SUMMARY only
 
