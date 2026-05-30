@@ -1,50 +1,26 @@
-# profile
+# Profile for optimization notes (Claude Code stub)
 
-Profile and benchmark vLLM-Omni performance.
+Profiling is **optional** — only needed when explaining *why* a delta happened in narrative or optimization tables.
 
-## Trigger Conditions
+## Diffusion
 
-Use this skill when the user asks to:
-- Profile performance
-- Benchmark a model
-- Measure throughput or latency
-- Analyze bottlenecks
-
-## Implementation
-
-1. Determine what to profile (latency, throughput, memory)
-2. Identify model type (AR, DiT, multimodal)
-3. Set up profiling tools
-4. Run benchmarks with appropriate parameters
-5. Analyze and present results
-
-## Profiling Commands
+Enable pipeline profiler in serve args (see perf JSON):
 
 ```bash
-# Basic omni-modality profiling
-vllm profile omni --model <model_name> --input-type <type>
-
-# Throughput benchmark
-vllm benchmark omni --model <model_name> --throughput
-
-# Latency measurement
-vllm benchmark omni --model <model_name> --latency
-
-# DiT model profiling
-vllm profile omni --model <dit_model> --arch diffusion
+vllm serve ... --omni --enable-diffusion-pipeline-profiler
 ```
 
-## Metrics to Capture
+Use stage breakdown (text encode → VAE → DiT → decode) in:
 
-- Tokens/frames per second
-- Time to first token/frame (TTFT)
-- Total request latency
-- Memory usage (varies by modality)
-- GPU utilization
-- Modality-specific metrics (image processing time, etc.)
+- `index.md` **Optimization summary** table
+- Optimization notes (`cookbook-write-narrative` skill)
 
-## vLLM-Omni Considerations
+## TTS / Omni
 
-- **Vision models**: Higher memory usage, different bottlenecks
-- **DiT models**: Parallel generation affects throughput measurements
-- **Audio/Video**: I/O overhead can dominate metrics
+Use upstream bench outputs and design docs; stage separation (talker / code2wav / thinker) maps to PR themes.
+
+## Rules
+
+- Separate CI H100 thresholds from local retro numbers
+- Tie claims to profiler logs or PR descriptions — do not speculate
+- Benchmark workflow: vllm-omni `benchmark_results/` READMEs and model `index.md` reproduce sections; upstream skills `diffusion-perf-cookbook` / `tts-perf-cookbook` if available

@@ -55,7 +55,7 @@ On non-H100 hardware, set `"skip-performance-assertion": true` per `benchmark_pa
 
 ## H200 retro comparison
 
-Measured **2026-05-20** on **4× NVIDIA H200** (L20X SKU). Metric: **`latency_mean`** (seconds, lower is better). Full methodology: [blog § Results](wan22-i2v-performance.html#results).
+Measured **2026-05-20** on **4× NVIDIA H200**. Metric: **`latency_mean`** (seconds, lower is better). Full methodology: [blog § Results](wan22-i2v-performance.html#results).
 
 | Config | Workload | v0.16.0 | v0.18.0 | v0.20.0 | Δ v0.18→v0.20 | Δ v0.16→v0.20 |
 |--------|----------|---------|---------|---------|---------------|---------------|

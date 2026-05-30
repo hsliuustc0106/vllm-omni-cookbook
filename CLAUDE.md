@@ -9,10 +9,6 @@ This is a performance tracking repository — not a how-to cookbook. Each model 
 ├── SUMMARY.md             # Cross-model release summary
 ├── omni/                  # Omni-modal models
 │   └── qwen3-omni/
-│       ├── index.md        # Perf ledger across releases
-│       └── assets/         # Charts and figures
-├── tts/                   # TTS models
-│   └── qwen3-tts/
 │       ├── index.md
 │       └── assets/
 └── diffusion/             # Diffusion models
@@ -35,6 +31,16 @@ touch <category>/<model-name>/assets/.gitkeep
 ```
 
 Write `<category>/<model-name>/index.md` following the same format as existing models.
+
+## Contributor skills
+
+Load `.cursor/skills/vllm-omni-cookbook/SKILL.md` first, then route to:
+
+- `cookbook-add-model` — new model ledger
+- `cookbook-add-release` — vX.Y.Z + SUMMARY.md
+- `cookbook-write-narrative` — optional Zhihu draft
+
+Claude Code stubs: `.claude/skills/*.md`
 
 ## Resources
 

@@ -9,7 +9,6 @@ Versioning mirrors vLLM-Omni stable releases.
 | Model       | Category                          | Type                       |
 |-------------|-----------------------------------|----------------------------|
 | Qwen3-Omni  | [omni](omni/qwen3-omni/)          | Omni-modal / any-to-any    |
-| Qwen3-TTS   | [tts](tts/qwen3-tts/)             | Text-to-speech             |
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
 | Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
 
@@ -44,6 +43,10 @@ touch <category>/<model-name>/assets/.gitkeep
 ```
 
 Then write `<category>/<model-name>/index.md` following the format of existing models.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and agent skills in [.cursor/skills/](.cursor/skills/) for step-by-step workflows (add model, add release, write narrative).
 
 ## Resources
 

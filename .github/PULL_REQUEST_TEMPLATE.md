@@ -1,42 +1,40 @@
 ## Description
 
-<!-- Brief description of changes -->
+<!-- Perf ledger update: release, model, or retro table -->
 
 ## Type of Change
 
-- [ ] New recipe
-- [ ] Bug fix
+- [ ] New model ledger
+- [ ] Release update (vX.Y.Z sections + SUMMARY.md)
+- [ ] Retro / benchmark numbers only
+- [ ] Narrative (Zhihu draft)
 - [ ] Documentation improvement
-- [ ] Code refactoring
 - [ ] Other (please describe)
 
-## Recipes Added/Modified
+## Models updated
 
-<!-- List any recipes added or modified -->
+<!-- e.g. diffusion/wan2.2/index.md, SUMMARY.md -->
 
-- `category/recipe-name.md`: Description
+-
 
-## Testing
+## Evidence
 
-<!-- Describe how you tested your changes -->
-
-- [ ] Code examples run successfully
-- [ ] Documentation builds without errors
-- [ ] Links in markdown files work correctly
-- [ ] Recipe follows the template format
+| Field | Value |
+|-------|-------|
+| vllm-omni baseline SHA | |
+| vllm-omni candidate SHA | |
+| vLLM / vLLM-Omni versions | |
+| GPUs | |
+| Upstream perf JSON or retro path | |
 
 ## Checklist
 
-- [ ] My code follows the style guidelines
-- [ ] I have performed a self-review
-- [ ] I have commented my code where necessary
-- [ ] I have updated `topics/index.md`
-- [ ] I have updated the relevant category README.md
-
-## Screenshots (if applicable)
-
-<!-- Add screenshots for UI/visual changes -->
+- [ ] Numbers from completed retro or CI (not estimates)
+- [ ] Non-comparable rows footnoted (GPU count, CLI flags, prompts/warmup)
+- [ ] `SUMMARY.md` updated (if release-level)
+- [ ] Links to recipe + perf JSON + PRs verified
+- [ ] No upstream perf JSON copied into cookbook repo
 
 ## Additional Notes
 
-<!-- Any additional context or considerations -->
+<!-- Optional: link to vllm-omni retro PR, profiler findings -->

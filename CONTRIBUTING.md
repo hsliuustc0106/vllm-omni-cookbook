@@ -1,102 +1,84 @@
-# Contributing to vLLM-Omni Cookbook
+# Contributing to vLLM-Omni Performance Cookbook
 
-Thank you for your interest in contributing! This document provides guidelines for contributing to the vLLM-Omni Cookbook.
+This repository tracks **measured performance and optimization deltas** for vLLM-Omni models across stable releases. It is **not** a how-to recipe book — deployment recipes and benchmark JSON live in [vllm-project/vllm-omni](https://github.com/vllm-project/vllm-omni).
 
-## About vLLM-Omni
+## Agent skills (recommended)
 
-vLLM-Omni extends vLLM to support:
-- **Omni-modality**: Text, image, video, and audio data processing
-- **Non-autoregressive architectures**: Diffusion Transformers (DiT) and parallel generation models
-- **Heterogeneous outputs**: Text, images, and multimodal generation
+Cursor and compatible agents can load project skills from `.cursor/skills/`:
 
-## Getting Started
+| Skill | When to use |
+|-------|-------------|
+| [vllm-omni-cookbook](.cursor/skills/vllm-omni-cookbook/SKILL.md) | Start here — overview and PR checklist |
+| [cookbook-add-model](.cursor/skills/cookbook-add-model/SKILL.md) | First ledger for a new model |
+| [cookbook-add-release](.cursor/skills/cookbook-add-release/SKILL.md) | New `vX.Y.Z` section + `SUMMARY.md` |
+| [cookbook-write-narrative](.cursor/skills/cookbook-write-narrative/SKILL.md) | Optional Zhihu draft |
+
+Templates: [.cursor/skills/vllm-omni-cookbook/references/templates.md](.cursor/skills/vllm-omni-cookbook/references/templates.md)
+
+Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
+
+## Getting started
 
 1. Fork the repository
-2. Create a branch for your contribution (`git checkout -b feature/my-recipe`)
-3. Make your changes following the guidelines below
-4. Submit a pull request
+2. Create a branch (`git checkout -b docs/wan22-v021-retro`)
+3. Run or cite benchmarks from vllm-omni (`benchmark_results/`, upstream perf JSON — see model `index.md` reproduce sections)
+4. Update model `index.md` and `SUMMARY.md`
+5. Open a pull request
 
-## Adding New Recipes
+## What to contribute
 
-### Use the Template
+| Change | Files |
+|--------|-------|
+| New model | `{omni,tts,diffusion}/{model}/index.md`, `README.md`, `SUMMARY.md` placeholders |
+| New release | Each tracked model's `index.md` + root `SUMMARY.md` |
+| Retro numbers | Tables in `index.md` with SHAs, GPU SKU, footnotes |
+| Optional Zhihu draft | `*-performance-zhihu.md` |
 
-All recipes should follow the [recipe template](templates/recipe-template.md). This ensures consistency across the cookbook.
-
-### Recipe Structure
+## Repository layout
 
 ```
-<category-folder>/
-├── my-recipe.md           # The main recipe documentation
-└── code/
-    └── my_example.py      # Associated code examples
+omni/{model}/index.md      # omni-modal ledgers
+tts/{model}/index.md       # TTS ledgers
+diffusion/{model}/index.md # diffusion ledgers
+SUMMARY.md                 # cross-model release overview
 ```
 
-### Guidelines
+Each model folder may include `assets/` for charts.
 
-- **Focus on vLLM-Omni capabilities**: Highlight omni-modality, DiT, or heterogeneous outputs
-- **Beginner-friendly**: Write for users who may be new to vLLM-Omni
-- **Concise examples**: Code should be minimal and focused on the concept
-- **Test your code**: Verify all examples run before submitting
-- **Document dependencies**: List required packages and versions
-- **Include troubleshooting**: Anticipate common issues
+## Evidence requirements
 
-## Categories
+Every performance table must be traceable:
 
-Place your recipe in the appropriate category:
+- Git commit SHA(s) for each compared release
+- Installed `vllm` and `vllm_omni` versions
+- GPU type and count (`CUDA_VISIBLE_DEVICES`)
+- Upstream perf JSON path or `benchmark_results/{slug}_retro/` artifact
+- Footnotes when rows are not apples-to-apples (missing CLI flags, different prompt counts, API backend changes)
 
-- `00-quickstart/`: Getting started with omni-modality
-- `01-inference/`: Text, vision, audio generation & streaming
-- `02-deployment/`: Production deployment
-- `03-multimodal/`: Cross-modal applications
-- `04-hardware/`: DiT models and parallel generation (formerly "Hardware")
-- `05-best-practices/`: Security, monitoring, patterns
-- `06-performance/`: Benchmarking and profiling
-- `07-troubleshooting/`: Common issues and solutions
+Do **not** copy upstream perf JSON into this repo.
 
-## Pull Request Process
+## Metrics by category
 
-1. Update the relevant category README.md to include your recipe
-2. Update [topics/index.md](topics/index.md) with your new recipe
-3. Ensure your recipe follows the template
-4. Test all code examples
-5. Submit PR using the provided template
+| Category | Folder | Primary metrics |
+|----------|--------|-----------------|
+| Omni | `omni/` | TTFT, TTFP, TPOT, RTF, E2EL |
+| TTS | `tts/` | TTFP, RTF, throughput (note concurrency) |
+| Diffusion | `diffusion/` | E2E latency (`latency_mean`) |
 
-## Code Style
+## Canonical examples
 
-- Python code should follow PEP 8
-- Use `vllm_omni` imports for vLLM-Omni features (e.g., `from vllm_omni.entrypoints.omni import Omni`)
-- Use type hints where appropriate
-- Keep examples under 100 lines when possible
-- Add docstrings for non-trivial functions
+- [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md) — fullest ledger + HTML + Zhihu
+- [diffusion/qwen-image/index.md](diffusion/qwen-image/index.md) — compact T2I retro
+- [omni/qwen3-omni/index.md](omni/qwen3-omni/index.md) — multi-stage omni metrics
 
-## Example: vLLM vs vLLM-Omni
+## Pull request checklist
 
-**vLLM (text-only, autoregressive):**
-```python
-from vllm import LLM, SamplingParams
-llm = LLM(model="gpt2")
-outputs = llm.generate(["Hello world"], SamplingParams())
-```
-
-**vLLM-Omni (omni-modality, text-to-image):**
-```python
-from vllm_omni.entrypoints.omni import Omni
-omni = Omni(model="Tongyi-MAI/Z-Image-Turbo")
-outputs = omni.generate("a beautiful landscape")
-images = outputs[0].request_output[0].images
-images[0].save("output.png")
-```
-
-**vLLM-Omni (online serving):**
-```bash
-# Server
-vllm serve Tongyi-MAI/Z-Image-Turbo --omni --port 8091
-
-# Client (OpenAI-compatible)
-curl http://localhost:8091/v1/chat/completions \
-  -d '{"messages": [{"role": "user", "content": "prompt"}]}'
-```
+- [ ] Numbers from a completed retro run or CI JSON
+- [ ] `SUMMARY.md` updated for release-level changes
+- [ ] Links to upstream recipe, perf JSON, and relevant PRs
+- [ ] Non-comparable benchmark rows footnoted
+- [ ] PR template evidence table filled in
 
 ## Questions?
 
-Open an issue for discussion before making significant changes.
+Open an issue before large structural changes. For benchmark methodology, see [docs/plans/2026-05-09-performance-cookbook-design.md](docs/plans/2026-05-09-performance-cookbook-design.md).

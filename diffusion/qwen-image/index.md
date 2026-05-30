@@ -14,7 +14,7 @@ Retro benchmark harness (v0.18 / v0.20): `vllm-omni/benchmark_results/qwen_image
 | Track | Hardware | Source |
 |-------|----------|--------|
 | **Standardized T2I (CI)** | 2× H100 (nightly) | [`test_qwen_image_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_qwen_image_vllm_omni.json) |
-| **v0.18 / v0.20 / main retro** | 4× L20X (measured) | [Table below](#l20x-retro-comparison) · [Retro README](https://github.com/vllm-project/vllm-omni/blob/main/benchmark_results/qwen_image_retro/README.md) |
+| **v0.18 / v0.20 / main retro** | 4× H200 (measured) | [Table below](#h200-retro-comparison) · [Retro README](https://github.com/vllm-project/vllm-omni/blob/main/benchmark_results/qwen_image_retro/README.md) |
 
 ---
 
@@ -37,9 +37,9 @@ pytest -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
 
 ---
 
-## L20X retro comparison
+## H200 retro comparison
 
-Measured **2026-05-22** on **4× NVIDIA L20X**. Metric: **`latency_mean`** (seconds, lower is better).
+Measured **2026-05-22** on **4× NVIDIA H200**. Metric: **`latency_mean`** (seconds, lower is better).
 
 Protocol: **`num-prompts=3`**, **`warmup-requests=1`** (first request excluded from measurement — avoids `torch.compile` / resolution-transition inflation).
 
@@ -49,7 +49,7 @@ Protocol: **`num-prompts=3`**, **`warmup-requests=1`** (first request excluded f
 | Single device | 1536×1536, 35 steps | **23.96** | 24.48 | 24.46 | −0.1% |
 | Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps | **8.16** | 8.42 | 8.56 | +1.7% |
 
-**Takeaway:** Latest **main** tracks **v0.20** within ~2% on these workloads. **v0.18** remains marginally fastest on this L20X retro (~2–9% vs v0.20/main).
+**Takeaway:** Latest **main** tracks **v0.20** within ~2% on these workloads. **v0.18** remains marginally fastest on this H200 retro (~2–9% vs v0.20/main).
 
 **Stacks:**
 
