@@ -25,16 +25,15 @@ vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **pu
 
 See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.22.0). Next cookbook update: **v0.22.0**.
 
-**WAN2.2** — [index](diffusion/wan2.2/index.md) · [I2V performance blog](diffusion/wan2.2/wan22-i2v-performance.html).
+**WAN2.2** — [index](diffusion/wan2.2/index.md) · [Zhihu draft](diffusion/wan2.2/wan22-i2v-performance-zhihu.md).
 
 ## Metrics
 
 | Model Type | Primary Metrics                    |
 |------------|------------------------------------|
-| Omni       | TTFT, TTFP, TPOT, RTF              |
-| TTS        | TTFP, RTF                          |
-| Diffusion  | E2E Latency                        |
-| All        | Throughput, GPU memory, HW efficiency |
+| Omni       | TTFT, TTFP, TPOT, RTF, E2EL        |
+| Diffusion  | E2E latency, throughput            |
+| All        | GPU memory, hardware efficiency    |
 
 ## How to Add a New Release
 

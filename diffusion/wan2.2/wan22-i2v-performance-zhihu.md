@@ -8,8 +8,7 @@ vLLM-Omni 优化 Wan2.2 图生视频：v0.16 → v0.20 三轮发版 H200 实测
 Wan2.2 I2V 在 vLLM-Omni 里怎么变快的？4×H200 延迟对比与优化路径
 
 【封面图建议】
-- 从 wan22-i2v-performance.html 浏览器打开后，截取「720p 柱状对比」或「Results 表格」
-- 或自制：832×480 / 720p 三版本 latency 对比图
+- 从 [index.md](index.md) 的 H200 retro 表格导出，或自制 832×480 / 720p 三版本 latency 对比图
 
 【话题标签】
 #vLLM #大模型推理 #视频生成 #Wan2.2 #扩散模型 #AIGC
@@ -98,7 +97,7 @@ v0.18.0  ██████████████████████     
 v0.20.0  ██████████████████                79.2 s
 ```
 
-> 发布时建议：打开 `wan22-i2v-performance.html` 截取 Results 章节柱状图，或把上表导入 Excel 做图上传。
+> 发布时建议：把上表导入 Excel 做柱状图上传，或从 [index.md](index.md) retro 表格截图。
 
 ### 2.3 阅读说明（建议放在表格下方）
 
@@ -197,7 +196,7 @@ H200 信号：USP2 @ 480p **20.26 s → 16.43 s**（**−18.9%**）。
 | v0.16.0 | 2026-02 | `/v1/videos` 在线 API；H200 retro **31.33 / 22.20 / 133.94 s** |
 | v0.18.0 | 2026-03 | IPC、快速加载；H200 **23.56 / 20.26 / 93.67 s** |
 | v0.20.0 | 2026-05 | Fused DiT + CI JSON；H200 **22.17 / 16.43 / 79.19 s** |
-| v0.21.0+ | 进行中 | Pipeline parallel #2322、GPU FP8 #2920、VAE tiling #3111 |
+| v0.22.0 | 下一偶数版 | Pipeline parallel #2322、GPU FP8 #2920、VAE tiling #3111 |
 
 ---
 
@@ -262,7 +261,7 @@ vllm serve Wan-AI/Wan2.2-I2V-A14B-Diffusers --omni \
 
 - vLLM-Omni 对 Wan2.2 I2V 的优化是 **分阶段** 的：先并行 serving（v0.14–0.16），再砍 IPC（v0.18），再在 v0.20 集中做 **VAE/preprocess + DiT kernel**。
 - **v0.20 相对 v0.18**，多卡 480p 最值得看（**−18.9%**）；单卡 480p 稳步但幅度小（**−5.9%**）。
-- **720p** 仍是线上成本核心；下一步 v0.21 的 pipeline parallel、FP8、VAE tiling 值得用 **同一套 JSON** 继续量。
+- **720p** 仍是线上成本核心；下一步 **v0.22** 的 pipeline parallel、FP8、VAE tiling 值得用 **同一套 JSON** 继续量。
 - 官方 CI 的 26.0 / 21.6 / 101.6 s 是 **H100 阈值**；本文 H200 实测更快，但二者用途不同——CI 防回归，retro 看发版 delta。
 
 ---
@@ -270,7 +269,7 @@ vllm serve Wan-AI/Wan2.2-I2V-A14B-Diffusers --omni \
 ## 附录：建议置顶评论
 
 ```
-完整数据表、英文版与 HTML：
+完整数据表与 index：
 https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/main/diffusion/wan2.2
 
 上游 vLLM-Omni：
@@ -282,7 +281,7 @@ https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wa
 Retro 结果目录（v0.16/v0.18/v0.20）：
 vllm-omni/benchmark_results/wan22_retro/
 
-有问题欢迎评论区交流，后续 v0.21 测完会更新一版。
+有问题欢迎评论区交流，后续 v0.22 测完会更新一版。
 ```
 
 ---

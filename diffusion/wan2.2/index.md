@@ -3,7 +3,6 @@
 **Category:** Diffusion (image / video generation)  
 **Models:** `Wan-AI/Wan2.2-T2V-A14B-Diffusers`, `Wan-AI/Wan2.2-I2V-A14B-Diffusers`, `Wan-AI/Wan2.2-TI2V-5B-Diffusers`, Wan2.2-S2V
 
-**Blog (narrative):** [Optimizing Wan2.2 I2V in vLLM-Omni](wan22-i2v-performance.html) — pipeline walkthrough, release comparison, and reproduction guide.  
 **Zhihu draft (中文):** [wan22-i2v-performance-zhihu.md](wan22-i2v-performance-zhihu.md)
 
 **Recipes:** [I2V](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md) · [S2V](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-S2V.md) · [T2V dashboard](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md)
@@ -19,7 +18,7 @@ This cookbook **does not fork** upstream benchmark JSON. When comparing releases
 | Track | Hardware | Source |
 |-------|----------|--------|
 | **Standardized I2V (CI)** | 2× H100 80GB (nightly) | [`test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json) |
-| **v0.16 / v0.18 / v0.20 retro** | 4× H200 (measured) | [Table below](#h200-retro-comparison) · [blog](wan22-i2v-performance.html#results) |
+| **v0.16 / v0.18 / v0.20 retro** | 4× H200 (measured) | [Table below](#h200-retro-comparison) |
 | **T2V serving dashboard** | A100-SXM4-80GB | [`wan_2_2_serving_performance.md`](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md) |
 | **NPU** | 8× Ascend A2 / A3 | [I2V recipe (NPU)](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md#npu) |
 
@@ -55,7 +54,7 @@ On non-H100 hardware, set `"skip-performance-assertion": true` per `benchmark_pa
 
 ## H200 retro comparison
 
-Measured **2026-05-20** on **4× NVIDIA H200**. Metric: **`latency_mean`** (seconds, lower is better). Full methodology: [blog § Results](wan22-i2v-performance.html#results).
+Measured **2026-05-20** on **4× NVIDIA H200**. Metric: **`latency_mean`** (seconds, lower is better).
 
 | Config | Workload | v0.16.0 | v0.18.0 | v0.20.0 | Δ v0.18→v0.20 | Δ v0.16→v0.20 |
 |--------|----------|---------|---------|---------|---------------|---------------|
@@ -84,7 +83,7 @@ End-to-end path: **API → text encode → preprocess → VAE encode → DiT (4 
 | DiT kernels | v0.20 | Fused norms, RoPE, FA fix | #2583, #2585, #2393, #2459, #3327 |
 | Runtime + CI | v0.20 | vLLM 0.20 rebase, perf JSON | #3232, #3063 |
 
-Step-by-step walkthrough, profiler checklist, and PR deep-dives: **[blog post](wan22-i2v-performance.html)**.
+Narrative walkthrough (中文): [Zhihu draft](wan22-i2v-performance-zhihu.md).
 
 ---
 
@@ -98,7 +97,7 @@ Step-by-step walkthrough, profiler checklist, and PR deep-dives: **[blog post](w
 | [v0.16.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.16.0) | 2026-02-28 | `/v1/videos` API; H200 retro **31.33 / 22.20 / 133.94 s** |
 | [v0.14.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.14.0) | 2026-01-31 | First stable Wan2.2 pipelines |
 
-Full PR lists per release: [blog § Release timeline](wan22-i2v-performance.html#timeline).
+PR deep-dives: optimization table above and upstream release notes.
 
 ---
 

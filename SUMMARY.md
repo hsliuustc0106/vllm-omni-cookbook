@@ -38,9 +38,10 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 
 ### Highlights
 
+- **Qwen3-Omni:** First H200 retro (v0.18 / v0.20) on 2500/900 async-chunk workload. See [index](omni/qwen3-omni/index.md).
 - **Qwen-Image:** First retro T2I comparison (v0.18 / v0.20) on 4× H200; roughly at parity (~2–9% delta). See [index](diffusion/qwen-image/index.md).
 - **WAN2.2:** First cookbook release with GPU perf baselines; fused DiT kernels (GPU + NPU), pipeline refactor, nightly I2V CI ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063)).
-- **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#h200-retro-comparison) on standardized I2V workloads. [Blog post](diffusion/wan2.2/wan22-i2v-performance.html).
+- **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#h200-retro-comparison) on standardized I2V workloads.
 
 ---
 
@@ -72,7 +73,7 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 
 ### Highlights
 
-- **WAN2.2:** `/v1/videos` online serving ([#1073](https://github.com/vllm-project/vllm-omni/pull/1073)), tensor parallelism ([#964](https://github.com/vllm-project/vllm-omni/pull/964)). H200 retro: [index](diffusion/wan2.2/index.md#h200-retro-comparison) · [blog](diffusion/wan2.2/wan22-i2v-performance.html).
+- **WAN2.2:** `/v1/videos` online serving ([#1073](https://github.com/vllm-project/vllm-omni/pull/1073)), tensor parallelism ([#964](https://github.com/vllm-project/vllm-omni/pull/964)). H200 retro: [index](diffusion/wan2.2/index.md#h200-retro-comparison).
 
 ---
 

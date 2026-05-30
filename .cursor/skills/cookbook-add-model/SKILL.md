@@ -2,7 +2,7 @@
 name: cookbook-add-model
 description: >-
   Add a new model to vllm-omni-cookbook with a release-by-release improvement ledger
-  (index.md). Use when onboarding a model not yet tracked under omni/, tts/, or diffusion/.
+  (index.md). Use when onboarding a model not yet tracked under omni/ or diffusion/.
 ---
 
 # Add a New Model Ledger
@@ -22,7 +22,7 @@ Fill this checklist (copy into the new `index.md` draft or retro README in vllm-
 |-------|---------|
 | `model_slug` | `qwen-image` |
 | HuggingFace id | `Qwen/Qwen-Image` |
-| Category | `diffusion` / `tts` / `omni` |
+| Category | `diffusion` / `omni` |
 | Task | `t2i`, `i2v`, `voice_clone`, `text+audio`, … |
 | Upstream perf JSON | `tests/dfx/perf/tests/test_qwen_image_vllm_omni.json` |
 | Primary metric | `latency_mean` / `median_audio_ttfp_ms` / `mean_ttfp` |
@@ -34,7 +34,7 @@ Fill this checklist (copy into the new `index.md` draft or retro README in vllm-
 
 ```bash
 cd vllm-omni-cookbook
-CATEGORY=diffusion   # or omni, tts
+CATEGORY=diffusion   # or omni
 MODEL=qwen-image     # kebab-case folder name
 
 mkdir -p "${CATEGORY}/${MODEL}/assets"

@@ -16,7 +16,7 @@ Each `{category}/{model}/index.md` is the model's full improvement timeline. `SU
 
 ## Before you start
 
-1. Read [README.md](../../README.md) and [docs/plans/2026-05-09-performance-cookbook-design.md](../../docs/plans/2026-05-09-performance-cookbook-design.md).
+1. Read [README.md](../../README.md) and [docs/DESIGN.md](../../docs/DESIGN.md).
 2. Do **not** fork upstream perf JSON here — link or copy configs under `vllm-omni/benchmark_results/`.
 3. Every comparison must record: commit SHAs, `vllm` + `vllm_omni` versions, GPU SKU/count, serve args, workload dimensions.
 4. Retro hardware on this cluster is **NVIDIA H200** (internal logs may label it **L20X** — same SKU; document as H200 in the cookbook).
@@ -34,7 +34,6 @@ Each `{category}/{model}/index.md` is the model's full improvement timeline. `SU
 | Category | Folder | Primary metrics |
 |----------|--------|-----------------|
 | Omni | `omni/` | TTFT, TTFP, TPOT, RTF, E2EL, throughput |
-| TTS | `tts/` | TTFP, RTF, throughput (note concurrency c) |
 | Diffusion | `diffusion/` | E2E latency (`latency_mean`), optional stage profiler |
 
 ## Repo layout
@@ -42,8 +41,7 @@ Each `{category}/{model}/index.md` is the model's full improvement timeline. `SU
 ```
 vllm-omni-cookbook/
 ├── SUMMARY.md                 # per-release cross-model snapshot
-├── omni/{model}/index.md      # per-model history (## vX.Y.Z for even releases only)
-├── tts/{model}/index.md
+├── omni/{model}/index.md
 └── diffusion/{model}/
     ├── index.md               # slim reference ledger
     └── *-performance-zhihu.md # optional Chinese draft

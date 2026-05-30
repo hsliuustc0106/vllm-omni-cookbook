@@ -25,7 +25,7 @@ Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
 ## Getting started
 
 1. Fork the repository
-2. Create a branch (`git checkout -b docs/wan22-v021-retro`)
+2. Create a branch (`git checkout -b docs/wan22-retro`)
 3. Run or cite benchmarks from vllm-omni (`benchmark_results/`, upstream perf JSON — see model `index.md` reproduce sections)
 4. Update model `index.md` and `SUMMARY.md`
 5. Open a pull request
@@ -34,7 +34,7 @@ Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
 
 | Change | Files |
 |--------|-------|
-| New model | `{omni,tts,diffusion}/{model}/index.md`, `README.md`, `SUMMARY.md` placeholders |
+| New model | `{omni,diffusion}/{model}/index.md`, `README.md`, `SUMMARY.md` placeholders |
 | New even release | Each tracked model's `index.md` + root `SUMMARY.md` (skip odd minors) |
 | Retro numbers | Tables in `index.md` with SHAs, GPU SKU, footnotes |
 | Optional Zhihu draft | `*-performance-zhihu.md` |
@@ -42,10 +42,9 @@ Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
 ## Repository layout
 
 ```
-omni/{model}/index.md      # omni-modal ledgers
-tts/{model}/index.md       # TTS ledgers
-diffusion/{model}/index.md # diffusion ledgers
-SUMMARY.md                 # cross-model release overview
+omni/{model}/index.md
+diffusion/{model}/index.md
+SUMMARY.md
 ```
 
 Each model folder may include `assets/` for charts.
@@ -67,12 +66,11 @@ Do **not** copy upstream perf JSON into this repo.
 | Category | Folder | Primary metrics |
 |----------|--------|-----------------|
 | Omni | `omni/` | TTFT, TTFP, TPOT, RTF, E2EL |
-| TTS | `tts/` | TTFP, RTF, throughput (note concurrency) |
 | Diffusion | `diffusion/` | E2E latency (`latency_mean`) |
 
 ## Canonical examples
 
-- [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md) — fullest ledger + HTML + Zhihu
+- [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md) — fullest ledger + Zhihu draft
 - [diffusion/qwen-image/index.md](diffusion/qwen-image/index.md) — compact T2I retro
 - [omni/qwen3-omni/index.md](omni/qwen3-omni/index.md) — multi-stage omni metrics
 
@@ -86,4 +84,4 @@ Do **not** copy upstream perf JSON into this repo.
 
 ## Questions?
 
-Open an issue before large structural changes. For benchmark methodology, see [docs/plans/2026-05-09-performance-cookbook-design.md](docs/plans/2026-05-09-performance-cookbook-design.md).
+Open an issue before large structural changes. See [docs/DESIGN.md](docs/DESIGN.md).
