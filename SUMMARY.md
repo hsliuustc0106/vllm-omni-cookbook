@@ -11,10 +11,14 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
+| Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.51 s** | **−1.2%** vs v0.20 |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.23 s** | **−0.8%** vs v0.20 |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.03 s** | **−0.1%** vs v0.20 |
 
 ### Highlights
 
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+- **Qwen-Image-Edit:** First cookbook ledger; H200 retro v0.20→v0.22 within ~1% on standardized i2i workloads. See [diffusion/qwen-image-edit/index.md](diffusion/qwen-image-edit/index.md#h200-retro-comparison).
 
 ---
 
@@ -35,6 +39,9 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 2×H100 CI) | **9.1 s** | first measured |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | **8.42 s** | **+3.2%** vs v0.18 H200 |
 | Qwen-Image | diffusion  | T2I E2E (1536² single, 4×H200 retro) | **24.48 s** | **+2.2%** vs v0.18 H200 |
+| Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.69 s** | first measured |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.68 s** | first measured |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.05 s** | first measured |
 
 ### Highlights
 
