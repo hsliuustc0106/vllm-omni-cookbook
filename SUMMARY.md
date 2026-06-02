@@ -20,6 +20,8 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 - **Qwen-Image-Edit:** First cookbook ledger; H200 retro v0.20→v0.22 within ~1% on standardized i2i workloads. See [diffusion/qwen-image-edit/index.md](diffusion/qwen-image-edit/index.md#h200-retro-comparison).
 
+† v0.20 retro runs used checkpoint `Qwen/Qwen-Image-Edit-2509`, while v0.22 used `2511`. See [Qwen-Image-Edit index](diffusion/qwen-image-edit/index.md#h200-retro-comparison) for details.
+
 ---
 
 ## v0.20.0 (2026-05-07)
