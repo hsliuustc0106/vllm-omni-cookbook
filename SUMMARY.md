@@ -11,9 +11,9 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
-| Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.51 s** | **−1.2%** vs v0.20 |
-| Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.23 s** | **−0.8%** vs v0.20 |
-| Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.03 s** | **−0.1%** vs v0.20 |
+| Qwen-Image-Edit (`ee336015`) | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.51 s** | **−1.2%** vs v0.20 |
+| Qwen-Image-Edit (`ee336015`) | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.23 s** | **−0.8%** vs v0.20 |
+| Qwen-Image-Edit (`ee336015`) | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.03 s** | **−0.1%** vs v0.20 |
 
 ### Highlights
 
