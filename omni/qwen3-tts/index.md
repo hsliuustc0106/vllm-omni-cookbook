@@ -64,7 +64,6 @@ Base c=4 quality cell skipped by the pytest marker on L20X main.
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
 | 1 | 20 | 1.314 / 595 / 0.77 | 1.622 / 686 / 0.61 | −20.3% |
-| 4 / 2.0 † | 100/200 | _2.0/100_ † | 1.920 / 798 / 2.07 | — |
 | 8 | 80 | 2.261 / 1107 / 3.09 | 2.352 / 1005 / 2.88 | −7.0% |
 | 16 | 128 | 4.139 / 9400 / 3.83 | 4.226 / 9649 / 3.66 | −4.5% |
 | 64 | 128 | 14.828 / 75758 / 3.89 | 15.728 / 80110 / 3.56 | −8.4% |
@@ -91,7 +90,7 @@ Base c=4 quality cell skipped by the pytest marker on L20X main.
 | 16 | 128 | 4.589 / 8846 / 3.41 | 4.341 / 8196 / 3.55 | **+4.1%** |
 | 64 | 128 | 16.410 / 67251 / 3.53 | 16.103 / 69200 / 3.53 | +0.1% |
 
-† v0.21.0rc2's quality phase was `c=2.0, n=100`; main moved it to `c=4, n=200`. The two cells are not directly comparable — see `data/` for raw JSONs.
+Quality-phase cells (Base c=4 and CustomVoice c=2.0/c=4) are not comparable across versions on L20X — `test_tts.json` defines them differently between v0.21.0rc2 and main. Only c=1/8/16/64 (which are identical in both spec files) are shown for L20X. H20-3e c=4 is comparable and included.
 
 ---
 
