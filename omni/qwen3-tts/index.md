@@ -13,10 +13,10 @@ Cells: `median_audio_rtf` (audio s / wall s, **<1 = realtime**) / `median_audio_
 
 ## Hardware
 
-| Box | GPU | Mem-BW | Used for | Date |
-|-----|-----|-------:|---------|------|
-| **H20** (h20-server-1) | NVIDIA H20 96GB HBM3 | ~3.35 TB/s | high-c throughput target | 2026-06-03 |
-| **H200** (h200-hsliu) | NVIDIA L20X 144GB GDDR | ~1.1 TB/s | cheaper streaming target | 2026-06-03/04 |
+| Box | GPU | Mem-BW | Date |
+|-----|-----|-------:|------|
+| **H20** | NVIDIA H20 96GB HBM3 | ~3.35 TB/s | 2026-06-03 |
+| **H200** | NVIDIA L20X 144GB GDDR | ~1.1 TB/s | 2026-06-03/04 |
 
 Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single replica.
 

@@ -24,10 +24,10 @@ Total 14 result JSONs per (host, version):
 
 ## Hosts
 
-| Host class | dir | GPUs used | notes |
-|---|---|---|---|
-| H20 (Alibaba Cloud) | `h20-server-1/` | physical idx `4,5` (idx `0-3` busy with other tenants at run time) | `VLLM_USE_FLASHINFER_SAMPLER=0` (no nvcc) |
-| H200 (silicon: L20X) | `h200-hsliu/` | physical idx `0,1` (idx `2,3` busy with `tencent/HunyuanImage-3.0` at run time) | `VLLM_USE_FLASHINFER_SAMPLER=0` (no nvcc), `--stage-init-timeout 1800`, `--init-timeout 2400` |
+| Host class | dir | notes |
+|---|---|---|
+| H20 | `h20/` | NVIDIA H20 96GB HBM3 · `VLLM_USE_FLASHINFER_SAMPLER=0` (no nvcc) |
+| H200 | `h200/` | NVIDIA L20X 144GB GDDR · `VLLM_USE_FLASHINFER_SAMPLER=0`, `--stage-init-timeout 1800`, `--init-timeout 2400` |
 
 ## Local patches applied (not for upstream — workarounds for this bench session only)
 
@@ -43,7 +43,7 @@ Total 14 result JSONs per (host, version):
 - Each `result_*.json` is from one bench run; CI defaults (`--num-warmups 2`, `--save-result`).
 - `result_json_count` per dir = 14 (h20) once all enabled phases land.
 
-## Headline numbers (h20-server-1 Base seed-tts)
+## Headline numbers (H20 · Base seed-tts)
 
 `median_audio_rtf` / `median_audio_ttfp_ms` / `audio_throughput` :
 
