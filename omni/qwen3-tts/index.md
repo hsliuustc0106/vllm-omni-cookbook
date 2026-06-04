@@ -15,8 +15,8 @@ Cells: `median_audio_rtf` (audio s / wall s, **<1 = realtime**) / `median_audio_
 
 | Box | GPU | Mem-BW | Used for | Date |
 |-----|-----|-------:|---------|------|
-| **H20-3e** (h20-server-1) | NVIDIA H20 96GB HBM3 | ~3.35 TB/s | high-c throughput target | 2026-06-03 |
-| **L20X** (h200-hsliu) | NVIDIA L20X 144GB GDDR | ~1.1 TB/s | cheaper streaming target | 2026-06-03/04 |
+| **H20** (h20-server-1) | NVIDIA H20 96GB HBM3 | ~3.35 TB/s | high-c throughput target | 2026-06-03 |
+| **H200** (h200-hsliu) | NVIDIA L20X 144GB GDDR | ~1.1 TB/s | cheaper streaming target | 2026-06-03/04 |
 
 Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single replica.
 
@@ -24,7 +24,7 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 
 ## Base · `seed-tts`
 
-### H20-3e
+### H20
 
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
@@ -34,7 +34,7 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 | 16 | 128 | 0.443 / 784 / 35.38 | 0.387 / 679 / 39.13 | **+10.6%** |
 | 64 | 128 | 1.494 / 5832 / 35.99 | 1.325 / 4887 / 41.35 | **+14.9%** |
 
-### L20X
+### H200
 
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
@@ -43,13 +43,13 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 | 16 | 128 | 6.105 / 11394 / 2.52 | 5.089 / 9044 / 2.96 | **+17.4%** |
 | 64 | 128 | 20.893 / 84451 / 2.57 | 16.813 / 66002 / 3.23 | **+26.0%** |
 
-Base c=4 quality cell skipped by the pytest marker on L20X main.
+Base c=4 quality cell skipped by the pytest marker on H200 main.
 
 ---
 
 ## CustomVoice · `seed-tts-text`
 
-### H20-3e
+### H20
 
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
@@ -59,7 +59,7 @@ Base c=4 quality cell skipped by the pytest marker on L20X main.
 | 16 | 128 | 0.326 / 710 / 48.06 | 0.332 / 735 / 47.21 | −1.8% |
 | 64 | 128 | 1.209 / 5776 / 48.58 | 1.178 / 6196 / 47.47 | −2.3% |
 
-### L20X
+### H200
 
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
@@ -72,7 +72,7 @@ Base c=4 quality cell skipped by the pytest marker on L20X main.
 
 ## CustomVoice · `seed-tts-design`
 
-### H20-3e
+### H20
 
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
@@ -81,7 +81,7 @@ Base c=4 quality cell skipped by the pytest marker on L20X main.
 | 16 | 128 | 0.314 / 581 / 48.32 | 0.333 / 599 / 46.58 | −3.6% |
 | 64 | 128 | 1.190 / 4768 / 48.54 | 1.196 / 5052 / 46.06 | −5.1% |
 
-### L20X
+### H200
 
 | c | n | v0.21.0rc2 | main (v0.22) | Δ tput |
 |---:|---:|---|---|---:|
@@ -90,7 +90,7 @@ Base c=4 quality cell skipped by the pytest marker on L20X main.
 | 16 | 128 | 4.589 / 8846 / 3.41 | 4.341 / 8196 / 3.55 | **+4.1%** |
 | 64 | 128 | 16.410 / 67251 / 3.53 | 16.103 / 69200 / 3.53 | +0.1% |
 
-Quality-phase cells (Base c=4 and CustomVoice c=2.0/c=4) are not comparable across versions on L20X — `test_tts.json` defines them differently between v0.21.0rc2 and main. Only c=1/8/16/64 (which are identical in both spec files) are shown for L20X. H20-3e c=4 is comparable and included.
+Quality-phase cells (Base c=4 and CustomVoice c=2.0/c=4) are not comparable across versions on H200 — `test_tts.json` defines them differently between v0.21.0rc2 and main. Only c=1/8/16/64 (which are identical in both spec files) are shown for H200. H20 c=4 is comparable and included.
 
 ---
 
@@ -98,5 +98,5 @@ Quality-phase cells (Base c=4 and CustomVoice c=2.0/c=4) are not comparable acro
 
 - **c=1 (latency):** main regresses 5–25% on RTF/TTFP on both boxes. vllm 0.22's heavier scheduler + chunked prefill costs more on Qwen3-TTS's short Stage 0 steps. Single-stream is the next thing to fix.
 - **c=16 / c=64 (throughput):** main wins on Base seed-tts everywhere (+10% to +26%). vllm 0.22's batching better saturates the talker decode loop on long Base prompts. CustomVoice stays neutral (−2% to −8%) — the 65k-token reference-audio prefill dominates the per-step budget.
-- **H20-3e vs L20X:** L20X is ~12× slower at c=64 RTF (16.8 vs 1.33 s/audio-s on Base main). Stage 1 (Code2Wav) is memory-bandwidth-bound; H20-3e's ~3.4 TB/s HBM3 vs L20X's ~1.1 TB/s GDDR explains the gap. L20X numbers are best read as a floor for cheaper streaming targets, not an H20 substitute.
+- **H20 vs H200:** H200 is ~12× slower at c=64 RTF (16.8 vs 1.33 s/audio-s on Base main). Stage 1 (Code2Wav) is memory-bandwidth-bound; H20's ~3.4 TB/s HBM3 vs H200's ~1.1 TB/s GDDR explains the gap. H200 numbers are best read as a floor for cheaper streaming targets, not an H20 substitute.
 - **CustomVoice c=1 < Base c=1** on both boxes — voice clone amortizes speaker conditioning once on the reference prefill; Base re-runs speaker selection per request.

@@ -26,8 +26,8 @@ Total 14 result JSONs per (host, version):
 
 | Host class | dir | GPUs used | notes |
 |---|---|---|---|
-| H20-3e (Alibaba Cloud) | `h20-server-1/` | physical idx `4,5` (idx `0-3` busy with other tenants at run time) | `VLLM_USE_FLASHINFER_SAMPLER=0` (no nvcc) |
-| H200-class L20X | (pending) | — | `--stage-init-timeout 1800` after initial 600 s handshake races |
+| H20 (Alibaba Cloud) | `h20-server-1/` | physical idx `4,5` (idx `0-3` busy with other tenants at run time) | `VLLM_USE_FLASHINFER_SAMPLER=0` (no nvcc) |
+| H200 (silicon: L20X) | `h200-hsliu/` | physical idx `0,1` (idx `2,3` busy with `tencent/HunyuanImage-3.0` at run time) | `VLLM_USE_FLASHINFER_SAMPLER=0` (no nvcc), `--stage-init-timeout 1800`, `--init-timeout 2400` |
 
 ## Local patches applied (not for upstream — workarounds for this bench session only)
 
