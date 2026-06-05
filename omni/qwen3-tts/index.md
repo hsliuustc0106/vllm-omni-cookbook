@@ -41,9 +41,9 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 | 1 | 20 | 3.804 | 1.996 | 11944 | 1847 | 0.13 | 0.51 | **+287.5%** |
 | 8 | 80 | 24.853 | 4.392 | 46343 | 3494 | 0.32 | 1.72 | **+437.1%** |
 | 16 | 128 | 46.946 | 5.089 | 115299 | 9044 | 0.26 | 2.96 | **+1029.6%** |
-| 64 | 128 | _n/a_ † | 16.813 | _n/a_ | 66002 | _n/a_ | 3.23 | — |
+| 64 | 128 | 176.121 | 16.813 | 698693 | 66002 | 0.32 | 3.23 | **+916.4%** |
 
-† v0.20.0 Base c=64 didn't complete on H200 (2 pytest failures during the run). Base c=4 quality was skipped on both versions (pytest WER-eval marker on v0.22, framework skip on v0.20).
+† Base c=4 quality was skipped on both versions (pytest WER-eval marker on v0.22, framework skip on v0.20). v0.20.0 c=64 originally crashed the server when run after c=8/c=16 (accumulated state in the orchestrator); re-running c=64 against a fresh server completes cleanly — the numbers shown are from that isolated re-run.
 
 ---
 
