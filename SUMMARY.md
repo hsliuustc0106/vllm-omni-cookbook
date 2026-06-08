@@ -11,10 +11,14 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
+| Qwen-Image-Layered (`963ba1a`) | diffusion | I2I layered E2E (640² single, 4×H200 retro) | **14.47 s** | **−1.6%** vs v0.20 |
+| Qwen-Image-Layered (`963ba1a`) | diffusion | I2I layered E2E (1024² single, 4×H200 retro) | **24.74 s** | **−1.5%** vs v0.20 |
+| Qwen-Image-Layered (`963ba1a`) | diffusion | I2I layered E2E (1024² CacheDiT+Ulysses2, 4×H200 retro) | **6.62 s** | **−2.4%** vs v0.20 |
 
 ### Highlights
 
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+- **Qwen-Image-Layered:** First cookbook ledger; H200 retro v0.20→v0.22 improves the measured layered i2i workloads by roughly 1.5–2.4%. See [diffusion/qwen-image-layered/index.md](diffusion/qwen-image-layered/index.md#h200-retro-comparison).
 
 ---
 
@@ -35,11 +39,15 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 2×H100 CI) | **9.1 s** | first measured |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | **8.42 s** | **+3.2%** vs v0.18 H200 |
 | Qwen-Image | diffusion  | T2I E2E (1536² single, 4×H200 retro) | **24.48 s** | **+2.2%** vs v0.18 H200 |
+| Qwen-Image-Layered | diffusion | I2I layered E2E (640² single, 4×H200 retro) | **14.71 s** | first measured |
+| Qwen-Image-Layered | diffusion | I2I layered E2E (1024² single, 4×H200 retro) | **25.11 s** | first measured |
+| Qwen-Image-Layered | diffusion | I2I layered E2E (1024² CacheDiT+Ulysses2, 4×H200 retro) | **6.78 s** | first measured |
 
 ### Highlights
 
 - **Qwen3-Omni:** First H200 retro (v0.18 / v0.20) on 2500/900 async-chunk workload. See [index](omni/qwen3-omni/index.md).
 - **Qwen-Image:** First retro T2I comparison (v0.18 / v0.20) on 4× H200; roughly at parity (~2–9% delta). See [index](diffusion/qwen-image/index.md).
+- **Qwen-Image-Layered:** First H200 retro baseline for layered i2i decomposition on single-device and CacheDiT+Ulysses2 workloads. See [index](diffusion/qwen-image-layered/index.md).
 - **WAN2.2:** First cookbook release with GPU perf baselines; fused DiT kernels (GPU + NPU), pipeline refactor, nightly I2V CI ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063)).
 - **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#h200-retro-comparison) on standardized I2V workloads.
 

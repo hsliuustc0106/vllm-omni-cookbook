@@ -97,6 +97,6 @@ vllm serve Qwen/Qwen-Image --omni \
 |-------|-----------|
 | Qwen-Image-Edit | `test_qwen_image_edit_vllm_omni.json` |
 | Qwen-Image-Edit-2509 | `test_qwen_image_edit_2509_vllm_omni.json` |
-| Qwen-Image-Layered | `test_qwen_image_layered_vllm_omni.json` |
+| Qwen-Image-Layered | [qwen-image-layered](../qwen-image-layered/index.md) · `test_qwen_image_layered_vllm_omni.json` |
 
 Use the same `diffusion-perf-cookbook` skill to scaffold retro for these models.
