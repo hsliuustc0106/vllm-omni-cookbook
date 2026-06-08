@@ -1,6 +1,8 @@
-# Qwen3-TTS perf raw data — 2026-06-03 / 2026-06-05
+# Qwen3-TTS perf raw data — H20 2026-06-03 / 2026-06-06, L20X 2026-06-08
 
 Raw JSON outputs from `tests/dfx/perf/scripts/run_benchmark.py --test-config-file tests/dfx/perf/tests/test_tts.json`. Captured outside vllm-omni CI so we can re-render the cookbook page without re-running benches.
+
+> **L20X re-bench (2026-06-08):** the first revision's `h200/` (L20X) JSONs were captured while an unrelated host-side CPU process saturated the box and starved the latency-bound Talker (single-digit % GPU SM util). They have been fully re-benched on the cleaned host; the `h200/{v020,v022}` JSONs here are the clean set. The bench-client patches below are required for `--dataset-name seed-tts*` to parse — without them every request fails (`completed == 0`) and the harness writes zero-filled JSONs.
 
 ## Cells per (host, version)
 
@@ -41,7 +43,7 @@ Expected per (host, version) — 14 cells when the full matrix runs:
 - Sequential per (host, version) — never two vllm-omni servers competing for the same GPUs.
 - Stage 1 pinned to local device `1` per `test_tts.json` `stage_overrides` (v0.22.0); v0.20.0 puts both stages on the same GPU.
 - Each `result_*.json` is from one bench run; CI defaults (`--num-warmups 2`, `--save-result`).
-- v0.20.0 Base server is unstable on H200 — Stage 1 dies during the READY handshake with `exit code 1`. CV server works fine. H200 v0.20.0 dir therefore has 9 CV cells + a single Base c=4 quality artifact (round-1 sentinel) but no real Base data.
+- On L20X, the throughput phase (c=8/16/64 on one server) degrades the orchestrator and zeroes out the c≥16 cells — v0.20 Base is the most fragile. The clean re-bench captures each high-concurrency cell against a fresh server, so `h200/{v020,v022}` now hold the full 14-cell matrix (Base c=1/4/8/16/64 + CV-text c=1/4/8/16/64 + CV-design c=1/8/16/64).
 
 ## Headline numbers (H20 · Base seed-tts · v0.22.0)
 

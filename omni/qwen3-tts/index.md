@@ -5,20 +5,22 @@
 **Spec:** [`test_tts.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_tts.json) · **Runner:** [`run_benchmark.py`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/scripts/run_benchmark.py)
 **Raw JSONs:** [`data/`](data/)
 
-vllm-omni `v0.22.0` (main HEAD `40b29591`, vllm 0.22.0) vs `v0.20.0` (`4a24a517`, vllm 0.20.0) — both with `transformers==5.8.1` — measured 2026-06-03 / 2026-06-05 / 2026-06-06.
+vllm-omni `v0.22.0` (main HEAD `40b29591`, vllm 0.22.0) vs `v0.20.0` (`4a24a517`, vllm 0.20.0) — both with `transformers==5.8.1`. H20 measured 2026-06-03 / 2026-06-06; L20X re-benched 2026-06-08.
 
 Metrics: **RTF** = `median_audio_rtf` (audio s / wall s, **<1 = realtime**) · **TTFP** = `median_audio_ttfp_ms` · **Tput** = `audio_throughput`.
+
+> **Correction (2026-06-08):** the L20X numbers in the first revision of this page were captured while an unrelated host-side CPU process was saturating the box and starving the latency-bound Talker (it ran at single-digit % GPU SM util). The L20X matrix below has been **re-benched on the cleaned host**. The earlier "L20X is ~12× slower, Code2Wav is HBM-vs-GDDR bandwidth-bound" reading was an artifact of that contamination and is **withdrawn** — the real cross-box gap is ~1.3× at c=64 (see "What the deltas say").
 
 ---
 
 ## Hardware
 
-| Box | GPU | Mem-BW | Date |
-|-----|-----|-------:|------|
-| **H20** | NVIDIA H20 96GB HBM3 | ~3.35 TB/s | 2026-06-03 / 2026-06-06 |
-| **H200** | NVIDIA L20X 144GB GDDR | ~1.1 TB/s | 2026-06-03 / 2026-06-05 |
+| Box | GPU | Class | Date |
+|-----|-----|-------|------|
+| **H20** | NVIDIA H20 96GB HBM3 | Hopper | 2026-06-03 / 2026-06-06 |
+| **H200** | NVIDIA L20X 141GB | Ada-class (reports as `NVIDIA L20X`; **not** a true H200) | 2026-06-08 |
 
-Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single replica.
+Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single replica. The "H200" box label maps to `data/h200/` for path continuity; the silicon is an Ada-class L20X, so read it as a cheaper-streaming-target floor, not an H200 ceiling.
 
 ---
 
@@ -38,12 +40,13 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 
 | c | n | RTF v0.20 | RTF v0.22 | TTFP v0.20 (ms) | TTFP v0.22 (ms) | Tput v0.20 | Tput v0.22 | Δ Tput |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 20 | 3.804 | 1.996 | 11944 | 1847 | 0.13 | 0.51 | **+287.5%** |
-| 8 | 80 | 24.853 | 4.392 | 46343 | 3494 | 0.32 | 1.72 | **+437.1%** |
-| 16 | 128 | 46.946 | 5.089 | 115299 | 9044 | 0.26 | 2.96 | **+1029.6%** |
-| 64 | 128 | 176.121 | 16.813 | 698693 | 66002 | 0.32 | 3.23 | **+916.4%** |
+| 1 | 20 | 0.163 | 0.173 | 167 | 137 | 4.10 | 5.76 | +40.5% |
+| 4 | 200 | 0.230 | 0.208 | 448 | 79 | 16.33 | 19.11 | +17.0% |
+| 8 | 80 | 0.369 | 0.387 | 933 | 193 | 12.73 | 20.30 | **+59.4%** |
+| 16 | 128 | 0.652 | 0.498 | 2286 | 882 | 16.88 | 30.98 | **+83.5%** |
+| 64 | 128 | 1.982 | 1.676 | 8065 | 6498 | 27.79 | 32.37 | +16.5% |
 
-† Base c=4 quality was skipped on both versions (pytest WER-eval marker on v0.22, framework skip on v0.20). v0.20.0 c=64 originally crashed the server when run after c=8/c=16 (accumulated state in the orchestrator); re-running c=64 against a fresh server completes cleanly — the numbers shown are from that isolated re-run.
+† Clean re-bench 2026-06-08. The c=8/16/64 throughput cells are each captured against a fresh server — running them back-to-back on one server degrades the orchestrator state and zeroes out the high-concurrency cells (v0.20 Base is the most fragile here). Base c=4 (quality phase) now completes and is included.
 
 ---
 
@@ -63,11 +66,11 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 
 | c | n | RTF v0.20 | RTF v0.22 | TTFP v0.20 (ms) | TTFP v0.22 (ms) | Tput v0.20 | Tput v0.22 | Δ Tput |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 20 | 1.444 | 1.622 | 703 | 686 | 0.51 | 0.61 | **+20.8%** |
-| 4 | 200 | 1.933 | 1.920 | 1417 | 798 | 2.00 | 2.07 | +3.5% |
-| 8 | 80 | 2.167 | 2.352 | 2450 | 1005 | 3.16 | 2.88 | −8.9% |
-| 16 | 128 | 4.250 | 4.226 | 11112 | 9649 | 3.59 | 3.66 | +1.8% |
-| 64 | 128 | 17.860 | 15.728 | 85849 | 80110 | 3.20 | 3.56 | **+11.3%** |
+| 1 | 20 | 0.136 | 0.150 | 54 | 50 | 5.01 | 6.70 | +33.5% |
+| 4 | 200 | 0.156 | 0.195 | 93 | 69 | 25.59 | 20.48 | −20.0% |
+| 8 | 80 | 0.177 | 0.250 | 157 | 83 | 43.63 | 30.88 | −29.2% |
+| 16 | 128 | 0.287 | 0.442 | 804 | 999 | 53.89 | 35.71 | −33.7% |
+| 64 | 128 | 1.056 | 1.584 | 4981 | 7835 | 53.86 | 35.44 | −34.2% |
 
 ---
 
@@ -86,17 +89,16 @@ Both runs: 1 GPU for Stage 0 (Talker), 1 GPU for Stage 1 (Code2Wav), single repl
 
 | c | n | RTF v0.20 | RTF v0.22 | TTFP v0.20 (ms) | TTFP v0.22 (ms) | Tput v0.20 | Tput v0.22 | Δ Tput |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 20 | 1.507 | 1.758 | 790 | 702 | 0.67 | 0.56 | **−15.8%** |
-| 8 | 80 | 2.169 | 2.429 | 2107 | 1009 | 3.59 | 3.16 | **−12.0%** |
-| 16 | 128 | 4.198 | 4.341 | 9998 | 8196 | 3.69 | 3.55 | −3.7% |
-| 64 | 128 | 14.715 | 16.103 | 65103 | 69200 | 3.73 | 3.53 | −5.2% |
+| 1 | 20 | 0.129 | 0.143 | 53 | 46 | 7.76 | 7.02 | −9.6% |
+| 8 | 80 | 0.171 | 0.245 | 153 | 80 | 44.93 | 31.40 | −30.1% |
+| 16 | 128 | 0.272 | 0.427 | 664 | 827 | 54.96 | 36.22 | −34.1% |
+| 64 | 128 | 1.016 | 1.579 | 4469 | 6708 | 55.30 | 35.81 | −35.2% |
 
 ---
 
 ## What the deltas say
 
-- **Base seed-tts is the v0.22 story.** v0.22 wins 1.7×–10× throughput on Base across every concurrency on both boxes. v0.20 Base was scheduler-bound (RTF >2 even at c=1 on H200), so the gains are mostly architectural: Stage 0 batching + KV-cache and the orchestrator's stage init refactor that lets the Talker actually keep up with the Code2Wav decoder.
-- **CV-text c=1 (latency-bound) sees a smaller but still material v0.22 win.** +21% on H200 / +193% on H20 — the single-stream speaker-conditioning path improved between v0.20 and v0.22.
-- **CV-design is roughly flat or slightly regressed on v0.22.** Voice-design's c=1 RTF gets 5–16% worse on v0.22; mid-concurrency cells are within ±5%. The voice-design pipeline didn't benefit from the same scheduler improvements that drove the Base wins.
-- **The H200 v0.20 Base server didn't work out-of-the-box.** Stage 1 (`Qwen3TTSCode2Wav`) dies during the READY handshake with `exit code 1` when both stages share GPU 0. The fix is `stage_overrides: {'1': {'devices': '1'}}` in the spec's `server_params` (v0.22 added this by default; v0.20 ships without it). With the override Base v0.20 numbers were captured cleanly.
-- **H20 vs H200 hardware gap is real:** H200 (L20X, ~1.1 TB/s GDDR) is ~12× slower than H20 (~3.4 TB/s HBM3) at c=64 RTF on v0.22 Base. Stage 1 is memory-bandwidth-bound; H200 numbers should be read as a floor for cheaper streaming targets, not as an H20 substitute.
+- **Base seed-tts is the v0.22 story on both boxes.** v0.22 wins Base throughput at every concurrency — H20 +174% to +458%, L20X +16% to +83%. The gains are architectural: Stage 0 batching + KV-cache and the orchestrator's stage-init refactor let the Talker keep up with the Code2Wav decoder. Both versions stay realtime (RTF < 2) even at c=64 on both boxes.
+- **CustomVoice regresses on v0.22 — and the regression is larger on L20X.** On H20 CV throughput is roughly neutral (−2% to −8%). On L20X v0.22 gives back **20–35%** of CV throughput across CV-text and CV-design (e.g. CV-text c=64 Tput 53.9 → 35.4). The voice-conditioning path didn't pick up the Base scheduler work, and on Ada-class silicon the v0.22 per-step overhead costs more. To serve CustomVoice on L20X today, v0.20 is the faster throughput option.
+- **The v0.20 Base server is fragile at high concurrency on L20X.** Running c=8/16/64 back-to-back on one server degrades the orchestrator and zeroes out the c≥16 cells, so each high-concurrency cell here is captured against a fresh server. Stage 1 device pinning via `stage_overrides: {'1': {'devices': '1'}}` is also required (v0.22 defaults it; v0.20 needs it set).
+- **The real H20-vs-L20X gap is ~1.3×, not ~12×.** On clean hardware, L20X v0.22 Base c=64 is RTF 1.676 / 32.4 audio-s per wall-s vs H20's 1.325 / 41.4 — about **1.27× slower RTF** at saturation and roughly **on par at c=1** (0.173 vs 0.165). CV cells sit at ~1.3× as well. The earlier "~12×, Code2Wav is HBM3-vs-GDDR bandwidth-bound" reading came entirely from a host-side CPU process starving the latency-bound Talker (single-digit % GPU SM util during the contaminated runs) and is **withdrawn**. L20X is a viable cheaper-streaming target, not a 12×-handicapped one.
