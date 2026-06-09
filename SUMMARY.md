@@ -11,9 +11,12 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
+| HunyuanImage-3.0 | diffusion | T2I E2E (TP4, L20X) | **4.67 s** | — (initial support) |
+| HunyuanImage-3.0 | diffusion | IT2I E2E (TP2, L20X) | **8.94 s** | — (initial support) |
 
 ### Highlights
 
+- **HunyuanImage-3.0:** Initial support with AR+DIT hybrid architecture. AR graph mode (−85.6% TPOT), KV cache reuse (−13.0% IT2I E2E), VAE parallel + Piecewise FA (−6.0% combined). See [diffusion/hunyuanimage/index.md](diffusion/hunyuanimage/index.md).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 
 ---

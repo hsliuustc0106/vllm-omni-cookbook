@@ -15,11 +15,12 @@ vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **pu
 
 ## Models Tracked
 
-| Model       | Category                          | Type                       |
-|-------------|-----------------------------------|----------------------------|
-| Qwen3-Omni  | [omni](omni/qwen3-omni/)          | Omni-modal / any-to-any    |
-| WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
-| Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
+| Model              | Category                          | Type                       |
+|--------------------|-----------------------------------|----------------------------|
+| Qwen3-Omni         | [omni](omni/qwen3-omni/)          | Omni-modal / any-to-any    |
+| WAN2.2             | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
+| Qwen-Image         | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
+| HunyuanImage-3.0   | [diffusion](diffusion/hunyuanimage/) | Text-to-image / Image-to-Image (AR+DIT) |
 
 ## Latest Cookbook Release: v0.20.0
 
