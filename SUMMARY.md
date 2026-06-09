@@ -11,10 +11,12 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen3-Omni | omni       | —          | —     | —                   |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
+| GLM-Image  | diffusion  | T2I E2E (1024², 4×H800 focused) | **13.89 s** (TP4+SP4) | **+0.5%** vs v0.20; ranking unchanged |
 
 ### Highlights
 
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+- **GLM-Image:** Fresh v0.22.0 release run matches v0.20.0 within ~1% on the focused H800 t2i/i2i matrix. See [diffusion/glm-image/index.md](diffusion/glm-image/index.md).
 
 ---
 
