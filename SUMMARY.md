@@ -4,16 +4,19 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 
 ---
 
-## v0.22.0 (upcoming)
+## v0.22.0 (2026-06-06)
 
 | Model      | Category   | Key Metric | Value | Delta from v0.20.0 |
 |------------|------------|------------|-------|---------------------|
-| Qwen3-Omni | omni       | —          | —     | —                   |
+| Qwen3-Omni | omni | TTFP (c=1, 2500/900 async-chunk, 2×H200) | **241 ms** | **−82%** vs v0.20 1325 ms |
+| Qwen3-Omni | omni | RTF (c=1, 2500/900, 2×H200) | **0.132** | **−25%** vs v0.20 0.175 |
+| Qwen3-Omni | omni | TTFT (c=1, 2500/900, 2×H200) | **101 ms** | **−86%** vs v0.20 721 ms |
 | WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
 
 ### Highlights
 
+- **Qwen3-Omni:** Massive TTFP/TTFT recovery from the v0.20 regression. c=1 TTFP **−82%** (1325→241 ms, [#4054](https://github.com/vllm-project/vllm-omni/pull/4054)), TTFT **−86%** (721→101 ms), RTF **−25%** (0.175→0.132), audio throughput **+33%**. Full c=1–32 sweep on 2×H200: see [index](omni/qwen3-omni/index.md#h200-full-sweep--v0220). Measured 2026-06-04 (main ~v0.22.0-pre).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 
 ---
