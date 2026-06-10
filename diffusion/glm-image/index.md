@@ -24,7 +24,7 @@ This page tracks the focused GLM-Image cookbook benchmark across vLLM-Omni **v0.
 |-------|-------|-------|
 | Release tag | `v0.20.0` | `v0.22.0` |
 | Checkout SHA | `4a24a517` | `963ba1ab` |
-| Cookbook config links | [`v0.20/test_glm_image_vllm_omni_focused_inline.json`](v0.20/test_glm_image_vllm_omni_focused_inline.json) · [`v0.20/deploy/`](v0.20/deploy/) | [`v0.22/test_glm_image_vllm_omni_focused_inline.json`](v0.22/test_glm_image_vllm_omni_focused_inline.json) · [`v0.22/deploy/`](v0.22/deploy/) |
+| Cookbook config links | [`v0.20/test_glm_image_vllm_omni_focused_inline.json`](v0.20/test_glm_image_vllm_omni_focused_inline.json) · [`v0.20/deploy/`](v0.20/deploy/) | [`v0.22/test_glm_image_vllm_omni_focused_inline.json`](v0.22/test_glm_image_vllm_omni_focused_inline.json) |
 
 ---
 
@@ -45,6 +45,8 @@ Relevant v0.22-cycle GLM-Image work includes the GLM-Image recipe ([#2950](https
 ## H800 Retro Comparison
 
 Measured **2026-06-08** on **4x NVIDIA H800**. Delta format is approximate percent first, then `(v0.20 -> v0.22)`.
+
+Config naming note: `*_dit_cudagraph` means the DiT/diffusion stage uses `enforce_eager: false`; the paired baseline keeps stage 1 eager. In all focused/retro configs here, stage 0 AR already uses `enforce_eager: false`, so the `_dit_cudagraph` suffix only marks the stage 1 difference.
 
 ### 1024x1024
 
@@ -101,6 +103,21 @@ These numbers are useful for understanding where the time goes, but they should 
 
 ---
 
+## 1-GPU Retro Comparison
+
+This retro slice tracks the oldest comparable 1-GPU GLM-Image path across v0.16, v0.18, v0.20, and v0.22: 1024x1024, 50 inference steps, max-concurrency 1, and `latency_mean` in seconds.
+
+| Config | Task | v0.16 | v0.18 | v0.20 | v0.22 |
+|---|---|---:|---:|---:|---:|
+| `1gpu_overlap` | t2i | 39.83 | 33.63 | 28.30 | 28.11 |
+| `1gpu_overlap` | i2i | 39.57 | not runnable | 25.29 | 25.15 |
+| `1gpu_overlap_dit_cudagraph` | t2i | 39.55 | 29.95 | 24.99 | 24.87 |
+| `1gpu_overlap_dit_cudagraph` | i2i | 39.40 | not runnable | 21.94 | 21.85 |
+
+v0.18 i2i starts the server but fails before generation in the stock `/v1/chat/completions` multimodal preprocessing path. Keep it as `not runnable` for an unpatched retro run; the relevant v0.20-line fixes include [#2320](https://github.com/vllm-project/vllm-omni/pull/2320), [#3024](https://github.com/vllm-project/vllm-omni/pull/3024), and [#3189](https://github.com/vllm-project/vllm-omni/pull/3189).
+
+---
+
 ## Release index
 
 | Release | GLM-Image highlight | Relevant PRs |
@@ -146,7 +163,7 @@ The v0.22 benchmark JSON can use `deploy-config-inline` directly. The focused co
 - [`v0.22/test_glm_image_vllm_omni_focused_inline.json`](v0.22/test_glm_image_vllm_omni_focused_inline.json)
 - [`v0.22/glm_image_1024_1472x1088_steps50_t2i_i2i.json`](v0.22/glm_image_1024_1472x1088_steps50_t2i_i2i.json)
 
-`test_glm_image_vllm_omni_focused_inline.json` is the intended nightly CI candidate (TODO: push upstream and raise PR). The YAML files under [`v0.22/deploy/`](v0.22/deploy/) are temporary cookbook copies for manual serving and reproducibility.
+`test_glm_image_vllm_omni_focused_inline.json` is the intended nightly CI candidate (TODO: push upstream and raise PR). v0.22 does not need separate cookbook deploy YAML artifacts because the focused perf config uses inline deploy JSON.
 
 ### v0.20.0
 
@@ -245,12 +262,12 @@ stages:
       width: 1024
 ```
 
-Serve with:
+Save the YAML above locally, then serve with:
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1
 vllm-omni serve zai-org/GLM-Image --omni \
-  --deploy-config /path/to/vllm-omni-cookbook/diffusion/glm-image/v0.22/deploy/glm_image_2gpu_artp2_sp2_dit_cudagraph.yaml \
+  --deploy-config /path/to/glm_image_2gpu_artp2_sp2_dit_cudagraph.yaml \
   --enable-diffusion-pipeline-profiler
 ```
 
@@ -261,9 +278,8 @@ vllm-omni serve zai-org/GLM-Image --omni \
 | Location | Path | Role |
 |----------|------|------|
 | Cookbook | `diffusion/glm-image/v0.20/` | v0.20 focused benchmark JSON and external YAML deploy configs |
-| Cookbook | `diffusion/glm-image/v0.22/` | v0.22 focused benchmark JSON and equivalent manual YAML deploy configs |
+| Cookbook | `diffusion/glm-image/v0.22/` | v0.22 focused benchmark JSON using inline deploy configs |
 | Cookbook | `diffusion/glm-image/v0.22/test_glm_image_vllm_omni_focused_inline.json` | Nightly CI candidate copy for the focused GLM-Image perf matrix (TODO: push upstream and raise PR) |
-| Cookbook | `diffusion/glm-image/v0.22/deploy/glm_image_2gpu_artp2_sp2_dit_cudagraph.yaml` | Recommended manual serve config for AR TP2 + DiT SP2 |
 | vLLM-Omni | `tests/e2e/online_serving/test_glm_image_expansion.py` | L4 feature e2e test for online t2i/i2i serving across baseline, Cache-DiT, TP, HSDP, and SP |
 | vLLM-Omni | `tests/e2e/offline_inference/test_glm_image_autoround_w4a16_expansion.py` | L4 feature e2e test for W4A16 AutoRound offline t2i/i2i generation |
 | vLLM-Omni | `tests/diffusion/models/glm_image/test_glm_image_sp.py` | CPU/unit coverage for GLM-Image sequence-parallel structure |
