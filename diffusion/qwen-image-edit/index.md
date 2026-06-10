@@ -62,6 +62,20 @@ Protocol: the same as [`tests/dfx/perf/tests/test_qwen_image_edit_2511_vllm_omni
 
 ---
 
+## Pipeline profiler (1536×1536)
+
+Diffusion pipeline profiler at commit **`ee336015`**, same **2511** inputs as the retro benchmark (`1536×1536`, 35 steps, 2 input images). Covers the two parallelism configs in the retro table (512×512 omitted).
+
+| Config | GPU | GPU busy (%) | Comm / overhead (%) |
+|--------|-----|--------------|---------------------|
+| Single device | 0 | 98.63 | 1.37 |
+| Ulysses2 + CFG2 + VAE-pp4 | 0 | 76.39 | 23.61 |
+| same | 1 | 74.54 | 25.46 |
+| same | 2 | 75.32 | 24.68 |
+| same | 3 | 77.49 | 22.51 |
+
+---
+
 ## Serve commands (matches perf JSON)
 
 **Single device:**
