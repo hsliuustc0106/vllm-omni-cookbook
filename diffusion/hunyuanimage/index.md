@@ -112,7 +112,7 @@ HunyuanImage-3.0's AR+DIT hybrid architecture supports multiple optimization fea
 | Config | Total Throughput (req/s) | Per-GPU Throughput (req/s) | Scaling Efficiency |
 |--------|-------------------------|----------------------------|-------------------|
 | **1:1** (baseline) | 0.21 | 0.105 | - |
-| **1:2** | [TBD] | [TBD] | [TBD] |
+| **1:2** | 0.39 | 0.13 | +23.8% |
 
 *Note: 1:1 means 1 AR replica paired with 1 DIT replica (2 GPUs total); 1:2 means 1 AR replica paired with 2 DIT replicas (3 GPUs total). Measured under high load (max concurrency=16). Scaling efficiency = (1:2 total throughput) / (1:1 total throughput) / (GPU ratio).*
 
