@@ -40,6 +40,12 @@ The v0.22 focused run is at parity with v0.20 on this H800 matrix: every measure
 
 Relevant v0.22-cycle GLM-Image work includes the GLM-Image recipe ([#2950](https://github.com/vllm-project/vllm-omni/pull/2950)), W4A16 AutoRound coverage ([#3059](https://github.com/vllm-project/vllm-omni/pull/3059)), NPU stage env/config plumbing ([#3235](https://github.com/vllm-project/vllm-omni/pull/3235)), and the L4 feature e2e test ([#3451](https://github.com/vllm-project/vllm-omni/pull/3451)).
 
+**Notes**
+
+1. **Default 2-GPU split (not in matrix).** Putting stage 0 AR (~18.88 GiB model weights) on GPU 0 and stage 1 DiT (~14.07 GiB) on GPU 1 — the stock `glm_image.yaml` topology — yields E2E latency very close to, or slightly worse than, colocating both stages on one H800. (`1gpu_overlap_dit_cudagraph`: ~24.87 s vs default 2-GPU with cudagraph ~25.96 s for 1024×1024 t2i). This layout is therefore **not included in the focused test matrix** and is **not a recommended set-up on H800-class hardware** where a single GPU already fits the workload.
+
+2. **24 GB GPUs.** 2-GPU should be enough. For 1024×1024 workloads in the H800 matrix next section, reported peak memory stays below ~23 GiB per GPU in all 2-GPU cases; peak grows with output resolution (e.g. 1472×1088 often reached ~20–29 GiB peak per GPU in our `test_glm_image_vllm_omni_focused_inline.json` setting). If a card is tight on memory: lower stage 0 `gpu_memory_utilization` to shrink the AR KV pool, cap output resolution, or prefer **TP2 on both stages** over **SP** where per-GPU footprint matters more than raw latency (e.g. `2gpu_tp2_overlap_dit_cudagraph` reports ~17 GiB peak on 1024 t2i vs ~23 GiB for SP-based configs).
+
 ---
 
 ## H800 Retro Comparison
