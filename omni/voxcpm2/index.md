@@ -7,7 +7,7 @@ vllm-omni `v0.22.0` (vllm 0.22.0) vs `v0.20.0` (vllm 0.20.0), both with `transfo
 
 Metrics: **RTF** = `mean_audio_rtf` (audio s / wall s, **<1 = realtime**) / **TTFP** = `mean_audio_ttfp_ms` / **Tput** = `audio_throughput`.
 
-![VoxCPM2 Performance Comparisons v0.20.0 vs v0.22.0](./data/h200/overview_6_comparisons.png)
+![VoxCPM2 Performance Comparisons v0.20.0 vs v0.22.0](data/h200/v0.22.0_overview_comparisons.png)
 
 ---
 
