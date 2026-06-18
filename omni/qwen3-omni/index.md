@@ -102,6 +102,45 @@ Result files: `vllm-omni/tests/test_result/result_test_qwen3_omni_chunk_random_{
 - **v0.18→v0.20:** TTFP regressed ~80% on this workload; E2EL improved because the run generated ~half the audio.
 - **v0.20→v0.22:** Massive recovery — TTFP **−82%** (1325→241 ms, [#4054](https://github.com/vllm-project/vllm-omni/pull/4054)); TTFT **−86%**, TPOT **−71%**, RTF **−25%**. Audio throughput +33%.
 
+### v0.22.0 vs v0.20.0 — TTFT (mean, ms)
+
+2× H200 · text+audio `random` 2500/900 · `--async-chunk`. Lower is better.
+
+| Scenario | c | v0.20.0 | v0.22.0 | Δ |
+|----------|--:|--------:|--------:|--:|
+| Low concurrency | 1 | 721 | 101 | **−86.0%** |
+| High concurrency | 32 | 935 | 666 | **−28.8%** |
+
+![TTFT at c=1 — 2× H200 Qwen3-Omni](assets/v0.22.0-ttft-c1-h200.png)
+
+![TTFT at c=32 — 2× H200 Qwen3-Omni](assets/v0.22.0-ttft-c32-h200.png)
+
+### v0.22.0 vs v0.20.0 — TTFP (mean, ms)
+
+| Scenario | c | v0.20.0 | v0.22.0 | Δ |
+|----------|--:|--------:|--------:|--:|
+| Low concurrency | 1 | 1325 | 241 | **−81.8%** |
+| High concurrency | 32 | 2846 | 1389 | **−51.2%** |
+
+![TTFP at c=1 — 2× H200 Qwen3-Omni](assets/v0.22.0-ttfp-c1-h200.png)
+
+![TTFP at c=32 — 2× H200 Qwen3-Omni](assets/v0.22.0-ttfp-c32-h200.png)
+
+### v0.22.0 vs v0.20.0 — RTF (mean)
+
+| Scenario | c | v0.20.0 | v0.22.0 | Δ |
+|----------|--:|--------:|--------:|--:|
+| Low concurrency | 1 | 0.175 | 0.132 | **−24.6%** |
+| High concurrency | 32 | 0.632 | 0.526 | **−16.8%** |
+
+![RTF at c=1 — 2× H200 Qwen3-Omni](assets/v0.22.0-rtf-c1-h200.png)
+
+![RTF at c=32 — 2× H200 Qwen3-Omni](assets/v0.22.0-rtf-c32-h200.png)
+
+† c=1 from the [retro anchor table](#c1-latency-2500900-async-chunk--primary-anchor) above. c=32: v0.20.0 from the 2026-05-23 retro run (`…random_32_128_in2500_out900…`); v0.22.0 from the [full sweep](#h200-full-sweep--v0220) (2026-06-04).
+
+Regenerate: `python scripts/plot_version_compare.py qwen3-omni`
+
 ### c=10 throughput — unstable on H200 (2026-05-24, v0.20.0 only)
 
 | Metric | v0.20.0 | Notes |
