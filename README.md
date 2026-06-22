@@ -21,6 +21,7 @@ vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **pu
 | VoxCPM2     | [omni](omni/voxcpm2/)             | Text-to-speech / voice clone |
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
 | Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
+| LTX-2.3     | [diffusion](diffusion/ltx2.3/)    | Text-to-video + synchronized audio |
 
 ## Latest Cookbook Release: v0.20.0
 
