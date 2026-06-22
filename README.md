@@ -18,6 +18,7 @@ vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **pu
 | Model       | Category                          | Type                       |
 |-------------|-----------------------------------|----------------------------|
 | Qwen3-Omni  | [omni](omni/qwen3-omni/)          | Omni-modal / any-to-any    |
+| VoxCPM2     | [omni](omni/voxcpm2/)             | Text-to-speech / voice clone |
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
 | Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
 | Qwen-Image-Edit | [diffusion](diffusion/qwen-image-edit/) | Image-to-image editing (DiT) |
