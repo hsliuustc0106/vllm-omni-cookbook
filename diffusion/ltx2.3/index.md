@@ -31,6 +31,9 @@ re-validated.
 | `throughput_qps` | Completed video requests per second | Higher | Endpoint observation; not the active regression assertion |
 | `peak_memory_mb_mean` | Mean peak memory reported by the benchmark | Lower | Memory regression guard |
 
+Note: upstream PRs sometimes call the real-weight validation tier "L4". That is
+a validation level, not NVIDIA L4 hardware.
+
 ---
 
 ## Performance tracks
@@ -38,8 +41,8 @@ re-validated.
 | Track | Hardware | Source |
 |-------|----------|--------|
 | **L2 mock T2V contract** | CPU/mock | [PR #4440](https://github.com/vllm-project/vllm-omni/pull/4440) |
-| **L4 accuracy** | Full model, nightly | [`test_ltx2_3_video_similarity.py`](https://github.com/vllm-project/vllm-omni/blob/main/tests/e2e/accuracy/test_ltx2_3_video_similarity.py) |
-| **L4 serving performance** | v0.23 validation environment | [`test_ltx2_3_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/514ad762faf73fd684c4e551fdf03dc2c7ffbba9/tests/dfx/perf/tests/test_ltx2_3_vllm_omni.json) |
+| **Full-model accuracy** | Real weights, nightly | [`test_ltx2_3_video_similarity.py`](https://github.com/vllm-project/vllm-omni/blob/main/tests/e2e/accuracy/test_ltx2_3_video_similarity.py) |
+| **Full-model serving performance** | v0.23 validation environment | [`test_ltx2_3_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/514ad762faf73fd684c4e551fdf03dc2c7ffbba9/tests/dfx/perf/tests/test_ltx2_3_vllm_omni.json) |
 | **I2V public path** | Functional / docs coverage | [PR #4381](https://github.com/vllm-project/vllm-omni/pull/4381) |
 | **CFG input-prep micro-profile** | CUDA operator micro-profile | [PR #4507](https://github.com/vllm-project/vllm-omni/pull/4507) |
 
@@ -59,7 +62,7 @@ re-validated.
 | Evidence head | [PR #4464](https://github.com/vllm-project/vllm-omni/pull/4464) head `514ad762` |
 
 ```bash
-cd /path/to/vllm-omni
+# Run from the vllm-omni repository root.
 pytest -q -s tests/dfx/perf/scripts/run_diffusion_benchmark.py \
   --test-config-file tests/dfx/perf/tests/test_ltx2_3_vllm_omni.json \
   --assert-baseline
@@ -106,7 +109,7 @@ left for a future even release once matching artifacts exist.
 | Auxiliary module placement | v0.22 window | Keep LTX-2.3 auxiliary modules resident by default; preserve explicit offload semantics | [#4144](https://github.com/vllm-project/vllm-omni/pull/4144) |
 | Offload correctness | v0.22 window | Register the RMSNorm no-affine identity weight as a non-persistent buffer | [#4278](https://github.com/vllm-project/vllm-omni/pull/4278) |
 | L2 guard split | v0.23 window | CPU/mock shape and metadata guard without runner or worker init | [#4440](https://github.com/vllm-project/vllm-omni/pull/4440) |
-| L4 perf guard | v0.23 window | Shape-correct warmup, measured request propagation, stage-metric assertions | [#4464](https://github.com/vllm-project/vllm-omni/pull/4464) |
+| Full-model perf guard | v0.23 window | Shape-correct warmup, measured request propagation, stage-metric assertions | [#4464](https://github.com/vllm-project/vllm-omni/pull/4464) |
 | I2V public path | v0.23 window | First-frame-conditioned I2V path and public docs/examples | [#4381](https://github.com/vllm-project/vllm-omni/pull/4381) |
 | CFG input prep | v0.23 window | Cast video/audio latents before CFG duplication | [#4507](https://github.com/vllm-project/vllm-omni/pull/4507) |
 
@@ -146,4 +149,4 @@ Use the upstream recipe for full deployment options and examples:
 | Release | Date | LTX-2.3 perf highlight |
 |---------|------|------------------------|
 | [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | Tracked model; no even-release retro table yet |
-| v0.23 line | post-v0.22 | L4 T2V perf guard, I2V public path, L2 mock split, CFG input-prep micro-profile |
+| v0.23 line | post-v0.22 | Full-model T2V perf guard, I2V public path, L2 mock split, CFG input-prep micro-profile |
