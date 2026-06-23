@@ -14,11 +14,16 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | VoxCPM2    | omni       | RTF mean (c=8, default / clone, L20X)        | **0.089** / **0.112** | **-69.8%** / **-65.2%**   |
 | WAN2.2     | diffusion  | I2V E2E latency                          | —                     | — (to be measured)        |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro)       | —                     | — (to be measured)        |
+| Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.51 s** | **−1.2%** vs v0.20† |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.23 s** | **−0.8%** vs v0.20† |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.03 s** | **−0.1%** vs v0.20† |
 
 ### Highlights
 
 - **Qwen3-Omni:** Massive TTFP/TTFT recovery from the v0.20 regression. c=1 TTFP **−82%** (1325→241 ms, [#4054](https://github.com/vllm-project/vllm-omni/pull/4054)), TTFT **−86%** (721→101 ms), RTF **−25%** (0.175→0.132), audio throughput **+33%**. Full c=1–32 sweep on 2×H200: see [index](omni/qwen3-omni/index.md#h200-full-sweep--v0220). Measured 2026-06-04 (main ~v0.22.0-pre).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+- **Qwen-Image-Edit:** First cookbook ledger; H200 retro v0.20→v0.22 within ~1% on standardized i2i workloads. See [diffusion/qwen-image-edit/index.md](diffusion/qwen-image-edit/index.md#h200-retro-comparison).
+  - † v0.20 retro runs used checkpoint `Qwen/Qwen-Image-Edit-2509`, while v0.22 used `2511`. See [Qwen-Image-Edit index](diffusion/qwen-image-edit/index.md#h200-retro-comparison) for details.
 
 ---
 
@@ -40,6 +45,9 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 2×H100 CI) | **9.1 s**               | first measured |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | **8.42 s**              | **+3.2%** vs v0.18 H200 |
 | Qwen-Image | diffusion  | T2I E2E (1536² single, 4×H200 retro) | **24.48 s**             | **+2.2%** vs v0.18 H200 |
+| Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.69 s** | first measured |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.68 s** | first measured |
+| Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.05 s** | first measured |
 
 ### Highlights
 
