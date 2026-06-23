@@ -7,7 +7,7 @@
       "model": "zai-org/GLM-Image",
       "serve_args": {
         "enable-diffusion-pipeline-profiler": true,
-        "deploy-config": "/path/to/vllm-omni-cookbook/diffusion/glm-image/v0.20/deploy/glm_image_1gpu_overlap.yaml"
+        "deploy-config": "/path/to/deploy/glm_image_1gpu_overlap.yaml"
       }
     },
     "benchmark_params": {
@@ -22,7 +22,7 @@
       "model": "zai-org/GLM-Image",
       "serve_args": {
         "enable-diffusion-pipeline-profiler": true,
-        "deploy-config": "/path/to/vllm-omni-cookbook/diffusion/glm-image/v0.20/deploy/glm_image_1gpu_overlap_dit_cudagraph.yaml"
+        "deploy-config": "/path/to/deploy/glm_image_1gpu_overlap_dit_cudagraph.yaml"
       }
     },
     "benchmark_params": {
@@ -37,7 +37,7 @@
       "model": "zai-org/GLM-Image",
       "serve_args": {
         "enable-diffusion-pipeline-profiler": true,
-        "deploy-config": "/path/to/vllm-omni-cookbook/diffusion/glm-image/v0.20/deploy/glm_image_2gpu_artp2_sp2_dit_cudagraph.yaml"
+        "deploy-config": "/path/to/deploy/glm_image_2gpu_artp2_sp2_dit_cudagraph.yaml"
       }
     },
     "benchmark_params": {
@@ -52,7 +52,7 @@
       "model": "zai-org/GLM-Image",
       "serve_args": {
         "enable-diffusion-pipeline-profiler": true,
-        "deploy-config": "/path/to/vllm-omni-cookbook/diffusion/glm-image/v0.20/deploy/glm_image_2gpu_tp2_overlap_dit_cudagraph.yaml"
+        "deploy-config": "/path/to/deploy/glm_image_2gpu_tp2_overlap_dit_cudagraph.yaml"
       }
     },
     "benchmark_params": {
@@ -67,7 +67,7 @@
       "model": "zai-org/GLM-Image",
       "serve_args": {
         "enable-diffusion-pipeline-profiler": true,
-        "deploy-config": "/path/to/vllm-omni-cookbook/diffusion/glm-image/v0.20/deploy/glm_image_4gpu_tp4_sp4_overlap_dit_cudagraph.yaml"
+        "deploy-config": "/path/to/deploy/glm_image_4gpu_tp4_sp4_overlap_dit_cudagraph.yaml"
       }
     },
     "benchmark_params": {
@@ -82,7 +82,7 @@
       "model": "zai-org/GLM-Image",
       "serve_args": {
         "enable-diffusion-pipeline-profiler": true,
-        "deploy-config": "/path/to/vllm-omni-cookbook/diffusion/glm-image/v0.20/deploy/glm_image_4gpu_tp4_tp4_overlap_dit_cudagraph.yaml"
+        "deploy-config": "/path/to/deploy/glm_image_4gpu_tp4_tp4_overlap_dit_cudagraph.yaml"
       }
     },
     "benchmark_params": {

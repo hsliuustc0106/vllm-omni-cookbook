@@ -24,7 +24,7 @@ This page tracks the focused GLM-Image cookbook benchmark across vLLM-Omni **v0.
 |-------|-------|-------|
 | Release tag | `v0.20.0` | `v0.22.0` |
 | Checkout SHA | `4a24a517` | `963ba1ab` |
-| Cookbook config links | [`v0.20/test_glm_image_vllm_omni_focused_inline.json`](v0.20/test_glm_image_vllm_omni_focused_inline.json) · [`v0.20/deploy/`](v0.20/deploy/) | [`v0.22/test_glm_image_vllm_omni_focused_inline.json`](v0.22/test_glm_image_vllm_omni_focused_inline.json) |
+| Cookbook config links | [`v0.20/test_glm_image_vllm_omni_focused_inline.json`](v0.20/test_glm_image_vllm_omni_focused_inline.json) | [`v0.22/test_glm_image_vllm_omni_focused_inline.json`](v0.22/test_glm_image_vllm_omni_focused_inline.json) |
 
 ---
 
@@ -50,33 +50,95 @@ Relevant v0.22-cycle GLM-Image work includes the GLM-Image recipe ([#2950](https
 
 ## H800 Retro Comparison
 
-Measured **2026-06-08** on **4x NVIDIA H800**. Delta format is approximate percent first, then `(v0.20 -> v0.22)`.
+Measured **2026-06-08** on **4x NVIDIA H800**. Δ format: approximate percent first , then `(v0.20 -> v0.22)`.
 
 Config naming note: `*_dit_cudagraph` means the DiT/diffusion stage uses `enforce_eager: false`; the paired baseline keeps stage 1 eager. In all focused/retro configs here, stage 0 AR already uses `enforce_eager: false`, so the `_dit_cudagraph` suffix only marks the stage 1 difference.
 
 ### 1024x1024
 
-| Config | GPUs | t2i v0.20 | t2i v0.22 | Delta t2i | i2i v0.20 | i2i v0.22 | Delta i2i |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| `1 GPU overlap (baseline)` | 1 GPU | 28.30 | 28.11 | ~-0.7% (28.30 -> 28.11) | 25.29 | 25.15 | ~-0.6% (25.29 -> 25.15) |
-| `1 GPU overlap + DiT cudagraph` | 1 GPU | 24.99 | 24.87 | ~-0.5% (24.99 -> 24.87) | 21.94 | 21.85 | ~-0.4% (21.94 -> 21.85) |
-| `2 GPU AR TP2 + DiT SP2` | 2 GPU | 18.03 | 18.09 | ~+0.3% (18.03 -> 18.09) | 15.71 | 15.74 | ~+0.1% (15.71 -> 15.74) |
-| `2 GPU AR TP2 + DiT TP2` | 2 GPU | 18.53 | 18.65 | ~+0.7% (18.53 -> 18.65) | 16.23 | 16.32 | ~+0.6% (16.23 -> 16.32) |
-| `4 GPU AR TP4 + DiT SP4` | 4 GPU | 13.82 | 13.89 | ~+0.5% (13.82 -> 13.89) | 11.85 | 11.86 | ~+0.1% (11.85 -> 11.86) |
-| `4 GPU AR TP4 + DiT TP4` | 4 GPU | 15.11 | 15.12 | ~+0.1% (15.11 -> 15.12) | 13.13 | 13.09 | ~-0.4% (13.13 -> 13.09) |
+| Config | t2i v0.20 | t2i v0.22 | Δ t2i | i2i v0.20 | i2i v0.22 | Δ i2i |
+|---|---:|---:|---:|---:|---:|---:|
+| `1 GPU overlap (baseline)` | 28.30 | 28.11 | ~−0.7%<br>(28.30 -> 28.11) | 25.29 | 25.15 | ~−0.6%<br>(25.29 -> 25.15) |
+| `1 GPU overlap + DiT cudagraph` | 24.99 | 24.87 | ~−0.5%<br>(24.99 -> 24.87) | 21.94 | 21.85 | ~−0.4%<br>(21.94 -> 21.85) |
+| `2 GPU AR TP2 + DiT SP2` | 18.03 | 18.09 | ~+0.3%<br>(18.03 -> 18.09) | 15.71 | 15.74 | ~+0.1%<br>(15.71 -> 15.74) |
+| `2 GPU AR TP2 + DiT TP2` | 18.53 | 18.65 | ~+0.7%<br>(18.53 -> 18.65) | 16.23 | 16.32 | ~+0.6%<br>(16.23 -> 16.32) |
+| `4 GPU AR TP4 + DiT SP4` | 13.82 | 13.89 | ~+0.5%<br>(13.82 -> 13.89) | 11.85 | 11.86 | ~+0.1%<br>(11.85 -> 11.86) |
+| `4 GPU AR TP4 + DiT TP4` | 15.11 | 15.12 | ~+0.1%<br>(15.11 -> 15.12) | 13.13 | 13.09 | ~−0.4%<br>(13.13 -> 13.09) |
+
+<details>
+<summary><strong>1024×1024 charts (12)</strong> — v0.20.0 vs v0.22.0 bar charts; lower is better</summary>
+
+<table>
+<tr>
+<td><img src="assets/v0.22.0-1gpu-1024x1024-t2i-1gpu-overlap-baseline-h800.png" width="460" alt="1 GPU overlap baseline 1024 t2i"></td>
+<td><img src="assets/v0.22.0-1gpu-1024x1024-i2i-1gpu-overlap-baseline-h800.png" width="460" alt="1 GPU overlap baseline 1024 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-1gpu-1024x1024-t2i-1gpu-overlap-dit-cudagraph-h800.png" width="460" alt="1 GPU overlap DiT cudagraph 1024 t2i"></td>
+<td><img src="assets/v0.22.0-1gpu-1024x1024-i2i-1gpu-overlap-dit-cudagraph-h800.png" width="460" alt="1 GPU overlap DiT cudagraph 1024 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-2gpu-1024x1024-t2i-2gpu-artp2-sp2-h800.png" width="460" alt="2 GPU AR TP2 DiT SP2 1024 t2i"></td>
+<td><img src="assets/v0.22.0-2gpu-1024x1024-i2i-2gpu-artp2-sp2-h800.png" width="460" alt="2 GPU AR TP2 DiT SP2 1024 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-2gpu-1024x1024-t2i-2gpu-artp2-tp2-h800.png" width="460" alt="2 GPU AR TP2 DiT TP2 1024 t2i"></td>
+<td><img src="assets/v0.22.0-2gpu-1024x1024-i2i-2gpu-artp2-tp2-h800.png" width="460" alt="2 GPU AR TP2 DiT TP2 1024 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-4gpu-1024x1024-t2i-4gpu-tp4-sp4-h800.png" width="460" alt="4 GPU AR TP4 DiT SP4 1024 t2i"></td>
+<td><img src="assets/v0.22.0-4gpu-1024x1024-i2i-4gpu-tp4-sp4-h800.png" width="460" alt="4 GPU AR TP4 DiT SP4 1024 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-4gpu-1024x1024-t2i-4gpu-tp4-tp4-h800.png" width="460" alt="4 GPU AR TP4 DiT TP4 1024 t2i"></td>
+<td><img src="assets/v0.22.0-4gpu-1024x1024-i2i-4gpu-tp4-tp4-h800.png" width="460" alt="4 GPU AR TP4 DiT TP4 1024 i2i"></td>
+</tr>
+</table>
+
+</details>
 
 ### 1472x1088
 
-| Config | GPUs | t2i v0.20 | t2i v0.22 | Delta t2i | i2i v0.20 | i2i v0.22 | Delta i2i |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| `1 GPU overlap (baseline)` | 1 GPU | 41.96 | 41.80 | ~-0.4% (41.96 -> 41.80) | 39.34 | 39.05 | ~-0.7% (39.34 -> 39.05) |
-| `1 GPU overlap + DiT cudagraph` | 1 GPU | 37.08 | 36.97 | ~-0.3% (37.08 -> 36.97) | 34.27 | 34.22 | ~-0.1% (34.27 -> 34.22) |
-| `2 GPU AR TP2 + DiT SP2` | 2 GPU | 26.15 | 26.25 | ~+0.4% (26.15 -> 26.25) | 24.10 | 24.14 | ~+0.1% (24.10 -> 24.14) |
-| `2 GPU AR TP2 + DiT TP2` | 2 GPU | 27.02 | 27.16 | ~+0.5% (27.02 -> 27.16) | 25.00 | 25.05 | ~+0.2% (25.00 -> 25.05) |
-| `4 GPU AR TP4 + DiT SP4` | 4 GPU | 19.62 | 19.57 | ~-0.3% (19.62 -> 19.57) | 17.68 | 17.61 | ~-0.4% (17.68 -> 17.61) |
-| `4 GPU AR TP4 + DiT TP4` | 4 GPU | 21.73 | 21.70 | ~-0.2% (21.73 -> 21.70) | 19.83 | 19.77 | ~-0.3% (19.83 -> 19.77) |
+| Config | t2i v0.20 | t2i v0.22 | Δ t2i | i2i v0.20 | i2i v0.22 | Δ i2i |
+|---|---:|---:|---:|---:|---:|---:|
+| `1 GPU overlap (baseline)` | 41.96 | 41.80 | ~−0.4%<br>(41.96 -> 41.80) | 39.34 | 39.05 | ~−0.7%<br>(39.34 -> 39.05) |
+| `1 GPU overlap + DiT cudagraph` | 37.08 | 36.97 | ~−0.3%<br>(37.08 -> 36.97) | 34.27 | 34.22 | ~−0.1%<br>(34.27 -> 34.22) |
+| `2 GPU AR TP2 + DiT SP2` | 26.15 | 26.25 | ~+0.4%<br>(26.15 -> 26.25) | 24.10 | 24.14 | ~+0.1%<br>(24.10 -> 24.14) |
+| `2 GPU AR TP2 + DiT TP2` | 27.02 | 27.16 | ~+0.5%<br>(27.02 -> 27.16) | 25.00 | 25.05 | ~+0.2%<br>(25.00 -> 25.05) |
+| `4 GPU AR TP4 + DiT SP4` | 19.62 | 19.57 | ~−0.3%<br>(19.62 -> 19.57) | 17.68 | 17.61 | ~−0.4%<br>(17.68 -> 17.61) |
+| `4 GPU AR TP4 + DiT TP4` | 21.73 | 21.70 | ~−0.2%<br>(21.73 -> 21.70) | 19.83 | 19.77 | ~−0.3%<br>(19.83 -> 19.77) |
 
-**Takeaway:** v0.22.0 is at parity with v0.20.0 on this GLM-Image matrix. Every measured delta is within about 1%, and the ranking is unchanged for both t2i and i2i.
+<details>
+<summary><strong>1472×1088 charts (12)</strong> — v0.20.0 vs v0.22.0 bar charts; lower is better</summary>
+
+<table>
+<tr>
+<td><img src="assets/v0.22.0-1gpu-1472x1088-t2i-1gpu-overlap-baseline-h800.png" width="460" alt="1 GPU overlap baseline 1472 t2i"></td>
+<td><img src="assets/v0.22.0-1gpu-1472x1088-i2i-1gpu-overlap-baseline-h800.png" width="460" alt="1 GPU overlap baseline 1472 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-1gpu-1472x1088-t2i-1gpu-overlap-dit-cudagraph-h800.png" width="460" alt="1 GPU overlap DiT cudagraph 1472 t2i"></td>
+<td><img src="assets/v0.22.0-1gpu-1472x1088-i2i-1gpu-overlap-dit-cudagraph-h800.png" width="460" alt="1 GPU overlap DiT cudagraph 1472 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-2gpu-1472x1088-t2i-2gpu-artp2-sp2-h800.png" width="460" alt="2 GPU AR TP2 DiT SP2 1472 t2i"></td>
+<td><img src="assets/v0.22.0-2gpu-1472x1088-i2i-2gpu-artp2-sp2-h800.png" width="460" alt="2 GPU AR TP2 DiT SP2 1472 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-2gpu-1472x1088-t2i-2gpu-artp2-tp2-h800.png" width="460" alt="2 GPU AR TP2 DiT TP2 1472 t2i"></td>
+<td><img src="assets/v0.22.0-2gpu-1472x1088-i2i-2gpu-artp2-tp2-h800.png" width="460" alt="2 GPU AR TP2 DiT TP2 1472 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-4gpu-1472x1088-t2i-4gpu-tp4-sp4-h800.png" width="460" alt="4 GPU AR TP4 DiT SP4 1472 t2i"></td>
+<td><img src="assets/v0.22.0-4gpu-1472x1088-i2i-4gpu-tp4-sp4-h800.png" width="460" alt="4 GPU AR TP4 DiT SP4 1472 i2i"></td>
+</tr>
+<tr>
+<td><img src="assets/v0.22.0-4gpu-1472x1088-t2i-4gpu-tp4-tp4-h800.png" width="460" alt="4 GPU AR TP4 DiT TP4 1472 t2i"></td>
+<td><img src="assets/v0.22.0-4gpu-1472x1088-i2i-4gpu-tp4-tp4-h800.png" width="460" alt="4 GPU AR TP4 DiT TP4 1472 i2i"></td>
+</tr>
+</table>
+
+</details>
 
 Ranking by GPU group:
 
@@ -84,11 +146,17 @@ Ranking by GPU group:
 - 2 GPU: `2gpu_artp2_sp2_dit_cudagraph` beats `2gpu_tp2_overlap_dit_cudagraph`.
 - 4 GPU: `4gpu_tp4_sp4_overlap_dit_cudagraph` beats `4gpu_tp4_tp4_overlap_dit_cudagraph`.
 
+The ranking is exactly the same for both t2i and i2i between v0.20.0 and v0.22.0.
+
+### Remark
+
+No GLM-Image-specific optimization work done in the v0.20.0 → v0.22.0 upgrade.
+
 ---
 
 ## Stage timing snapshot (v0.22 t2i)
 
-These numbers are useful for understanding where the time goes, but they should not replace the E2E latency table above. `stage_0_gen` is the AR stage, and `stage_1_gen` is the DiT/VAE stage. Units are seconds.
+These numbers are useful for understanding where the time goes, but they should not replace the E2E latency table above. `stage_0_gen` is the AR stage; `stage_1_gen` is the DiT denoise window on stage 1; `vae_decode` is measured separately by the diffusion pipeline profiler. **E2E ≈ Stage 0 + Stage 1 + VAE decode** (within ~0.1 s). DiT diffuse is the bulk of Stage 1. Units are seconds.
 
 | Config | Workload | E2E | Stage 0 gen | Stage 1 gen | DiT diffuse | VAE decode |
 |---|---|---:|---:|---:|---:|---:|
@@ -173,11 +241,56 @@ The v0.22 benchmark JSON can use `deploy-config-inline` directly. The focused co
 
 ### v0.20.0
 
-The v0.20 serve CLI does **not** support `deploy-config-inline`, so the v0.20 focused JSON points to external YAML files via `--deploy-config`.
+The v0.20 serve CLI does **not** support `deploy-config-inline`, so each case in the focused JSON points to a local deploy YAML via `--deploy-config`.
 
 - [`v0.20/test_glm_image_vllm_omni_focused_inline.json`](v0.20/test_glm_image_vllm_omni_focused_inline.json)
 - [`v0.20/glm_image_1024_1472x1088_steps50_t2i_i2i.json`](v0.20/glm_image_1024_1472x1088_steps50_t2i_i2i.json)
-- [`v0.20/deploy/`](v0.20/deploy/)
+
+**Bring-your-own YAML (v0.20 only):**
+
+1. Create a local directory (e.g. `~/glm-image-deploy/`).
+2. Save a deploy YAML locally — use the example below, or copy the matching `deploy-config-inline.content` block from [`v0.22/test_glm_image_vllm_omni_focused_inline.json`](v0.22/test_glm_image_vllm_omni_focused_inline.json) (same schema).
+3. Edit [`v0.20/test_glm_image_vllm_omni_focused_inline.json`](v0.20/test_glm_image_vllm_omni_focused_inline.json) and set each `deploy-config` path to your local files (placeholders use `/path/to/deploy/...`).
+
+<details>
+<summary><strong>Example deploy YAML</strong> — 1 GPU overlap + DiT cudagraph (<code>glm_image_1gpu_overlap_dit_cudagraph.yaml</code>)</summary>
+
+```yaml
+async_chunk: false
+stages:
+- stage_id: 0
+  max_num_seqs: 1
+  gpu_memory_utilization: 0.6
+  enforce_eager: false
+  trust_remote_code: true
+  enable_prefix_caching: false
+  max_num_batched_tokens: 32768
+  devices: '0'
+  default_sampling_params:
+    temperature: 0.9
+    top_p: 0.75
+    top_k: 16512
+    stop_token_ids:
+    - 16385
+    max_tokens: 4353
+    seed: 42
+    detokenize: false
+- stage_id: 1
+  max_num_batched_tokens: 32768
+  max_num_seqs: 1
+  enforce_eager: false
+  trust_remote_code: true
+  enable_prefix_caching: false
+  devices: '0'
+  default_sampling_params:
+    seed: 42
+    num_inference_steps: 50
+    guidance_scale: 1.5
+    height: 1024
+    width: 1024
+```
+
+</details>
 
 The same pytest command shape works for both v0.20 and v0.22; use the matching checkout/environment and config files.
 
@@ -283,7 +396,7 @@ vllm-omni serve zai-org/GLM-Image --omni \
 
 | Location | Path | Role |
 |----------|------|------|
-| Cookbook | `diffusion/glm-image/v0.20/` | v0.20 focused benchmark JSON and external YAML deploy configs |
+| Cookbook | `diffusion/glm-image/v0.20/` | v0.20 focused benchmark JSON; local deploy YAML required (see example) |
 | Cookbook | `diffusion/glm-image/v0.22/` | v0.22 focused benchmark JSON using inline deploy configs |
 | Cookbook | `diffusion/glm-image/v0.22/test_glm_image_vllm_omni_focused_inline.json` | Nightly CI candidate copy for the focused GLM-Image perf matrix (TODO: push upstream and raise PR) |
 | vLLM-Omni | `tests/e2e/online_serving/test_glm_image_expansion.py` | L4 feature e2e test for online t2i/i2i serving across baseline, Cache-DiT, TP, HSDP, and SP |
