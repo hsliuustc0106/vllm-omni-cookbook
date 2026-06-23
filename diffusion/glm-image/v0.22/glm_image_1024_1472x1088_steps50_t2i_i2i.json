@@ -1,0 +1,104 @@
+[
+  {
+    "name": "1024x1024_t2i_steps50",
+    "dataset": "random",
+    "task": "t2i",
+    "width": 1024,
+    "height": 1024,
+    "num-inference-steps": 50,
+    "num-prompts": 1,
+    "max-concurrency": 1,
+    "seed": 42,
+    "random-request-config": [
+      {
+        "width": 1024,
+        "height": 1024,
+        "num_inference_steps": 50,
+        "weight": 1
+      }
+    ],
+    "skip-performance-assertion": true,
+    "baseline": {
+      "throughput_qps": 0,
+      "latency_mean": 999999,
+      "peak_memory_mb_mean": 999999
+    }
+  },
+  {
+    "name": "1024x1024_i2i_steps50",
+    "dataset": "random",
+    "task": "i2i",
+    "width": 1024,
+    "height": 1024,
+    "num-inference-steps": 50,
+    "num-prompts": 1,
+    "max-concurrency": 1,
+    "num-input-images": 1,
+    "seed": 42,
+    "random-request-config": [
+      {
+        "width": 1024,
+        "height": 1024,
+        "num_inference_steps": 50,
+        "weight": 1
+      }
+    ],
+    "skip-performance-assertion": true,
+    "baseline": {
+      "throughput_qps": 0,
+      "latency_mean": 999999,
+      "peak_memory_mb_mean": 999999
+    }
+  },
+  {
+    "name": "1472x1088_t2i_steps50",
+    "dataset": "random",
+    "task": "t2i",
+    "width": 1472,
+    "height": 1088,
+    "num-inference-steps": 50,
+    "num-prompts": 1,
+    "max-concurrency": 1,
+    "seed": 42,
+    "random-request-config": [
+      {
+        "width": 1472,
+        "height": 1088,
+        "num_inference_steps": 50,
+        "weight": 1
+      }
+    ],
+    "skip-performance-assertion": true,
+    "baseline": {
+      "throughput_qps": 0,
+      "latency_mean": 999999,
+      "peak_memory_mb_mean": 999999
+    }
+  },
+  {
+    "name": "1472x1088_i2i_steps50",
+    "dataset": "random",
+    "task": "i2i",
+    "width": 1472,
+    "height": 1088,
+    "num-inference-steps": 50,
+    "num-prompts": 1,
+    "max-concurrency": 1,
+    "num-input-images": 1,
+    "seed": 42,
+    "random-request-config": [
+      {
+        "width": 1472,
+        "height": 1088,
+        "num_inference_steps": 50,
+        "weight": 1
+      }
+    ],
+    "skip-performance-assertion": true,
+    "baseline": {
+      "throughput_qps": 0,
+      "latency_mean": 999999,
+      "peak_memory_mb_mean": 999999
+    }
+  }
+]

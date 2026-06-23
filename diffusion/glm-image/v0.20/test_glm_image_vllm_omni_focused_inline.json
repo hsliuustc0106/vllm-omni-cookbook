@@ -1,0 +1,92 @@
+[
+  {
+    "test_name": "glm_image_1gpu_overlap",
+    "description": "1 GPU baseline: Stage 0 AR and Stage 1 DiT share GPU0.",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "deploy-config": "/path/to/deploy/glm_image_1gpu_overlap.yaml"
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i.json"
+    }
+  },
+  {
+    "test_name": "glm_image_1gpu_overlap_dit_cudagraph",
+    "description": "1 GPU: Stage 0 AR and Stage 1 DiT share GPU0; DiT CUDA graph enabled.",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "deploy-config": "/path/to/deploy/glm_image_1gpu_overlap_dit_cudagraph.yaml"
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i.json"
+    }
+  },
+  {
+    "test_name": "glm_image_2gpu_artp2_sp2_dit_cudagraph",
+    "description": "2 GPUs: Stage 0 AR TP2 and Stage 1 DiT SP2 share GPUs 0-1; DiT CUDA graph enabled.",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "deploy-config": "/path/to/deploy/glm_image_2gpu_artp2_sp2_dit_cudagraph.yaml"
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i.json"
+    }
+  },
+  {
+    "test_name": "glm_image_2gpu_tp2_overlap_dit_cudagraph",
+    "description": "2 GPUs: Stage 0 TP2 and Stage 1 DiT TP2 share GPUs 0-1; DiT CUDA graph enabled.",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "deploy-config": "/path/to/deploy/glm_image_2gpu_tp2_overlap_dit_cudagraph.yaml"
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_tp4_sp4_overlap_dit_cudagraph",
+    "description": "4 GPUs: Stage 0 TP4 and Stage 1 DiT SP4 share GPUs 0-3; DiT CUDA graph enabled.",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "deploy-config": "/path/to/deploy/glm_image_4gpu_tp4_sp4_overlap_dit_cudagraph.yaml"
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_tp4_tp4_overlap_dit_cudagraph",
+    "description": "4 GPUs: Stage 0 TP4 and Stage 1 DiT TP4 share GPUs 0-3; DiT CUDA graph enabled.",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "deploy-config": "/path/to/deploy/glm_image_4gpu_tp4_tp4_overlap_dit_cudagraph.yaml"
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i.json"
+    }
+  }
+]
