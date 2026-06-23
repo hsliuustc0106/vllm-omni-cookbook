@@ -1,0 +1,4 @@
+vllm==0.22.0
+vllm_omni==0.22.0rc2.dev27+g40b295918
+torch==2.11.0+cu130
+transformers==5.8.1
