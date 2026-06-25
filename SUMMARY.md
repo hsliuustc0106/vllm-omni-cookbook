@@ -17,13 +17,16 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.51 s** | **−1.2%** vs v0.20† |
 | Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.23 s** | **−0.8%** vs v0.20† |
 | Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.03 s** | **−0.1%** vs v0.20† |
+| Qwen-Image-Layered (`963ba1a`) | diffusion | I2I layered E2E (640² single, 4×H200 retro) | **14.47 s** | **−1.6%** vs v0.20 |
+| Qwen-Image-Layered (`963ba1a`) | diffusion | I2I layered E2E (1024² single, 4×H200 retro) | **24.74 s** | **−1.5%** vs v0.20 |
+| Qwen-Image-Layered (`963ba1a`) | diffusion | I2I layered E2E (1024² CacheDiT+Ulysses2, 4×H200 retro) | **6.62 s** | **−2.4%** vs v0.20 |
 
 ### Highlights
 
 - **Qwen3-Omni:** Massive TTFP/TTFT recovery from the v0.20 regression. c=1 TTFP **−82%** (1325→241 ms, [#4054](https://github.com/vllm-project/vllm-omni/pull/4054)), TTFT **−86%** (721→101 ms), RTF **−25%** (0.175→0.132), audio throughput **+33%**. Full c=1–32 sweep on 2×H200: see [index](omni/qwen3-omni/index.md#h200-full-sweep--v0220). Measured 2026-06-04 (main ~v0.22.0-pre).
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
-- **Qwen-Image-Edit:** First cookbook ledger; H200 retro v0.20→v0.22 within ~1% on standardized i2i workloads. See [diffusion/qwen-image-edit/index.md](diffusion/qwen-image-edit/index.md#h200-retro-comparison).
-  - † v0.20 retro runs used checkpoint `Qwen/Qwen-Image-Edit-2509`, while v0.22 used `2511`. See [Qwen-Image-Edit index](diffusion/qwen-image-edit/index.md#h200-retro-comparison) for details.
+- **Qwen-Image-Edit:** First cookbook ledger; H200 retro v0.20→v0.22 within ~1% on standardized i2i workloads. † v0.20 retro runs used checkpoint `Qwen/Qwen-Image-Edit-2509`, while v0.22 used `2511`. See [diffusion/qwen-image-edit/index.md](diffusion/qwen-image-edit/index.md#h200-retro-comparison).
+- **Qwen-Image-Layered:** First cookbook ledger; H200 retro v0.20→v0.22 improves the measured layered i2i workloads by roughly 1.5–2.4%. See [diffusion/qwen-image-layered/index.md](diffusion/qwen-image-layered/index.md#h200-retro-comparison).
 
 ---
 
@@ -48,11 +51,16 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.69 s** | first measured |
 | Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.68 s** | first measured |
 | Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.05 s** | first measured |
+| Qwen-Image-Layered | diffusion | I2I layered E2E (640² single, 4×H200 retro) | **14.71 s** | first measured |
+| Qwen-Image-Layered | diffusion | I2I layered E2E (1024² single, 4×H200 retro) | **25.11 s** | first measured |
+| Qwen-Image-Layered | diffusion | I2I layered E2E (1024² CacheDiT+Ulysses2, 4×H200 retro) | **6.78 s** | first measured |
 
 ### Highlights
 
 - **Qwen3-Omni:** First H200 retro (v0.18 / v0.20) on 2500/900 async-chunk workload. See [index](omni/qwen3-omni/index.md).
 - **Qwen-Image:** First retro T2I comparison (v0.18 / v0.20) on 4× H200; roughly at parity (~2–9% delta). See [index](diffusion/qwen-image/index.md).
+- **Qwen-Image-Edit:** First H200 retro baseline for i2i editing on 4× H200. See [index](diffusion/qwen-image-edit/index.md).
+- **Qwen-Image-Layered:** First H200 retro baseline for layered i2i decomposition on single-device and CacheDiT+Ulysses2 workloads. See [index](diffusion/qwen-image-layered/index.md).
 - **WAN2.2:** First cookbook release with GPU perf baselines; fused DiT kernels (GPU + NPU), pipeline refactor, nightly I2V CI ([#3063](https://github.com/vllm-project/vllm-omni/pull/3063)).
 - **v0.18.0 → v0.20.0 (4× H200):** [−5.9% / −18.9% / −15.5%](diffusion/wan2.2/index.md#h200-retro-comparison) on standardized I2V workloads.
 
