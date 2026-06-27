@@ -19,6 +19,7 @@ This cookbook **does not fork** upstream benchmark JSON. When comparing releases
 |-------|----------|--------|
 | **Standardized I2V (CI)** | 2× H100 80GB (nightly) | [`test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json) |
 | **v0.16 / v0.18 / v0.20 retro** | 4× H200 (measured) | [Table below](#h200-retro-comparison) |
+| **v0.22 spot check** | H200 (measured) | [Table below](#h200-v022-standard-json-spot-check) |
 | **T2V serving dashboard** | A100-SXM4-80GB | [`wan_2_2_serving_performance.md`](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md) |
 | **NPU** | 8× Ascend A2 / A3 | [I2V recipe (NPU)](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md#npu) |
 
@@ -71,6 +72,27 @@ Retro runners: `benchmark_results/wan22_retro/v0.{16,18,20}.0/run_benchmark.sh` 
 
 ---
 
+## H200 v0.22 standard JSON spot check
+
+Measured **2026-06-08** on **NVIDIA H200** with `vllm==0.22.0` and the standardized
+`test_wan22_i2v_vllm_omni.json` config. Metric: **`latency_mean`** (seconds, lower is better).
+
+| Config | Workload | v0.20.0 H200 retro | v0.22.0 spot check | Δ v0.20→v0.22 |
+|--------|----------|--------------------|--------------------|---------------|
+| Single device | 832×480, 81f, 4 steps | **22.17** | **20.46** | −7.7% |
+| USP2 + HSDP + slicing | 832×480, 81f, 4 steps | **16.43** | **16.52** | +0.5% |
+| USP2 + HSDP + slicing | 1280×720, 121f, 4 steps | **79.19** | **80.20** | +1.3% |
+
+Additional v0.22 metrics: throughput **0.0489 / 0.0605 / 0.0125 qps**; peak memory mean
+**76360 / 48135 / 56952 MB**. The run completed **10/10** requests for the three measured workloads
+(with 3 passed and 1 skipped in the test suite). Shutdown emitted diffusion-worker/orchestrator cleanup errors after the
+benchmark results were appended; no request failures were observed.
+
+Note: this spot check uses the standardized perf JSON path. The parallel server selected runtime
+devices for the USP2 stack rather than reproducing every historical retro-run detail.
+
+---
+
 ## Optimization guide (summary)
 
 End-to-end path: **API → text encode → preprocess → VAE encode → DiT (4 steps) → VAE decode → video**.
@@ -82,6 +104,7 @@ End-to-end path: **API → text encode → preprocess → VAE encode → DiT (4 
 | Preprocess / VAE | v0.20 | Dedup, BF16, GPU overlap | #2963, #2852, #2391 |
 | DiT kernels | v0.20 | Fused norms, RoPE, FA fix | #2583, #2585, #2393, #2459, #3327 |
 | Runtime + CI | v0.20 | vLLM 0.20 rebase, perf JSON | #3232, #3063 |
+| Spot-check status | v0.22 | No clear H200 regression in standard JSON path | 2026-06-08 result above |
 
 Narrative walkthrough (中文): [Zhihu draft](wan22-i2v-performance-zhihu.md).
 
@@ -91,7 +114,7 @@ Narrative walkthrough (中文): [Zhihu draft](wan22-i2v-performance-zhihu.md).
 
 | Release | Date | I2V perf highlight |
 |---------|------|-------------------|
-| [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | Pipeline parallel #2322, FP8 #2920 |
+| [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | H200 standard JSON spot check **20.46 / 16.52 / 80.20 s**; no clear regression vs v0.20 H200 retro |
 | [v0.20.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.20.0) | 2026-05-07 | Fused DiT + CI JSON; H200 **22.17 / 16.43 / 79.19 s** |
 | [v0.18.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.18.0) | 2026-03-28 | IPC −17.5% (other workload); H200 **23.56 / 20.26 / 93.67 s** |
 | [v0.16.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.16.0) | 2026-02-28 | `/v1/videos` API; H200 retro **31.33 / 22.20 / 133.94 s** |
