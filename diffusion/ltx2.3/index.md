@@ -11,9 +11,10 @@
 **Perf JSON:** [`test_ltx2_3_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/514ad762faf73fd684c4e551fdf03dc2c7ffbba9/tests/dfx/perf/tests/test_ltx2_3_vllm_omni.json) ([PR #4464](https://github.com/vllm-project/vllm-omni/pull/4464))
 
 LTX-2.3 is tracked here as a newly onboarded video diffusion model. Current
-public evidence is a v0.23-line maintenance snapshot rather than an even-release
-retro table, so the tables below are deliberately labeled as watchlist evidence
-until v0.24.0 or another even-release comparison is measured.
+public evidence combines a v0.23-line maintenance snapshot with v0.24-line
+regression triage from the PR discussion, rather than a formal release-to-release
+retro table. The tables below are deliberately labeled as watchlist evidence
+until matching even-release comparison artifacts are available.
 
 Checkpoint note: use `dg845/LTX-2.3-Diffusers` as the runnable Diffusers-layout
 model id in cookbook commands. Treat upstream `Lightricks/LTX-2.3` as a
@@ -45,6 +46,7 @@ a validation level, not NVIDIA L4 hardware.
 | **Full-model serving performance** | v0.23 validation environment | [`test_ltx2_3_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/514ad762faf73fd684c4e551fdf03dc2c7ffbba9/tests/dfx/perf/tests/test_ltx2_3_vllm_omni.json) |
 | **I2V public path** | Functional / docs coverage | [PR #4381](https://github.com/vllm-project/vllm-omni/pull/4381) |
 | **CFG input-prep micro-profile** | CUDA operator micro-profile | [PR #4507](https://github.com/vllm-project/vllm-omni/pull/4507) |
+| **v0.24 RMSNorm regression triage** | Discussion / PR-head validation | [PR #4956](https://github.com/vllm-project/vllm-omni/pull/4956), [cookbook PR note](https://github.com/hsliuustc0106/vllm-omni-cookbook/pull/12#issuecomment-4912471061) |
 
 ---
 
@@ -94,6 +96,67 @@ and result-fetch overhead.
 
 ---
 
+## v0.24 watchlist evidence
+
+This section records the PR discussion snapshot for the v0.24-line LTX-2.3
+regression investigation. It is not a formal cookbook release row because the
+numbers were posted as triage evidence, not as a completed even-release retro
+with a full artifact bundle.
+
+Discussion-level e2e / QPS comparison:
+
+| Version / mode | e2e latency | QPS | Source |
+|----------------|------------:|----:|--------|
+| v0.23.0 eager | 6014.2 ms | 0.1663 | [comment](https://github.com/hsliuustc0106/vllm-omni-cookbook/pull/12#issuecomment-4902299472) |
+| v0.23.0 torch.compile | 4010 ms | 0.2493 | [comment](https://github.com/hsliuustc0106/vllm-omni-cookbook/pull/12#issuecomment-4902299472) |
+| v0.24.0 eager | 6712.5 ms | 0.1489 | [comment](https://github.com/hsliuustc0106/vllm-omni-cookbook/pull/12#issuecomment-4902299472) |
+| v0.24.0 torch.compile | 6014.09 ms | 0.16627 | [comment](https://github.com/hsliuustc0106/vllm-omni-cookbook/pull/12#issuecomment-4902299472) |
+
+RMSNorm was identified as the main v0.24 compile-path regression source. v0.23
+started LTX-2.3 with `vllm_c,native` RMSNorm priority, while v0.24 selected the
+native path by default. [PR #4956](https://github.com/vllm-project/vllm-omni/pull/4956)
+adds an LTX-2.3-specific override for `rms_norm` and `fused_add_rms_norm`.
+
+| Scenario | `stage_durations_mean.stage_0_gen_ms` | Interpretation |
+|----------|--------------------------------------:|----------------|
+| v0.23.0 compile | 4215.94 ms | Reference compile-path result |
+| v0.24.0 original compile | 4710.10 ms | Regressed under native RMSNorm default |
+| v0.24.0 compile with `vllm_c,native` | 4169.64 ms | Compile path recovers with the LTX override |
+| v0.23.0 eager | 5014.2 ms | Reference eager result in PR #4956 |
+| v0.24.0 original eager | 6712.5 ms | Eager path still regressed |
+| v0.24.0 eager with `vllm_c,native` | 5406.66 ms | Improved but not fully recovered |
+
+The block-level profile in the PR discussion showed the eight RMSNorm calls in
+one LTX-2.3 block adding about 9.5 ms in v0.24; across 48 blocks that accounts
+for roughly 450 ms of compile-path regression.
+
+| Block-24 RMSNorm item | v0.23 | v0.24 | Delta |
+|-----------------------|------:|------:|------:|
+| `norm1` | 0.840 ms | 2.257 ms | +1.416 ms |
+| `norm2` | 1.303 ms | 2.562 ms | +1.259 ms |
+| `norm3` | 1.170 ms | 2.514 ms | +1.344 ms |
+| `audio_norm1` | 1.166 ms | 2.279 ms | +1.113 ms |
+| `audio_norm2` | 1.113 ms | 2.218 ms | +1.105 ms |
+| `audio_norm3` | 1.045 ms | 2.073 ms | +1.028 ms |
+| `audio_to_video_norm` | 1.114 ms | 2.417 ms | +1.304 ms |
+| `video_to_audio_norm` | 0.692 ms | 1.619 ms | +0.927 ms |
+
+Related PR status:
+
+| PR | Status | LTX-2.3 relevance |
+|----|--------|-------------------|
+| [#4079](https://github.com/vllm-project/vllm-omni/pull/4079) | merged | Related diffusion request-level batching change; A/B check in the discussion did not identify it as the regression source |
+| [#4739](https://github.com/vllm-project/vllm-omni/pull/4739) | merged | LTX-2.3 I2V support and shared T2V/I2V refactor; A/B check in the discussion did not identify it as the regression source |
+| [#4956](https://github.com/vllm-project/vllm-omni/pull/4956) | open | Restores the torch.compile path by forcing LTX-2.3 RMSNorm IR ops to prefer `vllm_c`; eager remains a watch item |
+| [#4507](https://github.com/vllm-project/vllm-omni/pull/4507) | open | Incremental CFG input-prep optimization; still tracked separately from the v0.24 RMSNorm regression |
+
+SGLang 0.5.14 was also posted as an external comparison point in the PR
+discussion: 14025 ms / 0.0712 QPS with warmup, and 19486 ms without warmup.
+Because the comment does not restate the full workload, hardware, or commit
+metadata, treat it as discussion context rather than a cookbook baseline.
+
+---
+
 ## v0.22.0 status
 
 No even-release LTX-2.3 retro table has been published yet. The model is listed
@@ -111,7 +174,10 @@ left for a future even release once matching artifacts exist.
 | L2 guard split | v0.23 window | CPU/mock shape and metadata guard without runner or worker init | [#4440](https://github.com/vllm-project/vllm-omni/pull/4440) |
 | Full-model perf guard | v0.23 window | Shape-correct warmup, measured request propagation, stage-metric assertions | [#4464](https://github.com/vllm-project/vllm-omni/pull/4464) |
 | I2V public path | v0.23 window | First-frame-conditioned I2V path and public docs/examples | [#4381](https://github.com/vllm-project/vllm-omni/pull/4381) |
-| CFG input prep | v0.23 window | Cast video/audio latents before CFG duplication | [#4507](https://github.com/vllm-project/vllm-omni/pull/4507) |
+| Request-level batching check | v0.24 window | Related diffusion batching change; not identified as the LTX-2.3 regression source in A/B discussion | [#4079](https://github.com/vllm-project/vllm-omni/pull/4079) |
+| I2V shared-pipeline refactor | v0.24 window | Adds LTX-2.3 I2V support and shared T2V/I2V stages; not identified as the regression source in A/B discussion | [#4739](https://github.com/vllm-project/vllm-omni/pull/4739) |
+| RMSNorm priority override | v0.24 window | Restores compile-path performance by preferring `vllm_c` for LTX-2.3 RMSNorm IR ops; eager still needs follow-up | [#4956](https://github.com/vllm-project/vllm-omni/pull/4956) |
+| CFG input prep | v0.24 window | Cast video/audio latents before CFG duplication; incremental optimization still tracked separately | [#4507](https://github.com/vllm-project/vllm-omni/pull/4507) |
 
 ### CFG input-prep micro-profile
 
@@ -150,3 +216,4 @@ Use the upstream recipe for full deployment options and examples:
 |---------|------|------------------------|
 | [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | Tracked model; no even-release retro table yet |
 | v0.23 line | post-v0.22 | Full-model T2V perf guard, I2V public path, L2 mock split, CFG input-prep micro-profile |
+| v0.24 line | current watchlist | RMSNorm priority regression triage; compile-path fix in [#4956](https://github.com/vllm-project/vllm-omni/pull/4956), eager still under analysis |
