@@ -2,7 +2,7 @@
 
 **Release-by-release performance summary** for models running on [vLLM-Omni](https://github.com/vllm-project/vllm-omni). For each tracked model, the cookbook records **what improved, by how much, and why** at every **even** stable release — measured numbers plus links to the PRs and optimizations behind them.
 
-**Update cadence:** the cookbook is updated only on **even** vLLM-Omni minor releases — v0.14.0, v0.16.0, v0.18.0, v0.20.0, v0.22.0, … Odd minors (v0.19, v0.21, …) are skipped. Deltas always compare to the **previous even** release (e.g. v0.22 vs v0.20).
+**Update cadence:** the cookbook is updated only on **even** vLLM-Omni minor releases — v0.14.0, v0.16.0, v0.18.0, v0.20.0, v0.22.0, v0.24.0, … Odd minors (v0.19, v0.21, …) are skipped. Deltas always compare to the **previous even** release (e.g. v0.24 vs v0.22).
 
 ## How it is organized
 
@@ -20,12 +20,14 @@ vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **pu
 | Qwen3-Omni  | [omni](omni/qwen3-omni/)          | Omni-modal / any-to-any    |
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
 | Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
+| Cosmos3     | [diffusion](diffusion/cosmos3/)   | World-model image/video generation |
 
-## Latest Cookbook Release: v0.20.0
+## Latest Cookbook Release: v0.24.0
 
-See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.22.0). Next cookbook update: **v0.22.0**.
+See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.24.0). Next cookbook update: **v0.26.0**.
 
-**WAN2.2** — [index](diffusion/wan2.2/index.md) · [Zhihu draft](diffusion/wan2.2/wan22-i2v-performance-zhihu.md).
+- **WAN2.2** — [index](diffusion/wan2.2/index.md) · [Zhihu draft](diffusion/wan2.2/wan22-i2v-performance-zhihu.md).
+- **Cosmos3** — [index](diffusion/cosmos3/index.md).
 
 ## Metrics
 

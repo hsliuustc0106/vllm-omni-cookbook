@@ -20,6 +20,7 @@ This cookbook **does not fork** upstream benchmark JSON. When comparing releases
 | **Standardized I2V (CI)** | 2× H100 80GB (nightly) | [`test_wan22_i2v_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_wan22_i2v_vllm_omni.json) |
 | **v0.16 / v0.18 / v0.20 retro** | 4× H200 (measured) | [Table below](#h200-retro-comparison) |
 | **v0.22 spot check** | H200 (measured) | [Table below](#h200-v022-standard-json-spot-check) |
+| **v0.24 local validation** | H200 local run | [Table below](#h200-v024-local-validation) |
 | **T2V serving dashboard** | A100-SXM4-80GB | [`wan_2_2_serving_performance.md`](https://github.com/vllm-project/vllm-omni/blob/main/benchmarks/diffusion/performance_dashboard/wan_2_2_serving_performance.md) |
 | **NPU** | 8× Ascend A2 / A3 | [I2V recipe (NPU)](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Wan-AI/Wan2.2-I2V.md#npu) |
 
@@ -93,6 +94,41 @@ devices for the USP2 stack rather than reproducing every historical retro-run de
 
 ---
 
+## H200 v0.24 local validation
+
+Measured **2026-07-10** with `vllm==0.24.0`, a local Wan2.2 I2V snapshot, and the standardized
+`test_wan22_i2v_vllm_omni.json` config. Metric: **`latency_mean`** (seconds, lower is better).
+
+| Config | Workload | Completed | v0.22 spot check | v0.24 local run | Status |
+|--------|----------|-----------|------------------|-----------------|--------|
+| Single device | 832×480, 81f, 4 steps | 10/10 | **20.46** | **82.13** | anomalous, rerun required |
+| USP2 + HSDP + VAE-pp2 + slicing | 832×480, 81f, 4 steps | 10/10 | **16.52** | **48.55** | anomalous, rerun required |
+| USP2 + HSDP + VAE-pp2 + slicing | 1280×720, 121f, 4 steps | 10/10 | **80.20** | **309.53** | anomalous, rerun required |
+
+Additional v0.24 metrics: throughput **0.0122 / 0.0206 / 0.00323 qps**; peak memory mean
+**76396 / 48004 / 55417 MB**.
+
+This run is recorded as a **local validation sample**, not a confirmed regression baseline. The result commit is
+`9fe26cfa`, while the runtime uses a local editable `vllm-omni` checkout with `vllm==0.24.0`; rerun with a matched
+release checkout/runtime before publishing a release-over-release delta. The run completed without request failures,
+but the latency is far slower than v0.22 and previous H200 measurements. The slowdown is concentrated in
+`Wan22I2VPipeline.diffuse`, not the HTTP path or VAE path:
+
+| Workload | `diffuse` mean | `vae.encode` mean | `vae.decode` mean |
+|----------|----------------|-------------------|-------------------|
+| 832×480 single | 72.50 s | 2.86 s | 4.71 s |
+| 832×480 USP2 stack | 37.64 s | 2.91 s | 4.73 s |
+| 1280×720 USP2 stack | 278.59 s | 9.47 s | 15.42 s |
+
+Before using these numbers as release conclusions, re-check GPU isolation, clocks / power state, competing load, attention backend, and the exact vLLM-Omni / vLLM package pairing.
+
+Artifacts:
+
+- `vllm-omni/tests/dfx/perf/results/wan22_v024/diffusion_result_test_wan22_i2v_vllm_omni_20260710-073751.json`
+- logs under `vllm-omni/tests/dfx/perf/results/wan22_v024/logs/`
+
+---
+
 ## Optimization guide (summary)
 
 End-to-end path: **API → text encode → preprocess → VAE encode → DiT (4 steps) → VAE decode → video**.
@@ -105,6 +141,7 @@ End-to-end path: **API → text encode → preprocess → VAE encode → DiT (4 
 | DiT kernels | v0.20 | Fused norms, RoPE, FA fix | #2583, #2585, #2393, #2459, #3327 |
 | Runtime + CI | v0.20 | vLLM 0.20 rebase, perf JSON | #3232, #3063 |
 | Spot-check status | v0.22 | No clear H200 regression in standard JSON path | 2026-06-08 result above |
+| Local validation | v0.24 | Standard JSON completed but latency requires investigation | 2026-07-10 result above |
 
 Narrative walkthrough (中文): [Zhihu draft](wan22-i2v-performance-zhihu.md).
 
@@ -114,7 +151,8 @@ Narrative walkthrough (中文): [Zhihu draft](wan22-i2v-performance-zhihu.md).
 
 | Release | Date | I2V perf highlight |
 |---------|------|-------------------|
-| [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | upcoming | H200 standard JSON spot check **20.46 / 16.52 / 80.20 s**; no clear regression vs v0.20 H200 retro |
+| [v0.24.0](https://github.com/vllm-project/vllm-omni/releases) | 2026-07 local validation | Standard JSON completed **82.13 / 48.55 / 309.53 s**; anomalous local result, needs rerun before release comparison |
+| [v0.22.0](https://github.com/vllm-project/vllm-omni/releases) | 2026-06 spot check | H200 standard JSON spot check **20.46 / 16.52 / 80.20 s**; no clear regression vs v0.20 H200 retro |
 | [v0.20.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.20.0) | 2026-05-07 | Fused DiT + CI JSON; H200 **22.17 / 16.43 / 79.19 s** |
 | [v0.18.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.18.0) | 2026-03-28 | IPC −17.5% (other workload); H200 **23.56 / 20.26 / 93.67 s** |
 | [v0.16.0](https://github.com/vllm-project/vllm-omni/releases/tag/v0.16.0) | 2026-02-28 | `/v1/videos` API; H200 retro **31.33 / 22.20 / 133.94 s** |

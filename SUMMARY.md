@@ -1,20 +1,39 @@
 # vLLM-Omni Performance Summary
 
-Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v0.20, v0.22, …). Odd minors are not cookbook releases. Each row is a snapshot at that even release; full history lives in each model's `index.md`.
+Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v0.20, v0.22, v0.24, …). Odd minors are not cookbook releases. Each row is a snapshot at that even release; full history lives in each model's `index.md`.
 
 ---
 
-## v0.22.0 (upcoming)
+## v0.24.0 (2026-07-10 local validation)
+
+| Model      | Category   | Key Metric | Value | Status / Delta |
+|------------|------------|------------|-------|---------------------|
+| Cosmos3    | diffusion  | T2I E2E (1024², 50 steps, CFG2+HSDP2+VAE-pp2, 2×H200) | **7.61 s** | first measured |
+| Cosmos3    | diffusion  | T2V / I2V / V2V E2E (720p, 189f, 35 steps, 2×H200) | **482.98 / 483.00 / 483.38 s** | first measured |
+| WAN2.2     | diffusion  | I2V E2E (832×480 single, local H200 run) | **82.13 s** | anomalous local result; rerun required before release comparison |
+| WAN2.2     | diffusion  | I2V E2E (832×480 / 720p USP2+HSDP+VAE-pp2) | **48.55 / 309.53 s** | anomalous local result; rerun required before release comparison |
+| Qwen3-Omni | omni       | —          | —     | —                   |
+| Qwen-Image | diffusion  | —          | —     | —                   |
+
+### Highlights
+
+- **Cosmos3:** First cookbook entry and first standardized local perf sweep for T2I, T2V, I2V, and V2V official-demo workloads. See [diffusion/cosmos3/index.md](diffusion/cosmos3/index.md).
+- **WAN2.2:** Standard JSON completed with 0 request failures, but latency is much slower than v0.22 / earlier H200 measurements. The gap is concentrated in `Wan22I2VPipeline.diffuse`, so treat this as an anomalous local validation sample pending rerun. See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md#h200-v024-local-validation).
+
+---
+
+## v0.22.0 (2026-06 spot check)
 
 | Model      | Category   | Key Metric | Value | Delta from v0.20.0 |
 |------------|------------|------------|-------|---------------------|
 | Qwen3-Omni | omni       | —          | —     | —                   |
-| WAN2.2     | diffusion  | I2V E2E latency | — | — (to be measured) |
+| WAN2.2     | diffusion  | I2V E2E (832×480 single, H200 spot check) | **20.46 s** | −7.7% vs v0.20 H200 retro |
+| WAN2.2     | diffusion  | I2V E2E (832×480 / 720p USP2+HSDP+VAE-pp2) | **16.52 / 80.20 s** | +0.5% / +1.3% vs v0.20 |
 | Qwen-Image | diffusion  | T2I E2E (1536² USP2, 4×H200 retro) | — | — (to be measured) |
 
 ### Highlights
 
-- **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
+- **WAN2.2:** H200 standard JSON spot check showed no clear regression vs v0.20; pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md#h200-v022-standard-json-spot-check).
 
 ---
 

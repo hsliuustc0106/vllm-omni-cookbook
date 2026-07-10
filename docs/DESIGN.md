@@ -1,6 +1,6 @@
 # Performance Cookbook — Design
 
-**Purpose:** Per-model performance improvement summary at each **even** vLLM-Omni stable release (v0.14, v0.16, v0.18, v0.20, v0.22, …). Odd minors are skipped.
+**Purpose:** Per-model performance improvement summary at each **even** vLLM-Omni stable release (v0.14, v0.16, v0.18, v0.20, v0.22, v0.24, …). Odd minors are skipped.
 
 ## Structure
 
@@ -33,10 +33,11 @@ One `## vX.Y.Z` block per even release: headline metric row per tracked model + 
 - Benchmark JSON and retro harnesses (vLLM-Omni `tests/dfx/perf/`, `benchmark_results/`)
 - Odd-minor release sections
 
-## Tracked models (v0.20 cookbook)
+## Tracked models (v0.24 cookbook)
 
 | Model | Path |
 |-------|------|
 | Qwen3-Omni | `omni/qwen3-omni/` |
 | WAN2.2 | `diffusion/wan2.2/` |
 | Qwen-Image | `diffusion/qwen-image/` |
+| Cosmos3 | `diffusion/cosmos3/` |
