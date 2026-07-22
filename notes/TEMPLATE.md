@@ -1,40 +1,52 @@
-# vLLM-Omni Update Note — YYYY-MM-DD
+<!--
+知乎发布建议
 
-> Coverage: YYYY-MM-DD to YYYY-MM-DD
-> Scope: Brief description of the sources or areas reviewed.
+标题：用问题、冲突或结果作标题，避免“更新汇总”和“RFC 解读”式命名
+话题：#vLLM #大模型推理 #多模态生成
+-->
 
-## Highlights
+# {中文标题：问题、变化或结论}
 
-- Concise summary of the changes that matter most.
+- **关注对象：** RFC / PR / feature 链接
+- **当前状态：** Proposal / In progress / Merged / Released
+- **关注时间：** YYYY-MM-DD 至 YYYY-MM-DD
+- **适用场景：** 模型、部署方式或用户场景
 
-## Feature Updates
+---
 
-| Area | Update | Status | Why It Matters | Source |
-|------|--------|--------|----------------|--------|
-| | | | | |
+## 写在前面
 
-## RFCs and Design Discussions
+先写痛点、反直觉现象或关键结果，再补背景。适当使用“我沿着代码路径发现……”的专家
+分享视角，并告诉读者本文要回答哪两到四个问题。不要从 PR 列表或状态表开始。
 
-| Topic | Status | Key Decision or Open Question | Source |
-|-------|--------|-------------------------------|--------|
-| | | | |
+## 一、问题是什么
 
-## Important PRs
+解释当前架构、限制和用户可感知的影响。优先引用短代码片段；流程用移动端可读的一行箭头
+表达，复杂架构图在发布前渲染成图片。
 
-| PR | Status | Summary | Impact | Source |
-|----|--------|---------|--------|--------|
-| | | | | |
+## 二、方案如何工作
 
-## Performance Implications
+按数据流或请求生命周期解释核心设计。优先写“为什么这样设计”，不要逐段翻译 RFC。
 
-- Note measured results, expected effects, or explicitly state when performance has
-  not yet been measured.
+## 三、关键取舍
 
-## Watchlist
+对比主要方案，说明哪些结论已经确定、哪些仍在讨论，以及选择会影响哪些组件。
 
-- Follow-up, risk, unresolved decision, or upcoming work to monitor.
+## 四、为什么值得关注
 
-## Sources
+把技术变化连接到延迟、吞吐、资源利用率、可靠性或开发维护成本。没有测量数据时，明确
+写成预期影响，不要把推断写成已经实现的收益。
 
-- Link to the release note, RFC, PR, issue, benchmark result, or discussion for each
-  claim not already linked above.
+## 五、仍待回答的问题
+
+列出真正影响落地的风险、验证计划和后续 PR。避免泛泛的“持续关注”。
+
+## 六、总结
+
+用两到四段话收束文章：核心判断是什么、读者应该记住什么、下一次更新要看哪些证据。
+
+## 参考资料
+
+- RFC、PR、issue discussion、设计文档和 benchmark 的直接链接。
+
+每个主要章节用一句 **加粗结论** 收束，让快速浏览的读者也能抓住全文主线。
