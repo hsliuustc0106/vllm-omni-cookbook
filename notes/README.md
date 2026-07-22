@@ -14,11 +14,14 @@ period in the article metadata.
 2. Copy [`TEMPLATE.md`](TEMPLATE.md) to `YYYY-MM-DD.md`.
 3. Start from the problem and explain the architecture, tradeoffs, and impact in
    Chinese prose. Use tables only when they make a comparison clearer.
-4. Separate confirmed facts, open proposals, inferences, and measured results.
-5. Link every RFC, PR, benchmark, or discussion used as evidence.
-6. Add the new note to the list below, newest first.
+4. Prefer short code evidence and one-line flows that remain readable on mobile;
+   render complex architecture diagrams as images before publishing.
+5. Give each major section one bold takeaway for readers who skim.
+6. Separate confirmed facts, open proposals, inferences, and measured results.
+7. Link every RFC, PR, benchmark, or discussion used as evidence.
+8. Add the new note to the list below, newest first.
 
 ## Notes
 
-- [2026-07-22](2026-07-22.md) — KV Cache 为什么还在反复全量搬运？vLLM-Omni
-  多阶段传输 RFC 解读。
+- [2026-07-22](2026-07-22.md) — vLLM 的 P/D 解耦已经很省了，为什么多模态的
+  KV 还在反复搬？
