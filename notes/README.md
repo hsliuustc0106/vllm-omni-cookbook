@@ -17,4 +17,4 @@ period in its `Coverage` field.
 
 ## Notes
 
-No update notes have been published yet.
+- [2026-07-22](2026-07-22.md) — Multi-stage KV-cache transfer manager RFC.
