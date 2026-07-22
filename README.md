@@ -10,8 +10,10 @@
 |-------|------|------|
 | **Per model** | `{category}/{model}/index.md` | Full improvement history — one `## vX.Y.Z` section per **even** release (metrics, delta vs prior even release, optimization notes) |
 | **Per release** | `SUMMARY.md` | Cross-model snapshot for each **even** release only |
+| **Update notes** | [`notes/`](notes/) | Chronological feature, RFC, and PR updates with no fixed cadence |
 
-vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **published summary** of performance evolution only.
+vLLM-Omni owns deployment recipes and benchmark harnesses; this repo publishes the
+performance history and the related update notes.
 
 ## Models Tracked
 
@@ -28,6 +30,13 @@ vLLM-Omni owns deployment recipes and benchmark harnesses; this repo is the **pu
 See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.22.0). Next cookbook update: **v0.22.0**.
 
 **WAN2.2** — [index](diffusion/wan2.2/index.md) · [Zhihu draft](diffusion/wan2.2/wan22-i2v-performance-zhihu.md).
+
+## Update Notes
+
+[Update notes](notes/) cover recent features, important RFCs and design discussions,
+notable PRs, performance implications, and follow-up items. They are published when
+useful rather than on a daily or weekly schedule; each note records its own coverage
+period. Use [the template](notes/TEMPLATE.md) for new entries.
 
 ## Metrics
 
