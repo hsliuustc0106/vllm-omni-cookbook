@@ -69,7 +69,7 @@ CFG-parallel hang was fixed in v0.24 ([#3956](https://github.com/vllm-project/vl
 
 ## H800 Retro Comparison (v0.22 → v0.24, n=10)
 
-Measured on **4x NVIDIA H800**. Δ format: percent then `(v0.22 -> v0.24)`. Blank v0.22 cells mean that config was not run on v0.22 (CFG-parallel) or the n=10 refresh is still filling in.
+Measured on **4x NVIDIA H800**. Δ format: percent then `(v0.22 -> v0.24)`. v0.22 CFG-parallel cells are marked *broken* (not runnable on v0.22).
 
 Config naming: `*_dit_cudagraph` ⇒ stage 1 `enforce_eager: false`. Stage 0 AR is already non-eager in all focused configs.
 
