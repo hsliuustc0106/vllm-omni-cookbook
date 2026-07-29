@@ -51,9 +51,9 @@ Protocol: the same as [`tests/dfx/perf/tests/test_qwen_image_edit_2511_vllm_omni
 
 | Config | Workload | Δ v0.20→v0.22 | Δ v0.22→v0.24 |
 |--------|----------|---------------|---------------|
-| Single device | 512×512, 20 steps, 2 img | -1.2% | 0.0% |
-| Single device | 1536×1536, 35 steps, 2 img | -0.8% | −0.3% |
-| Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps, 2 img | -0.1% | +0.6% |
+| Single device | 512×512, 20 steps, 2 img | −1.2% | 0.0% |
+| Single device | 1536×1536, 35 steps, 2 img | −0.8% | −0.3% |
+| Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps, 2 img | −0.1% | +0.6% |
 
 † **v0.20.0** retro runs used checkpoint **`Qwen/Qwen-Image-Edit-2509`**, not **2511** — early deltas compare different model weights on the same standardized workloads. But since they use the same pipeline and only differ in weights, the comparison is meaningful.
 
