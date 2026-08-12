@@ -43,11 +43,11 @@ Measured on **4× NVIDIA H200**. Metric: **`latency_mean`** (seconds, lower is b
 
 Protocol: the same as [`tests/dfx/perf/tests/test_qwen_image_edit_2511_vllm_omni.json`](https://github.com/vllm-project/vllm-omni/blob/main/tests/dfx/perf/tests/test_qwen_image_edit_2511_vllm_omni.json) — **`warmup-requests=1`** (first request excluded from measurement), then **`num-prompts=10`** measured prompts per workload (`512×512` / `1536×1536`, **2 input images**, negative prompt enabled).
 
-| Config | Workload | v0.20.0† | v0.22.0 (`ee336015`) | v0.24.0 (`dda88a6f`) |
+| Config | Workload | v0.20.0† | v0.22.0 (`ee336015` 2026-06-01) | v0.24.0 (`dda88a6f` 2026-07-13) |
 |--------|----------|----------|----------------------|---------------------|
-| Single device | 512×512, 20 steps, 2 img | 14.69 | 14.51 | **14.51** |
-| Single device | 1536×1536, 35 steps, 2 img | 57.68 | 57.23 | **57.05** |
-| Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps, 2 img | 19.05 | 19.03 | **19.14** |
+| Single device | 512×512, 20 steps, 2 img | 14.69 | 14.51 | 14.51 |
+| Single device | 1536×1536, 35 steps, 2 img | 57.68 | 57.23 | 57.05 |
+| Ulysses2 + CFG2 + VAE-pp4 | 1536×1536, 35 steps, 2 img | 19.05 | 19.03 | 19.14 |
 
 | Config | Workload | Δ v0.20→v0.22 | Δ v0.22→v0.24 |
 |--------|----------|---------------|---------------|
@@ -81,8 +81,8 @@ Diffusion pipeline profiler at the same **2511** inputs as the retro benchmark (
 | same | 2 | 63.04 | 36.96 |
 | same | 3 | 64.60 | 35.40 |
 
-| Version              | Single device | Ulysses2 + CFG2 + VAE-pp4 |
-|----------------------|---------------|---------------------------|
+| Version | MFU (%) — Single device | MFU (%) — Ulysses2 + CFG2 + VAE-pp4 |
+|--------|--------------------------|-------------------------------------|
 | v0.22.0 (`ee336015`) | 18.3 | 17.3 |
 | v0.24.0 (`dda88a6f`) | 18.3 | 17.4 |
 
