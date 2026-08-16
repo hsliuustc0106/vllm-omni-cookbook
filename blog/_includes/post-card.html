@@ -7,6 +7,10 @@
   <div class="post-card-media">
     <img src="{{ include.post.image | relative_url }}" alt="" loading="lazy" decoding="async">
   </div>
+  {%- else -%}
+  <div class="post-card-media post-card-cover-fallback">
+    {%- include feature-cover.html post=include.post -%}
+  </div>
   {%- endif -%}
   <div class="post-card-body">
     <div class="post-card-meta">

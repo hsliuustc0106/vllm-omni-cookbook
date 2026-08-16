@@ -1,0 +1,78 @@
+{%- comment -%}
+  Generated cover figure for posts without an `image:` a distinct SVG mark,
+  accent color and label per feature category (site.features). Theme-aware:
+  fills use the site's --minima-* CSS variables. Expects `post`.
+{%- endcomment -%}
+{%- assign f_slug = include.post.feature | default: "other" -%}
+{%- assign f_label = nil -%}
+{%- assign f_color = "#64748b" -%}
+{%- for f in site.features -%}
+  {%- if f.slug == f_slug -%}
+    {%- assign f_label = f.label -%}
+    {%- assign f_color = f.color -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if f_label == nil -%}
+  {%- assign f_label = include.post.tags.first | default: "vLLM-Omni" -%}
+{%- endif -%}
+{%- assign f_kicker = include.post.category | default: "PR Analysis" | upcase -%}
+<svg class="cover-svg" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <rect width="640" height="360" style="fill: color-mix(in srgb, {{ f_color }} 13%, var(--minima-background-color));"></rect>
+  <circle cx="576" cy="16" r="190" style="fill: color-mix(in srgb, {{ f_color }} 10%, transparent);"></circle>
+  <circle cx="52" cy="352" r="150" style="fill: color-mix(in srgb, {{ f_color }} 8%, transparent);"></circle>
+  <g stroke="{{ f_color }}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92">
+    {%- case f_slug -%}
+    {%- when "quantization" -%}
+    <rect x="272" y="86" width="34" height="34" rx="7" fill="{{ f_color }}"></rect>
+    <rect x="334" y="86" width="34" height="34" rx="7"></rect>
+    <rect x="272" y="148" width="34" height="34" rx="7"></rect>
+    <rect x="334" y="148" width="34" height="34" rx="7" fill="{{ f_color }}"></rect>
+    {%- when "offloader" -%}
+    <line x1="258" y1="84" x2="382" y2="84"></line>
+    <line x1="276" y1="112" x2="364" y2="112"></line>
+    <line x1="294" y1="140" x2="346" y2="140"></line>
+    <line x1="320" y1="162" x2="320" y2="212"></line>
+    <polyline points="296,190 320,214 344,190"></polyline>
+    {%- when "async_chunk" -%}
+    <rect x="248" y="96" width="70" height="42" rx="10"></rect>
+    <rect x="286" y="150" width="70" height="42" rx="10" fill="{{ f_color }}"></rect>
+    <rect x="324" y="204" width="70" height="42" rx="10"></rect>
+    {%- when "disaggregated_inference" -%}
+    <rect x="236" y="106" width="72" height="96" rx="12"></rect>
+    <rect x="332" y="106" width="72" height="96" rx="12" fill="{{ f_color }}"></rect>
+    <line x1="312" y1="142" x2="328" y2="142"></line>
+    <line x1="312" y1="166" x2="328" y2="166"></line>
+    {%- when "realtime_ar_diffusion" -%}
+    <polyline points="230,150 262,150 278,104 300,196 318,128 338,172 356,150 410,150"></polyline>
+    <line x1="230" y1="196" x2="410" y2="196" stroke-dasharray="2 16"></line>
+    {%- when "parallelism" -%}
+    <line x1="284" y1="92" x2="284" y2="210"></line>
+    <line x1="320" y1="76" x2="320" y2="226"></line>
+    <line x1="356" y1="92" x2="356" y2="210"></line>
+    {%- when "continuous_batching" -%}
+    <rect x="248" y="100" width="90" height="56" rx="12"></rect>
+    <rect x="302" y="146" width="90" height="56" rx="12" fill="{{ f_color }}"></rect>
+    {%- when "caching" -%}
+    <polygon points="336,84 288,160 320,160 304,224 352,144 320,144"></polygon>
+    {%- when "connectors" -%}
+    <circle cx="272" cy="154" r="30"></circle>
+    <circle cx="368" cy="154" r="30" fill="{{ f_color }}"></circle>
+    <line x1="302" y1="154" x2="338" y2="154"></line>
+    {%- when "kernels" -%}
+    <rect x="284" y="102" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
+    <rect x="308" y="102" width="24" height="24" rx="5"></rect>
+    <rect x="332" y="102" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
+    <rect x="284" y="126" width="24" height="24" rx="5"></rect>
+    <rect x="308" y="126" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
+    <rect x="332" y="126" width="24" height="24" rx="5"></rect>
+    <rect x="284" y="150" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
+    <rect x="308" y="150" width="24" height="24" rx="5"></rect>
+    <rect x="332" y="150" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
+    {%- else -%}
+    <circle cx="320" cy="146" r="46"></circle>
+    <circle cx="320" cy="146" r="14" fill="{{ f_color }}"></circle>
+    {%- endcase -%}
+  </g>
+  <text x="320" y="282" text-anchor="middle" font-size="36" font-weight="700" style="fill: var(--minima-text-color);" font-family="system-ui, -apple-system, sans-serif">{{ f_label }}</text>
+  <text x="320" y="314" text-anchor="middle" font-size="14" letter-spacing="4" style="fill: var(--minima-table-text-color);" font-family="system-ui, -apple-system, sans-serif">{{ f_kicker }}</text>
+</svg>
