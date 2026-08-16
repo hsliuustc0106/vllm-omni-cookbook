@@ -11,9 +11,24 @@ $card-radius: 12px;
 
 /* --- base ---------------------------------------------------------------- */
 
+/* Wide canvas (vllm.ai-like) instead of minima's ~50em column; article text
+   keeps a readable measure via the centered .post/.page rules below. */
+.wrapper {
+  max-width: 72rem;
+}
+
 /* Transparent figures shouldn't glow on dark backgrounds (as on vllm.ai). */
 img {
   background-color: var(--minima-background-color);
+}
+
+/* Reading measure for prose pages (posts, about, 404) inside the wide canvas. */
+main .wrapper > article.post,
+main .wrapper > article.page,
+main .wrapper > div.page {
+  max-width: 46rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* --- header --------------------------------------------------------------- */
@@ -93,6 +108,53 @@ img {
 .icon-sun { display: none; }
 [data-theme-effective="dark"] .icon-moon { display: none; }
 [data-theme-effective="dark"] .icon-sun { display: block; }
+
+/* --- tags grid ---------------------------------------------------------------- */
+
+.tags-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.tag-card {
+  border: 1px solid $card-border;
+  border-radius: $card-radius;
+  padding: 1.1rem 1.25rem;
+  transition: border-color 0.15s ease;
+
+  &:hover { border-color: $accent; }
+
+  /* keep anchor jumps below the sticky header */
+  scroll-margin-top: 5rem;
+}
+
+.tag-card-title {
+  font-size: 1.05rem;
+  margin: 0 0 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  a { color: var(--minima-text-color); }
+  a:hover { color: $accent; }
+}
+
+.tag-post-list {
+  list-style: none;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+
+  li {
+    display: flex;
+    flex-direction: column;
+    a { color: $accent; font-size: 0.92rem; }
+    time { color: $muted; font-size: 0.78rem; }
+  }
+}
 
 /* --- feature sidebar -------------------------------------------------------- */
 

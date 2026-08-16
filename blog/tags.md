@@ -3,8 +3,6 @@ layout: page
 title: Tags
 ---
 
-{%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
-
 All post tags, most used first.
 
 {%- comment -%}Liquid cannot sort a hash by value directly; map to "count|tag" strings.{%- endcomment -%}
@@ -15,13 +13,22 @@ All post tags, most used first.
 {%- endfor -%}
 {%- assign tag_pairs = tag_pairs | sort | reverse -%}
 
+<div class="tags-grid">
 {%- for pair in tag_pairs -%}
 {%- assign count = pair | split: "|" | first | plus: 0 -%}
 {%- assign tag = pair | split: "|" | last -%}
-## <a id="{{ tag | slugify }}" href="#{{ tag | slugify }}">#{{ tag }}</a> <span class="tag-count">{{ count }}</span>
-
-{%- for post in site.tags[tag] %}
-- [{{ post.title | escape }}]({{ post.url | relative_url }}) — {{ post.date | date: date_format }}
-{%- endfor %}
-
+  <section class="tag-card" id="{{ tag | slugify }}">
+    <h2 class="tag-card-title"><a href="#{{ tag | slugify }}">#{{ tag }}</a>
+      <span class="sidebar-count">{{ count }}</span>
+    </h2>
+    <ul class="tag-post-list">
+      {%- for post in site.tags[tag] -%}
+      <li>
+        <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+        <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%b %-d, %Y" }}</time>
+      </li>
+      {%- endfor -%}
+    </ul>
+  </section>
 {%- endfor -%}
+</div>
