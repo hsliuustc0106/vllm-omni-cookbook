@@ -28,6 +28,7 @@ Each `{category}/{model}/index.md` is the model's full improvement timeline. `SU
 | First-time model in the cookbook | [cookbook-add-model](../cookbook-add-model/SKILL.md) |
 | New even stable release (v0.22.0, …) | [cookbook-add-release](../cookbook-add-release/SKILL.md) |
 | Optional Zhihu draft | [cookbook-write-narrative](../cookbook-write-narrative/SKILL.md) |
+| Deep-dive post for an important PR/feature | [cookbook-blog-post](../cookbook-blog-post/SKILL.md) |
 
 ## Category → metrics
 
@@ -41,6 +42,7 @@ Each `{category}/{model}/index.md` is the model's full improvement timeline. `SU
 ```
 vllm-omni-cookbook/
 ├── SUMMARY.md                 # per-release cross-model snapshot
+├── blog/                      # self-contained Jekyll site (PR-analysis posts)
 ├── omni/{model}/index.md
 └── diffusion/{model}/
     ├── index.md               # slim reference ledger

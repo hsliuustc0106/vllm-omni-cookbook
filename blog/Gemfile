@@ -1,0 +1,10 @@
+source "https://rubygems.org"
+
+# Pins local builds to the same gem versions the GitHub Pages Actions build uses
+# (.github/workflows/blog-pages.yml), so local preview matches production.
+# Requires Ruby >= 3 (e.g. `brew install ruby`).
+gem "github-pages", group: :jekyll_plugins
+
+# Local preview:
+#   cd blog && bundle install && bundle exec jekyll serve
+# Site is served at http://127.0.0.1:4000/vllm-omni-cookbook/

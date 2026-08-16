@@ -10,6 +10,7 @@
 |-------|------|------|
 | **Per model** | `{category}/{model}/index.md` | Full improvement history — one `## vX.Y.Z` section per **even** release (metrics, delta vs prior even release, optimization notes) |
 | **Per release** | `SUMMARY.md` | Cross-model snapshot for each **even** release only |
+| **Per PR** | [`blog/`](blog/) | "PR Analysis" deep-dive posts — one per important PR/feature, published as a [blog](https://hsliuustc0106.github.io/vllm-omni-cookbook/) |
 | **Update notes** | [`notes/`](notes/) | Chronological feature, RFC, and PR updates with no fixed cadence |
 
 vLLM-Omni owns deployment recipes and benchmark harnesses; this repo publishes the
@@ -30,6 +31,20 @@ performance history and the related update notes.
 See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.22.0). Next cookbook update: **v0.22.0**.
 
 **WAN2.2** — [index](diffusion/wan2.2/index.md) · [Zhihu draft](diffusion/wan2.2/wan22-i2v-performance-zhihu.md).
+
+## Blog — PR Analysis
+
+Whenever an important PR, feature, or model lands in vLLM-Omni, [`blog/`](blog/)
+gets a deep-dive post explaining it for users: the problem, the design, the key
+code changes, and the measured impact (numbers always cited from this cookbook).
+The blog is a self-contained Jekyll site — same stack as
+[vllm.ai/blog](https://vllm.ai/blog) — deployed to
+[GitHub Pages](https://hsliuustc0106.github.io/vllm-omni-cookbook/) on every
+push that touches `blog/`. Posts have no fixed cadence; start from
+[`blog/TEMPLATE.md`](blog/TEMPLATE.md).
+
+Local preview (needs Ruby ≥ 3, e.g. `brew install ruby`):
+`cd blog && bundle install && bundle exec jekyll serve`
 
 ## Update Notes
 
@@ -74,3 +89,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and agent skills in [.cursor/skills/](.cu
 
 - [vLLM-Omni](https://github.com/vllm-project/vllm-omni) — source repository
 - [vLLM-Omni Docs](https://docs.vllm.ai/projects/vllm-omni/en/latest/)
+- [Blog](https://hsliuustc0106.github.io/vllm-omni-cookbook/) — PR Analysis deep dives

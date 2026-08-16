@@ -1,0 +1,42 @@
+# vLLM-Omni Blog — self-contained Jekyll site.
+#
+# Mirrors the stack of https://github.com/vllm-project/vllm-project.github.io
+# (vllm.ai/blog): Jekyll + Minima remote theme (pinned to the same commit),
+# GitHub-Pages-allowlisted plugins only. Kept in its own directory so the whole
+# blog/ tree can move to a dedicated repo later without restructuring.
+
+title: vLLM-Omni Blog
+description: >-
+  Deep dives into important vLLM-Omni PRs, features, and model support —
+  what changed, how it works, and the measured impact.
+
+url: "https://hsliuustc0106.github.io"
+baseurl: "/vllm-omni-cookbook"
+
+remote_theme: jekyll/minima@5ce4006d175e6e5278bb63a0aad1a85e3bf2370b
+
+minima:
+  skin: auto
+
+header_pages:
+  - about.md
+
+# Show posts regardless of their front-matter date (same as vllm.ai).
+future: true
+
+# vllm.ai-style post URLs: /2026-08-16-my-post/ (categories stay out of the path).
+permalink: /:year-:month-:day-:title/
+
+# Keep the template and local dev files out of the published site.
+exclude:
+  - TEMPLATE.md
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-gfm-admonitions
+  - jekyll-redirect-from
+
+# Set when the site goes live.
+# google_analytics: G-XXXXXXXXXX
