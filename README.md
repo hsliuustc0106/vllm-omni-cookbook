@@ -1,6 +1,6 @@
 # vLLM-Omni Blog
 
-**Deep dives into important [vLLM-Omni](https://github.com/vllm-project/vllm-omni) PRs, features, and new model support** — what changed, how it works, and the measured impact.
+**Feature blog and performance tracing for [vLLM-Omni](https://github.com/vllm-project/vllm-omni)** — deep dives into important PRs, features, and new model support, plus tracing-driven analysis of where inference time goes and what each change costs or saves.
 
 Read it live at **[hsliuustc0106.github.io/vllm-omni-cookbook](https://hsliuustc0106.github.io/vllm-omni-cookbook/)**.
 
@@ -9,7 +9,7 @@ Whenever an important PR, feature, or model is finalized, it gets a **PR Analysi
 Local preview (needs Ruby ≥ 3, e.g. `brew install ruby`):
 `cd blog && bundle install && bundle exec jekyll serve`
 
-Behind the posts, this repo maintains the **vLLM-Omni performance cookbook** — the authoritative numbers the blog cites. For each tracked model it records **what improved, by how much, and why** at every **even** stable release, measured and linked to the PRs behind each change.
+Behind the posts, this repo maintains the **vLLM-Omni performance cookbook** — the two things every post is built on: **feature analysis** (what a PR does and how it works) and **performance tracing** (the measured numbers and where they come from). For each tracked model it records **what improved, by how much, and why** at every **even** stable release, measured and linked to the PRs behind each change.
 
 **Cookbook cadence:** updated only on **even** vLLM-Omni minor releases — v0.14.0, v0.16.0, v0.18.0, v0.20.0, v0.22.0, … Odd minors (v0.19, v0.21, …) are skipped. Deltas always compare to the **previous even** release (e.g. v0.22 vs v0.20).
 
@@ -24,7 +24,7 @@ Behind the posts, this repo maintains the **vLLM-Omni performance cookbook** —
 | **Update notes** | [`notes/`](notes/) | Chronological feature, RFC, and PR updates with no fixed cadence |
 
 vLLM-Omni owns deployment recipes and benchmark harnesses; this repo publishes the
-blog, the performance history, and the related update notes.
+feature blog, the performance-tracing history, and the related update notes.
 
 ## Models Tracked
 
