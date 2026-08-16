@@ -1,0 +1,16 @@
+{%- comment -%}
+  Loaded by minima's default layout at the end of <head>.
+  MathJax is pulled in only on pages that set `math: true` in front matter
+  (same behavior as vllm.ai/blog posts).
+{%- endcomment -%}
+{%- if page.math -%}
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{%- endif -%}
