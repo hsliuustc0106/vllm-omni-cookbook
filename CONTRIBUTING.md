@@ -17,11 +17,12 @@ Cursor and compatible agents can load project skills from `.cursor/skills/`:
 | [cookbook-add-model](.cursor/skills/cookbook-add-model/SKILL.md) | First ledger for a new model |
 | [cookbook-add-release](.cursor/skills/cookbook-add-release/SKILL.md) | New even release (`v0.22.0`) section + `SUMMARY.md` |
 | [cookbook-write-narrative](.cursor/skills/cookbook-write-narrative/SKILL.md) | Optional Zhihu draft |
-| [cookbook-blog-post](.cursor/skills/cookbook-blog-post/SKILL.md) | PR-analysis deep-dive post on the blog |
+| [cookbook-blog-post](.cursor/skills/cookbook-blog-post/SKILL.md) | PR-analysis deep-dive post from a PR/issue number |
 
 Templates: [.cursor/skills/vllm-omni-cookbook/references/templates.md](.cursor/skills/vllm-omni-cookbook/references/templates.md)
 
-Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
+Claude Code users: see [.claude/skills/](.claude/skills/) — a full repo-scoped
+skill for blog posts (`blog-post.md`) and condensed stubs for the rest.
 
 ## Getting started
 

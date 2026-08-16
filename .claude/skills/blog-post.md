@@ -1,13 +1,62 @@
-# Write PR-analysis blog post (Claude Code stub)
+# Write a PR-analysis blog post from a PR or issue
 
-Load the full skill: `.cursor/skills/cookbook-blog-post/SKILL.md`
+Repo-scoped skill: given a vLLM-Omni PR number (and optionally an issue number),
+produce a published blog post. Invoke like: *create a blog post for PR 4054*.
 
-Quick path (when an important vllm-omni PR/feature/model is finalized):
+## Inputs
 
-1. Copy `blog/TEMPLATE.md` → `blog/_posts/YYYY-MM-DD-<slug>.md`
-2. Structure: TL;DR → Background → What the PR does → Key changes → Measured impact → How to use → Limitations → References
-3. Metrics only from cookbook ledgers or upstream perf JSON; link cookbook with absolute GitHub URLs
-4. Figures: `blog/assets/figures/<slug>/`; raw HTML diagrams OK anywhere
-5. Preview: `cd blog && bundle exec jekyll serve` → http://127.0.0.1:4000/vllm-omni-cookbook/
+- **PR number** (required) — from `vllm-project/vllm-omni`. Skip to Step 2.
+- **Issue number only** (RFC / design discussion, no merged PR yet) — write a
+  *design explainer* instead: same structure, but say explicitly in the TL;DR
+  that it is a proposal, not shipped, and mark status in every impact claim.
 
-Dummy example: `blog/_posts/2026-08-16-pr-analysis-template.md`
+## Step 1 — Gather (read-only `gh`)
+
+```bash
+gh pr view <N> --repo vllm-project/vllm-omni \
+  --json number,title,author,body,mergedAt,files,labels,reviews,comments
+gh pr diff <N> --repo vllm-project/vllm-omni | head -400   # key files first
+# issue context (given or auto-linked):
+gh pr view <N> --repo vllm-project/vllm-omni --json closingIssuesReferences
+gh issue view <I> --repo vllm-project/vllm-omni --json title,body,comments
+# cookbook numbers + existing diagrams:
+grep -rn "<N>" omni/ diffusion/ SUMMARY.md
+ls docs/visualizations/ | grep "<N>"
+```
+
+## Step 2 — Map to the post skeleton
+
+Copy `blog/TEMPLATE.md` → `blog/_posts/$(date +%F)-pr<N>-<short-slug>.md`, then:
+
+| Source | Post section |
+|--------|--------------|
+| Issue body / PR problem statement | **Background** (symptom first, then cause) |
+| PR description + review discussion | **What the PR does** (surface design decisions that reviewers debated) |
+| `gh pr diff` (biggest files) | **Key changes** (short excerpts + GitHub file links) |
+| Cookbook grep hits (`index.md`, `SUMMARY.md`) | **Measured impact** (cite with absolute GitHub URLs) |
+| PR body usage example / recipes | **How to use it** |
+| Open follow-up issues, review TODOs | **Limitations & follow-ups** |
+
+Title: `Understanding PR #N — <feature>`. Tags: `[<model>, <area>]`. `summary`
+front matter ≤ 240 chars. **Never invent metrics** — if the cookbook has no
+numbers for it, write the design story and say performance is not yet measured.
+
+## Step 3 — Figures
+
+- If `docs/visualizations/pr-<N>-*` exists: copy the best assets into
+  `blog/assets/figures/<slug>/` and embed with
+  `![caption]({{ site.baseurl }}/assets/figures/<slug>/fig1.png)`.
+- Otherwise a small inline SVG (raw HTML passes through Markdown) beats prose.
+
+## Step 4 — Verify and publish
+
+```bash
+cd blog && bundle exec jekyll serve   # or: JEKYLL_NO_BUNDLER_REQUIRE=1 jekyll build
+```
+
+Checklist before the PR: template placeholders removed; every metric cited;
+cookbook links absolute; `summary` ≤ 240 chars; placeholders like the
+`[TEMPLATE]` dummy post deleted if this is the first real post. Push a branch,
+open the PR — merging to `main` auto-deploys to GitHub Pages.
+
+Full long-form skill (Cursor): `.cursor/skills/cookbook-blog-post/SKILL.md`
