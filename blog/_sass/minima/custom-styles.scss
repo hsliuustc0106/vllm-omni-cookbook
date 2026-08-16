@@ -94,6 +94,91 @@ img {
 [data-theme-effective="dark"] .icon-moon { display: none; }
 [data-theme-effective="dark"] .icon-sun { display: block; }
 
+/* --- feature sidebar -------------------------------------------------------- */
+
+.home-layout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.feature-sidebar {
+  position: sticky;
+  top: 4.5rem;
+}
+
+.sidebar-heading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $muted;
+  margin: 0 0 0.6rem 0.5rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.92rem;
+  color: $muted;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover { color: var(--minima-text-color); background: var(--minima-code-background-color); }
+
+  &.active {
+    color: var(--minima-text-color);
+    font-weight: 600;
+    background: var(--minima-code-background-color);
+  }
+}
+
+.sidebar-count {
+  font-size: 0.75rem;
+  color: $muted;
+  border: 1px solid var(--minima-border-color-01);
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  min-width: 1.4rem;
+  text-align: center;
+}
+
+.sidebar-note {
+  font-size: 0.75rem;
+  color: $muted;
+  margin: 0.9rem 0 0 0.5rem;
+  line-height: 1.4;
+
+  a { color: $accent; }
+}
+
+.filter-empty {
+  color: $muted;
+  padding: 1rem 0;
+}
+
+.feature-pill {
+  color: $accent;
+  border-color: var(--minima-link-base-color);
+
+  &:hover { color: var(--minima-text-color); }
+}
+
 /* --- hero ----------------------------------------------------------------- */
 
 .hero {
@@ -394,6 +479,19 @@ img {
   .site-nav .trigger { gap: 0.75rem; }
   .page-link { font-size: 0.85rem; }
   .page-link[href*="docs.vllm.ai"] { display: none; } /* Docs link too wide on phones */
+
+  /* Sidebar becomes a horizontal chip rail above the cards. */
+  .home-layout { display: block; }
+  .feature-sidebar { position: static; }
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+  .sidebar-item { width: auto; padding: 0.25rem 0.7rem; font-size: 0.85rem; }
+  .sidebar-count { display: none; }
+  .sidebar-note { display: none; }
 
   .post-card { flex-direction: column; }
   .post-card-media { flex: none; height: 160px; }

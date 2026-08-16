@@ -10,6 +10,7 @@ summary: >-
   Proposal — not merged.
 tags: [MiniMax-H3, quantization]
 category: PR Analysis
+feature: quantization
 math: true
 ---
 

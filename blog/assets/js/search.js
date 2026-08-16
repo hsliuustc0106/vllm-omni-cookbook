@@ -86,7 +86,7 @@
 
   function score(post, q) {
     var title = post.title.toLowerCase();
-    var tags = post.tags.join(" ").toLowerCase();
+    var tags = (post.tags.join(" ") + " " + (post.feature || "")).trim().toLowerCase();
     if (title.indexOf(q) !== -1) return 3;
     if (tags.indexOf(q) !== -1) return 2;
     if (post.summary.toLowerCase().indexOf(q) !== -1) return 1;

@@ -21,6 +21,15 @@ layout: base
       <span itemprop="author">{{ page.author }}</span>
       {%- endif -%}
     </p>
+    {%- if page.feature -%}
+    <div class="post-card-tags">
+      {%- for f in site.features -%}
+        {%- if f.slug == page.feature -%}
+      <a class="tag-pill feature-pill" href="{{ '/' | relative_url }}#feature-{{ f.slug }}">{{ f.label }}</a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
     {%- if page.tags.size > 0 -%}
     <div class="post-card-tags">
       {%- for tag in page.tags -%}

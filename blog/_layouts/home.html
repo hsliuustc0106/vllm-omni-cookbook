@@ -9,20 +9,45 @@ layout: base
 {%- comment -%} Featured post: first post flagged `featured: true`, else the newest. {%- endcomment -%}
 {%- assign featured = site.posts | where: "featured", true | first | default: site.posts.first -%}
 
-<div class="home">
+<div class="home-layout">
 
-  {%- if featured -%}
-    {%- include post-card.html post=featured featured=true -%}
-  {%- endif -%}
+  <aside class="feature-sidebar" aria-label="Filter posts by feature">
+    <h2 class="sidebar-heading">Features</h2>
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" type="button" data-feature-filter="all">
+        <span class="sidebar-label">All posts</span>
+        <span class="sidebar-count">{{ site.posts.size }}</span>
+      </button>
+      {%- for f in site.features -%}
+      {%- assign n = 0 -%}
+      {%- for p in site.posts -%}
+        {%- if p.feature == f.slug -%}{%- assign n = n | plus: 1 -%}{%- endif -%}
+      {%- endfor -%}
+      <button class="sidebar-item" type="button" data-feature-filter="{{ f.slug }}">
+        <span class="sidebar-label">{{ f.label }}</span>
+        <span class="sidebar-count">{{ n }}</span>
+      </button>
+      {%- endfor -%}
+    </nav>
+    <p class="sidebar-note">Aligned with the
+      <a href="https://github.com/vllm-project/vllm-omni/tree/main/docs/design/feature" rel="noopener">vLLM-Omni feature design docs</a>.
+    </p>
+  </aside>
 
-  <div class="post-cards">
-    {%- for post in site.posts -%}
-      {%- if post.url == featured.url -%}
-        {%- continue -%}
-      {%- endif -%}
-      {%- include post-card.html post=post -%}
-    {%- endfor -%}
+  <div class="home">
+    {%- if featured -%}
+      {%- include post-card.html post=featured featured=true -%}
+    {%- endif -%}
+
+    <div class="post-cards" id="post-list">
+      {%- for post in site.posts -%}
+        {%- if post.url == featured.url -%}
+          {%- continue -%}
+        {%- endif -%}
+        {%- include post-card.html post=post -%}
+      {%- endfor -%}
+    </div>
+
+    <p class="rss-subscribe">subscribe <a href="{{ 'feed.xml' | relative_url }}">via RSS</a></p>
   </div>
-
-  <p class="rss-subscribe">subscribe <a href="{{ 'feed.xml' | relative_url }}">via RSS</a></p>
 </div>

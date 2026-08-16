@@ -20,6 +20,10 @@ Rules:
 - Optional card front matter: `image:` (cover shown on the home-page card) and
   `featured: true` (pins the post as the featured card; newest is featured when
   unset).
+- `feature: <slug>` — one canonical feature area for the home sidebar filter;
+  slugs are curated in `blog/_config.yml` (`site.features`) and match
+  vLLM-Omni's `docs/design/feature/` page names (e.g. `quantization`,
+  `offloader`, `async_chunk`, `disaggregated_inference`).
 - Figures go in `blog/assets/figures/<slug>/`.
 
 ---
@@ -35,6 +39,7 @@ summary: >-
   teaser shown on the blog index.>
 tags: [<model, e.g. qwen3-omni>, <area, e.g. scheduler>]
 category: PR Analysis
+feature: <site.features slug, e.g. quantization>   # home sidebar filter
 math: true   # omit when the post has no math
 # image: /assets/figures/<slug>/cover.png   # optional home-card cover
 # featured: true                            # optional: pin as featured card

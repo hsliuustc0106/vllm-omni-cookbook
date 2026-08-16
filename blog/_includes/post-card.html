@@ -2,7 +2,7 @@
 {%- assign words = include.post.content | strip_html | split: " " | size -%}
 {%- assign minutes = words | divided_by: 200 | at_least: 1 -%}
 
-<article class="post-card{% if include.featured %} post-card-featured{% endif %}">
+<article class="post-card{% if include.featured %} post-card-featured{% endif %}" data-feature="{{ include.post.feature | default: 'other' }}">
   {%- if include.post.image -%}
   <div class="post-card-media">
     <img src="{{ include.post.image | relative_url }}" alt="" loading="lazy" decoding="async">
