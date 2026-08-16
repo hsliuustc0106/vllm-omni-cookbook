@@ -1,11 +1,20 @@
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
 {%- assign words = include.post.content | strip_html | split: " " | size -%}
 {%- assign minutes = words | divided_by: 200 | at_least: 1 -%}
+{%- assign feature_label = include.post.feature -%}
+{%- for f in site.features -%}
+  {%- if f.slug == include.post.feature -%}{%- assign feature_label = f.label -%}{%- endif -%}
+{%- endfor -%}
 
 <article class="post-card{% if include.featured %} post-card-featured{% endif %}" data-feature="{{ include.post.feature | default: 'other' }}">
   {%- if include.post.image -%}
   <div class="post-card-media">
     <img src="{{ include.post.image | relative_url }}" alt="" loading="lazy" decoding="async">
+  </div>
+  {%- else -%}
+  <div class="post-card-media post-card-cover-fallback" aria-hidden="true">
+    <span class="cover-kicker">{{ include.post.category | default: "PR Analysis" }}</span>
+    <span class="cover-label">{{ feature_label | default: include.post.tags.first | default: "vLLM-Omni" }}</span>
   </div>
   {%- endif -%}
   <div class="post-card-body">

@@ -255,18 +255,19 @@ main .wrapper > div.page {
   a { color: $accent; }
 }
 
-/* --- post cards ------------------------------------------------------------ */
+/* --- post cards (vllm.ai style: figure top, title/desc bottom) -------------- */
 
 .post-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: 1.25rem;
   margin-top: 1.5rem;
 }
 
 .post-card {
   position: relative;
   display: flex;
+  flex-direction: column;
   border: 1px solid $card-border;
   border-radius: $card-radius;
   background: var(--minima-background-color);
@@ -275,35 +276,72 @@ main .wrapper > div.page {
 
   &:hover {
     border-color: $accent;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);
   }
 }
 
 .post-card-media {
-  flex: 0 0 34%;
-  min-width: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-bottom: 1px solid $card-border;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 0.2s ease;
+  }
+
+  .post-card:hover & img { transform: scale(1.03); }
+}
+
+/* Generated cover for posts without an image: feature label over a tint. */
+.post-card-cover-fallback {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0 1.25rem;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--minima-code-background-color) 55%, transparent) 0%,
+    var(--minima-code-background-color) 100%);
+
+  .cover-kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $muted;
+  }
+  .cover-label {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--minima-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
 .post-card-body {
-  padding: 1.15rem 1.35rem;
+  padding: 1.1rem 1.25rem 1.2rem;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .post-card-featured {
+  grid-column: 1 / -1;
   border-color: $accent;
   box-shadow: 0 0 0 1px $accent;
 
   &:hover { transform: none; }
 
+  .post-card-media { aspect-ratio: 21 / 9; }
   .post-card-title { font-size: 1.45rem; }
+  .post-card-summary { -webkit-line-clamp: 2; }
 }
 
 .post-card-meta {
@@ -555,7 +593,6 @@ main .wrapper > div.page {
   .sidebar-count { display: none; }
   .sidebar-note { display: none; }
 
-  .post-card { flex-direction: column; }
-  .post-card-media { flex: none; height: 160px; }
+  .post-card-media { aspect-ratio: 16 / 9; }
   .post-header .post-title { font-size: 1.5rem; }
 }
