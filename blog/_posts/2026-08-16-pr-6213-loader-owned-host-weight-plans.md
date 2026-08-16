@@ -7,7 +7,7 @@ summary: >-
   The diffusion loader now preflights the checkpoint and hands DLO one exact
   host-weight plan, so no-AllGather workers share checkpoint pages instead of
   private copies — node PSS −47% on a two-worker MiniMax-H3 node.
-tags: [minimax-h3, offloader]
+tags: [MiniMax-H3]
 category: PR Analysis
 feature: offloader
 math: true

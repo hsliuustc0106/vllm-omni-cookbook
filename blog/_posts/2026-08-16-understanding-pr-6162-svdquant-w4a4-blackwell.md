@@ -8,7 +8,7 @@ summary: >-
   makes W4A4 viable for MiniMax-H3's DiT, how the PR dispatches
   FlashInfer/Nunchaku kernels per GPU, and author-reported B300 numbers.
   Proposal — not merged.
-tags: [MiniMax-H3, quantization]
+tags: [MiniMax-H3, Blackwell]
 category: PR Analysis
 feature: quantization
 math: true

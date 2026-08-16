@@ -15,8 +15,11 @@ Rules:
 - **Links to the cookbook must be absolute GitHub URLs** — the blog deploys as a
   standalone site, so relative cookbook paths would 404.
 - `summary` front matter ≤ 240 characters (SEO description + index teaser).
-- One post per PR or feature. Tags: the model plus the technical area
-  (e.g. `qwen3-omni`, `scheduler`).
+- One post per PR or feature. Tags: the model plus hardware/workload
+  identifiers in their canonical brand casing (e.g. `qwen3-omni`,
+  `MiniMax-H3`, `H200`, `Blackwell`). Never use a `site.features` slug as a
+  tag — feature classification belongs to the `feature:` front matter only,
+  or the card shows the same label twice.
 - Optional card front matter: `image:` (cover shown on the home-page card) and
   `featured: true` (pins the post as the featured card; newest is featured when
   unset).
