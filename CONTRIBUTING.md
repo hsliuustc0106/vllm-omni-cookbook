@@ -53,6 +53,8 @@ blog/            # self-contained Jekyll site (PR-analysis posts)
 
 Each model folder may include `assets/` for charts.
 
+The blog deploys via `.github/workflows/blog-pages.yml`, which smoke-checks the live index after deploying. The Pages source must be **GitHub Actions** (Settings → Pages); if blog URLs 404 after a green deploy, check the repo's `build_type` first — the legacy branch build clobbers Actions deployments (#21).
+
 ## Evidence requirements
 
 Every performance table must be traceable:

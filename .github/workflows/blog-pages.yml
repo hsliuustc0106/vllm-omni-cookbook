@@ -50,3 +50,38 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Smoke-check deployed blog
+        # A legacy "Deploy from a branch" Pages build clobbers this deployment
+        # and serves a repo-root render without the _posts collection (#21).
+        # A root render also contains the string "vLLM-Omni Blog" (README's
+        # H1), so the discriminating check is dated post links on the index.
+        run: |
+          base="${{ steps.deployment.outputs.page_url }}"
+          base="${base%/}"
+
+          check() {
+            local html post url
+            html=$(curl -fsS "$base/") || return 1
+            posts=$(printf '%s' "$html" | grep -c 'href="[^"]*20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-') || posts=0
+            [ "$posts" -ge 1 ] || return 1
+            post=$(printf '%s' "$html" | grep -oE 'href="[^"]*20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[^"]*"' | head -1 | sed -e 's/^href="//' -e 's/"$//')
+            case "$post" in
+              http*) url="$post" ;;
+              /*) url="$(printf '%s' "$base" | sed -E 's#^(https?://[^/]+).*#\1#')$post" ;;
+              *) url="$base/$post" ;;
+            esac
+            curl -fsS -o /dev/null "$url"
+          }
+
+          for attempt in 1 2 3 4 5; do
+            if check; then
+              echo "OK: $base/ lists $posts post(s); sample post URL returns 200."
+              exit 0
+            fi
+            echo "attempt $attempt/5: deployed blog not verifiable yet, retrying in 15s"
+            sleep 15
+          done
+
+          echo "::error::Live site at $base/ lists no reachable posts. A legacy Pages branch build (repo-root render, no _posts) likely clobbered this deployment. Fix: Settings -> Pages -> Build and deployment -> Source = GitHub Actions, i.e. gh api -X PUT repos/<owner>/<repo>/pages -f build_type=workflow. See issue #21."
+          exit 1
