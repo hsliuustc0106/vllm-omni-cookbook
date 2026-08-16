@@ -17,6 +17,7 @@ Cursor and compatible agents can load project skills from `.cursor/skills/`:
 | [cookbook-add-model](.cursor/skills/cookbook-add-model/SKILL.md) | First ledger for a new model |
 | [cookbook-add-release](.cursor/skills/cookbook-add-release/SKILL.md) | New even release (`v0.22.0`) section + `SUMMARY.md` |
 | [cookbook-write-narrative](.cursor/skills/cookbook-write-narrative/SKILL.md) | Optional Zhihu draft |
+| [cookbook-blog-post](.cursor/skills/cookbook-blog-post/SKILL.md) | PR-analysis deep-dive post on the blog |
 
 Templates: [.cursor/skills/vllm-omni-cookbook/references/templates.md](.cursor/skills/vllm-omni-cookbook/references/templates.md)
 
@@ -37,6 +38,7 @@ Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
 | New model | `{omni,diffusion}/{model}/index.md`, `README.md`, `SUMMARY.md` placeholders |
 | New even release | Each tracked model's `index.md` + root `SUMMARY.md` (skip odd minors) |
 | Retro numbers | Tables in `index.md` with SHAs, GPU SKU, footnotes |
+| PR-analysis blog post | `blog/_posts/YYYY-MM-DD-<slug>.md` + figures in `blog/assets/figures/<slug>/` |
 | Optional Zhihu draft | `*-performance-zhihu.md` |
 
 ## Repository layout
@@ -45,6 +47,7 @@ Claude Code users: see condensed stubs in [.claude/skills/](.claude/skills/).
 omni/{model}/index.md
 diffusion/{model}/index.md
 SUMMARY.md
+blog/            # self-contained Jekyll site (PR-analysis posts)
 ```
 
 Each model folder may include `assets/` for charts.
