@@ -28,38 +28,49 @@ author:
 # Canonical blog feature taxonomy, aligned with vLLM-Omni docs
 # (docs/design/feature/ in vllm-project/vllm-omni). One `feature: <slug>` per
 # post; the home sidebar filters by it and links each entry to its design doc.
-# Keep slugs identical to the docs file names where one exists.
+# Keep slugs identical to the docs file names where one exists. `color` drives
+# the generated per-feature cover art (blog/_includes/feature-cover.html).
 features:
   - slug: quantization
     label: Quantization
     docs: quantization.md
+    color: "#7c3aed"
   - slug: offloader
     label: Offloading
     docs: offloader/
+    color: "#0891b2"
   - slug: async_chunk
     label: Async chunking
     docs: async_chunk.md
+    color: "#16a34a"
   - slug: disaggregated_inference
     label: Disaggregation
     docs: disaggregated_inference.md
+    color: "#ea580c"
   - slug: realtime_ar_diffusion
     label: Realtime AR diffusion
     docs: realtime_ar_diffusion.md
+    color: "#db2777"
   - slug: parallelism
     label: Parallelism
     docs: tensor_parallel.md
+    color: "#2563eb"
   - slug: continuous_batching
     label: Continuous batching
     docs: diffusion_continuous_batching.md
+    color: "#ca8a04"
   - slug: caching
     label: Caching & speedups
     docs: cache_dit.md
+    color: "#dc2626"
   - slug: connectors
     label: Omni connectors
     docs: omni_connectors/
+    color: "#0d9488"
   - slug: kernels
     label: Kernels & attention
     docs: attention_backend_selection.md
+    color: "#4f46e5"
 
 header_pages:
   - about.md

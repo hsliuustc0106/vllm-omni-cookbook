@@ -11,7 +11,7 @@ description: >-
   PR #5491 gives vLLM-Omni a model-neutral, fail-closed realtime tick path:
   one request = one AR latent block with per-session paged KV, enabling
   interactive LingBot World 2.0 worlds at 2.66 s per steady tick on H200.
-tags: [lingbot-world-2, ar-diffusion]
+tags: [lingbot-world-2]
 category: PR Analysis
 feature: realtime_ar_diffusion
 featured: true
