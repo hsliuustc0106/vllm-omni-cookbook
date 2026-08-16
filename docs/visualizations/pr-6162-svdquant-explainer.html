@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVDQuant, visually — W4A4 for diffusion transformers</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --panel: #121821;
+    --panel2: #0e141c;
+    --line: #1f2937;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --faint: #5c6a7d;
+    --q: #22d3ee;        /* 4-bit quantized path */
+    --q-dim: #0e7490;
+    --bf: #fbbf24;       /* BF16 low-rank path */
+    --bf-dim: #92600a;
+    --err: #f87171;
+    --ok: #4ade80;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 1060px; margin: 0 auto; padding: 24px 20px 80px; }
+  section { margin-top: 64px; }
+  h1 { font-size: 34px; line-height: 1.2; margin: 8px 0 4px; letter-spacing: -0.5px; }
+  h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.3px; }
+  h2 .idx { color: var(--faint); font-weight: 400; margin-right: 10px; font-size: 18px; }
+  h3 { font-size: 16px; margin: 20px 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin: 10px 0; max-width: 76ch; }
+  .lede { color: var(--muted); font-size: 18px; max-width: 70ch; }
+  .tag { color: var(--q); font-family: var(--mono); font-size: 13px; letter-spacing: 0.04em; }
+  a { color: var(--q); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .chip {
+    font-family: var(--mono); font-size: 13px; background: #182230;
+    border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; margin-top: 14px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 860px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  .controls { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin: 10px 0 14px; }
+  .controls label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .controls output { font-family: var(--mono); color: var(--text); min-width: 52px; }
+  input[type="range"] { accent-color: var(--q); width: 160px; }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  button.tog {
+    background: var(--panel2); color: var(--muted); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  button.tog.active { color: var(--bg); background: var(--q); border-color: var(--q); font-weight: 600; }
+  button.tog.active[data-kind="bf"] { background: var(--bf); border-color: var(--bf); }
+  canvas { display: block; image-rendering: pixelated; border-radius: 6px; border: 1px solid var(--line); }
+  .cap { font-size: 12.5px; color: var(--muted); margin-top: 6px; max-width: 90ch; }
+  .stats { display: flex; gap: 26px; flex-wrap: wrap; margin-top: 12px; font-family: var(--mono); font-size: 14px; }
+  .stats b { font-weight: 600; }
+  .good { color: var(--ok); } .bad { color: var(--err); }
+  .eq {
+    font-family: var(--mono); font-size: 17px; background: var(--panel2);
+    border: 1px solid var(--line); border-left: 3px solid var(--q);
+    padding: 14px 18px; border-radius: 8px; margin: 18px 0; overflow-x: auto;
+  }
+  .eq .bf { color: var(--bf); } .eq .qt { color: var(--q); } .eq .cm { color: var(--faint); }
+  .note {
+    border-left: 3px solid var(--bf); background: #191405; padding: 10px 14px;
+    border-radius: 0 8px 8px 0; font-size: 14px; color: #d8cfa8; margin-top: 14px; max-width: 80ch;
+  }
+  .note code { background: #241d08; border-color: #3a3010; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin-top: 8px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  td.mono { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+  .flowwrap { overflow-x: auto; padding: 6px 2px 2px; }
+  svg text { font-family: var(--mono); }
+  .bar-row { display: grid; grid-template-columns: 210px 1fr 120px; gap: 12px; align-items: center; margin: 10px 0; }
+  @media (max-width: 640px) {
+    .bar-row { grid-template-columns: 1fr; gap: 4px 12px; }
+    .bar-val { text-align: left; }
+  }
+  .bar-label { font-size: 13.5px; color: var(--muted); }
+  .bar-track { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; height: 26px; position: relative; }
+  .bar-fill { height: 100%; border-radius: 5px; transition: width .25s ease; }
+  .bar-val { font-family: var(--mono); font-size: 13px; text-align: right; }
+  .gpu-lane { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 14px; }
+  @media (max-width: 860px) { .gpu-lane { grid-template-columns: repeat(2, 1fr); } }
+  .gpu {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 12px 10px; position: relative; min-height: 150px;
+  }
+  .gpu .sm { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+  .gpu .nm { font-weight: 600; font-size: 14px; margin: 2px 0 8px; }
+  .gpu .bk { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+  .gpu .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 2px 7px;
+    border-radius: 99px; margin-top: 8px; border: 1px solid;
+  }
+  .gpu.nun { border-top: 3px solid var(--q-dim); } .gpu.nun .pill { color: var(--q); border-color: var(--q-dim); }
+  .gpu.fi  { border-top: 3px solid var(--q); }   .gpu.fi .pill { color: var(--q); border-color: var(--q); }
+  .gpu.no  { border-top: 3px solid var(--err); opacity: .75; } .gpu.no .pill { color: var(--err); border-color: var(--err); }
+  .hero-eq { font-size: 19px; }
+  footer { margin-top: 72px; border-top: 1px solid var(--line); padding-top: 18px; color: var(--faint); font-size: 13.5px; }
+  footer .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 860px) { footer .cols { grid-template-columns: 1fr; } }
+  .nibble { display: flex; align-items: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+  .nibble .byte { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-family: var(--mono); }
+  .nibble .half { padding: 8px 14px; font-size: 13px; }
+  .nibble .lo { background: #07202a; color: var(--q); }
+  .nibble .hi { background: #0d1a26; color: #7dd3fc; }
+  @media (prefers-reduced-motion: reduce) {
+    .flowpath { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============ HERO ============ -->
+<section style="margin-top:28px">
+  <div class="tag">QUANTIZATION · arXiv 2411.05007 · as implemented in vllm-omni PR #6162</div>
+  <h1>SVDQuant, visually</h1>
+  <p class="lede">4-bit weights <em>and</em> 4-bit activations for diffusion transformers, kept accurate by a
+  small BF16 low-rank residual that absorbs the parts that refuse to quantize. The name is literal:
+  singular value decomposition, applied per linear layer at quantization time.</p>
+  <div class="eq hero-eq">
+    y &nbsp;=&nbsp; <span class="qt">Q<sub>w4</sub>(W&hairsp;·&hairsp;diag(s))&hairsp;·&hairsp;Q<sub>a4</sub>(x&hairsp;/&hairsp;s)</span>
+    &nbsp;+&nbsp; <span class="bf">U&hairsp;(V<sup>T</sup>·x)</span> &nbsp;+&nbsp; b
+    <br><span class="cm">// &nbsp;teal = 4-bit tensor-core branch &nbsp;·&nbsp; amber = BF16 rank-r correction (r ≪ K)</span>
+  </div>
+  <p class="cap">Everything below is interactive and computed live in your browser — the SVD demo runs a real
+  power-iteration decomposition on a synthetic matrix with channel outliers.</p>
+</section>
+
+<!-- ============ 1. WHY 4-BIT IS HARD ============ -->
+<section>
+  <h2><span class="idx">01</span>Why W4A4 is hard: outliers crush the grid</h2>
+  <p>A 4-bit format like NVFP4 has only 16 levels — magnitude codes
+  <code>{0, 0.5, 1, 1.5, 2, 3, 4, 6}</code> plus a sign bit. One large outlier stretches the
+  scale so far that every normal value collapses onto the two smallest levels. Below: 256 values
+  (16 blocks × 16), one of them spiked. Drag the outlier and watch both quantization strategies.</p>
+
+  <div class="controls">
+    <label>outlier magnitude
+      <input type="range" id="outMag" min="2" max="40" step="1" value="24">
+      <output id="outMagV">24×</output>
+    </label>
+    <span class="cap" style="margin:0">grid: 16×16 cells · one cell per value · color = dequantized value · red frame = large per-value error</span>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3 style="margin-top:0">One global scale</h3>
+      <canvas id="qgA" width="384" height="384" style="width:100%;max-width:384px"></canvas>
+      <div class="stats"><span>RMSE <b id="rmseA" class="bad"></b></span><span>crushed to |v|≤0.5 <b id="crushA" class="bad"></b></span></div>
+      <p class="cap">The outlier sets the scale for <em>everything</em>; 99% of the grid is wasted.</p>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">Per-block scale (16 values, FP8) — what NVFP4 ships</h3>
+      <canvas id="qgB" width="384" height="384" style="width:100%;max-width:384px"></canvas>
+      <div class="stats"><span>RMSE <b id="rmseB" class="good"></b></span><span>crushed to |v|≤0.5 <b id="crushB" class="good"></b></span></div>
+      <p class="cap">Block scales quarantine the damage to the outlier’s own 16-value block.</p>
+    </div>
+  </div>
+  <div class="note">Block scales fix <em>isolated</em> outliers. They cannot fix a <strong>channel</strong> outlier —
+  a weight column (or activation channel) that is consistently large across every row and every block.
+  Every block touching that column is degraded, everywhere, at every denoising step. That is the job
+  of the next two moves: <code>smooth_factor</code> and the SVD absorption.</div>
+</section>
+
+<!-- ============ 2. SMOOTH + SVD ============ -->
+<section>
+  <h2><span class="idx">02</span>The trick: smooth, then absorb the hard part into low rank</h2>
+  <p>Per linear layer <code>W [N,K]</code>, two things happen offline, at quantization time:</p>
+  <p><b>1 · Smooth.</b> Rescale channels to spread outlier energy:
+  <code>x/s</code> on activations, <code>w·s</code> on weight columns — <code>s = smooth_factor [K]</code> lives in the checkpoint.<br>
+  <b>2 · SVD.</b> Decompose the smoothed weight: <code>W ≈ L + R</code> where <code>L = U·Vᵀ</code>
+  is rank-r (r = 16…64) and captures the spiked, outlier-heavy directions; the residual
+  <code>R</code> is flat and quantizes to 4 bits with almost no error.</p>
+
+  <div class="panel">
+    <div class="controls">
+      <label>rank r
+        <input type="range" id="rank" min="1" max="10" step="1" value="4">
+        <output id="rankV">4</output>
+      </label>
+      <button class="tog" id="reseed">↻ new random W</button>
+    </div>
+    <div class="grid3">
+      <div><h3 style="margin-top:0">W — smoothed weight</h3><canvas id="hW" width="280" height="280" style="width:100%"></canvas></div>
+      <div><h3 style="margin-top:0">L = U·Vᵀ — rank r, BF16</h3><canvas id="hL" width="280" height="280" style="width:100%"></canvas></div>
+      <div><h3 style="margin-top:0">R = W − L — flat, 4-bit</h3><canvas id="hR" width="280" height="280" style="width:100%"></canvas></div>
+    </div>
+    <div class="stats">
+      <span>quantize W directly → RMSE <b id="rmseW" class="bad"></b></span>
+      <span>quantize R, add L back → RMSE <b id="rmseR" class="good"></b></span>
+      <span>improvement <b id="rmseGain"></b></span>
+    </div>
+    <p class="cap">Synthetic 40×40: gaussian noise + 3 spiked columns + 2 spiked rows (channel outliers, the
+    structure block scales can’t fix). Real SVD via power iteration with deflation, re-run as you drag r.
+    Quantization simulates NVFP4: e2m1 codes with a per-16 block scale, exactly like the checkpoint format.</p>
+  </div>
+</section>
+
+<!-- ============ 3. FORWARD PASS ============ -->
+<section>
+  <h2><span class="idx">03</span>The forward pass, and where PR #6162 puts each tensor</h2>
+  <div class="btnrow">
+    <button class="tog active" id="btnUnfused">unfused math</button>
+    <button class="tog" id="btnFused">fused kernel (FlashInfer <code>svdquant_linear</code>)</button>
+  </div>
+
+  <div class="panel flowwrap" id="flowPanel">
+    <svg id="flowSvg" viewBox="0 0 980 400" width="980" style="min-width:760px;max-width:100%">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#5c6a7d"/>
+        </marker>
+      </defs>
+      <!-- input -->
+      <rect x="14" y="160" width="110" height="64" rx="10" fill="#182230" stroke="#1f2937"/>
+      <text x="69" y="186" text-anchor="middle" fill="#e6edf3" font-size="15">x</text>
+      <text x="69" y="206" text-anchor="middle" fill="#8b98a9" font-size="11">[M, K] BF16</text>
+
+      <!-- smooth -->
+      <rect x="170" y="160" width="130" height="64" rx="10" fill="#07202a" stroke="#0e7490"/>
+      <text x="235" y="186" text-anchor="middle" fill="#22d3ee" font-size="14">÷ smooth_factor</text>
+      <text x="235" y="206" text-anchor="middle" fill="#8b98a9" font-size="11">[K] BF16</text>
+
+      <!-- act quant -->
+      <rect x="346" y="160" width="150" height="64" rx="10" fill="#07202a" stroke="#22d3ee"/>
+      <text x="421" y="182" text-anchor="middle" fill="#22d3ee" font-size="13">NVFP4 quantize</text>
+      <text x="421" y="200" text-anchor="middle" fill="#8b98a9" font-size="11">per-16 block, scale FP8-e4m3</text>
+      <text x="421" y="215" text-anchor="middle" fill="#5c6a7d" font-size="10">dynamic, per step</text>
+
+      <!-- 4bit gemm -->
+      <rect x="542" y="112" width="180" height="76" rx="10" fill="#07202a" stroke="#22d3ee"/>
+      <text x="632" y="138" text-anchor="middle" fill="#22d3ee" font-size="14">4-bit GEMM</text>
+      <text x="632" y="157" text-anchor="middle" fill="#8b98a9" font-size="11">x₄ · W₄ → fp32 acc</text>
+      <text x="632" y="173" text-anchor="middle" fill="#5c6a7d" font-size="10">tensor cores: tcgen05 MMA</text>
+
+      <!-- lora branch -->
+      <rect x="346" y="288" width="150" height="64" rx="10" fill="#191405" stroke="#fbbf24"/>
+      <text x="421" y="310" text-anchor="middle" fill="#fbbf24" font-size="13">Vᵀ = proj_down</text>
+      <text x="421" y="328" text-anchor="middle" fill="#8b98a9" font-size="11">[K, R] BF16 — x @ V</text>
+      <text x="421" y="343" text-anchor="middle" fill="#5c6a7d" font-size="10">original x, not smoothed</text>
+
+      <rect x="542" y="288" width="150" height="64" rx="10" fill="#191405" stroke="#fbbf24"/>
+      <text x="617" y="310" text-anchor="middle" fill="#fbbf24" font-size="13">U = proj_up</text>
+      <text x="617" y="328" text-anchor="middle" fill="#8b98a9" font-size="11">[N, R] BF16</text>
+      <text x="617" y="343" text-anchor="middle" fill="#5c6a7d" font-size="10">skinny GEMMs, ~1–2% cost</text>
+
+      <!-- epilogue -->
+      <rect x="768" y="160" width="150" height="140" rx="10" fill="#182230" stroke="#1f2937"/>
+      <text x="843" y="192" text-anchor="middle" fill="#e6edf3" font-size="14">epilogue</text>
+      <text x="843" y="214" text-anchor="middle" fill="#8b98a9" font-size="11">· α ⊙ (per-output)</text>
+      <text x="843" y="231" text-anchor="middle" fill="#8b98a9" font-size="11">· + rank-up</text>
+      <text x="843" y="248" text-anchor="middle" fill="#8b98a9" font-size="11">· + bias</text>
+      <text x="843" y="272" text-anchor="middle" fill="#e6edf3" font-size="13">y [M, N]</text>
+
+      <!-- flows -->
+      <path class="flowpath" d="M124,192 H170" stroke="#22d3ee" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath" d="M300,192 H346" stroke="#22d3ee" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath" d="M496,192 H542" stroke="#22d3ee" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath" d="M722,150 C748,150 748,192 768,192" stroke="#22d3ee" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath bf" d="M69,224 V320 H346" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath bf" d="M496,320 H542" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath bf" d="M692,320 C740,320 740,290 768,278" stroke="#fbbf24" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path class="flowpath" d="M918,230 H952" stroke="#e6edf3" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+
+      <!-- fused grouping -->
+      <rect id="fuseBox" x="332" y="96" width="604" height="272" rx="14" fill="none"
+            stroke="#22d3ee" stroke-width="1.6" stroke-dasharray="7 6" opacity="0"/>
+      <text id="fuseLabel" x="634" y="86" text-anchor="middle" fill="#22d3ee" font-size="13" opacity="0">flashinfer.svdquant_linear — one op: residual GEMM + rank-up + per-output α + bias</text>
+
+      <!-- weight chips -->
+      <g font-size="10.5" fill="#7dd3fc">
+        <text x="632" y="104" text-anchor="middle">qweight [N, K/2] · wscales [K/16, N]</text>
+      </g>
+      <g font-size="10.5" fill="#d8cfa8">
+        <text x="421" y="278" text-anchor="middle" fill="#d8cfa8">rank-r pair from the SVD</text>
+      </g>
+      <g font-size="10.5">
+        <text x="843" y="318" text-anchor="middle" fill="#8b98a9">α = wtscale ⊙ wcscales</text>
+        <text x="843" y="333" text-anchor="middle" fill="#8b98a9">(QKV: one per shard)</text>
+      </g>
+    </svg>
+    <p class="cap">Amber branch runs on <em>unsmoothed</em> x — <code>proj_down</code> is exported as
+    <code>D/s</code> at quantization time so the product works out (this exact invariant is documented in
+    <code>svdquant_flashinfer.py::apply</code>). Toggle “fused kernel” to see what the native FlashInfer
+    path collapses into a single epilogue; older FlashInfer builds and SM110 stay on the compatible
+    CuTe-DSL path with the rank-up as a separate small GEMM.</p>
+  </div>
+</section>
+
+<!-- ============ 4. COST MATH ============ -->
+<section>
+  <h2><span class="idx">04</span>Why an extra branch makes it <em>faster</em></h2>
+  <p>4-bit tensor cores run ~2–4× the BF16 MMA rate on Blackwell. The correction branch costs only
+  <code>2·r·(K+N)</code> FLOPs against the main GEMM’s <code>2·K·N</code> — for K=N=4096, r=32, that is
+  ~1.6% of the work. Play with the numbers:</p>
+
+  <div class="panel">
+    <div class="controls">
+      <label>K <input type="range" id="cK" min="9" max="14" step="1" value="12"><output id="cKV">4096</output></label>
+      <label>N <input type="range" id="cN" min="9" max="14" step="1" value="12"><output id="cNV">4096</output></label>
+      <label>rank r <input type="range" id="cR" min="8" max="128" step="8" value="32"><output id="cRV">32</output></label>
+      <label>4-bit TC speedup <input type="range" id="cS" min="20" max="40" step="1" value="30"><output id="cSV">3.0×</output></label>
+    </div>
+    <div class="bar-row"><div class="bar-label">BF16 GEMM</div><div class="bar-track"><div class="bar-fill" id="bar0" style="width:100%;background:#374151"></div></div><div class="bar-val" id="barV0">1.00×</div></div>
+    <div class="bar-row"><div class="bar-label">W4A16 (AWQ-style)</div><div class="bar-track"><div class="bar-fill" id="bar1" style="width:100%;background:#4b5563"></div></div><div class="bar-val" id="barV1">1.00× · memory 0.25×</div></div>
+    <div class="bar-row"><div class="bar-label">SVDQuant main branch</div><div class="bar-track"><div class="bar-fill" id="bar2" style="background:#0e7490"></div></div><div class="bar-val" id="barV2"></div></div>
+    <div class="bar-row"><div class="bar-label">+ low-rank correction</div><div class="bar-track"><div class="bar-fill" id="bar3" style="background:#92600a"></div></div><div class="bar-val" id="barV3"></div></div>
+    <div class="bar-row"><div class="bar-label"><b style="color:var(--text)">SVDQuant total</b></div><div class="bar-track"><div class="bar-fill" id="bar4" style="background:linear-gradient(90deg,#0e7490 70%,#92600a 70%)"></div></div><div class="bar-val" id="barV4"></div></div>
+    <p class="cap">Relative compute time vs the same GEMM in BF16 (lower is better). W4A16 relieves
+    memory bandwidth but computes in BF16 — no tensor-core win, which is why it’s the wrong default for
+    compute-bound diffusion. MiniMax-H3 keeps W4A16 only for the 50 low-token AdaLN projections, where
+    bandwidth (not compute) dominates; truly sensitive projections stay BF16.</p>
+  </div>
+</section>
+
+<!-- ============ 5. HARDWARE DISPATCH ============ -->
+<section>
+  <h2><span class="idx">05</span>One checkpoint, many GPUs — the dispatch in PR #6162</h2>
+  <p>The on-disk layout is backend-neutral canonical row-major NVFP4/INT4. At load time,
+  <code>svdquant_dispatch.py</code> picks the kernel family from the compute capability and fails fast
+  with an actionable error on anything unsupported — no silent fallback to a different precision:</p>
+
+  <div class="gpu-lane">
+    <div class="gpu nun"><div class="sm">SM 75 / 80 / 86 / 89</div><div class="nm">Turing · Ampere · Ada</div>
+      <div class="bk">Nunchaku W4A4<br>INT4 · 64-elem groups<br>PTX-MMA kernels</div><div class="pill">precision=int4</div></div>
+    <div class="gpu no"><div class="sm">SM 90</div><div class="nm">Hopper</div>
+      <div class="bk">Rejected at startup — no validated W4A4 kernel family on this architecture.</div><div class="pill">unsupported</div></div>
+    <div class="gpu fi"><div class="sm">SM 100 / 103</div><div class="nm">B200 / B300</div>
+      <div class="bk">FlashInfer NVFP4 + native fused op (per-output α, incl. QKV shards); Marlin W4A16 for AdaLN.</div><div class="pill">precision=nvfp4</div></div>
+    <div class="gpu fi"><div class="sm">SM 110</div><div class="nm">Datacenter Blackwell</div>
+      <div class="bk">FlashInfer NVFP4 via the compatible CuTe-DSL path until the native kernel lands.</div><div class="pill">precision=nvfp4</div></div>
+    <div class="gpu nun"><div class="sm">SM 120 / 121</div><div class="nm">Consumer Blackwell</div>
+      <div class="bk">Nunchaku W4A4<br>NVFP4 tcgen05 path</div><div class="pill">precision=nvfp4</div></div>
+    <div class="gpu no" style="opacity:.85"><div class="sm">everything else</div><div class="nm">non-CUDA</div>
+      <div class="bk">Explicit <code>RuntimeError</code> naming the required backend — never a quiet BF16 dequant.</div><div class="pill">rejected</div></div>
+  </div>
+  <div class="note">Nunchaku ships as GitHub release wheels from
+  <code>nunchaku-ai/nunchaku</code>. <code>pip install nunchaku</code> installs an unrelated Bayesian
+  statistics package — the dispatcher’s <code>ImportError</code> spells this out.</div>
+</section>
+
+<!-- ============ 6. ON-DISK LAYOUT ============ -->
+<section>
+  <h2><span class="idx">06</span>What the checkpoint actually contains</h2>
+  <p>From <code>DiffusionSVDQuantConfig.create_weights</code> — every SVDQuant linear carries:</p>
+  <div style="overflow-x:auto">
+  <table>
+    <tr><th>tensor</th><th>shape</th><th>dtype</th><th>role</th></tr>
+    <tr><td class="mono">qweight</td><td class="mono">[N, K/2]</td><td class="mono">int8/uint8</td><td>4-bit weights, two nibbles per byte (low nibble = even k)</td></tr>
+    <tr><td class="mono">wscales</td><td class="mono">[K/16, N]</td><td class="mono">fp8-e4m3 · NVFP4<br>bf16/fp16 · INT4</td><td>block scales — 16-elem blocks on Blackwell, 64-elem on the INT4 path</td></tr>
+    <tr><td class="mono">proj_down</td><td class="mono">[K, R]</td><td class="mono">bf16</td><td>V from the SVD — consumes unsmoothed x</td></tr>
+    <tr><td class="mono">proj_up</td><td class="mono">[N, R]</td><td class="mono">bf16</td><td>U from the SVD — the rank-up</td></tr>
+    <tr><td class="mono">smooth_factor</td><td class="mono">[K]</td><td class="mono">bf16</td><td>the smoothing divisor s</td></tr>
+    <tr><td class="mono">wcscales</td><td class="mono">[N]</td><td class="mono">bf16</td><td>per-output outer scale — non-trivial only for QKV, one per Q/K/V shard</td></tr>
+    <tr><td class="mono">wtscale</td><td class="mono">[1]</td><td class="mono">bf16</td><td>per-tensor outer scale α</td></tr>
+  </table>
+  </div>
+  <div class="nibble">
+    <div class="byte"><div class="half lo">nibble k=0 · low</div><div class="half hi">nibble k=1 · high</div></div>
+    <span class="cap" style="margin:0">one <code>qweight</code> byte = two adjacent k values; the converter also half-swaps fused gate-up
+    layers on the N axis so halves land in vLLM’s <code>[gate; up]</code> SiluAndMul order</span>
+  </div>
+  <div class="note">The fused path folds <code>α ⊙ wcscales</code> into a per-output epilogue vector and
+  pre-divides <code>proj_up</code> by α so the rank correction stays in physical units — the exact math
+  that the head commit of the PR introduced and that the compat epilogue
+  (<code>base·wcscales + x·V·Uᵀ + bias</code>) reproduces for older FlashInfer builds.</div>
+</section>
+
+<footer>
+  <div class="cols">
+    <div>
+      <b>Sources</b><br>
+      · SVDQuant: <a href="https://arxiv.org/abs/2411.05007">arXiv 2411.05007</a> — “Absorbing Outliers by Low-Rank Components for 4-Bit Diffusion Models”<br>
+      · Nunchaku kernels: <a href="https://github.com/nunchaku-ai/nunchaku/releases">nunchaku-ai/nunchaku</a> (release wheels)<br>
+      · User guide: <code>docs/user_guide/quantization/svdquant.md</code> in the PR
+    </div>
+    <div>
+      <b>In vllm-omni (PR #6162)</b><br>
+      · <code>vllm_omni/quantization/svdquant_config.py</code> — config + LinearMethod, on-disk contract<br>
+      · <code>svdquant_dispatch.py</code> — the hardware gate visualized in section 05<br>
+      · <code>svdquant_flashinfer.py</code> / <code>svdquant_nunchaku.py</code> — the two backends<br>
+      · <code>tools/convert_nunchaku_to_svdquant.py</code> — nunchaku → canonical converter
+    </div>
+  </div>
+  <p style="margin-top:14px">All demos run locally in this page — no network, no data, just your CPU re-deriving
+  why a rank-32 correction buys a 2–3× speedup. Built 2026-08-15 alongside the PR #6162 review.</p>
+</footer>
+
+</main>
+
+<script>
+"use strict";
+/* ---------- shared RNG so demos are deterministic per seed ---------- */
+function mulberry32(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let gauss=(rng)=>{let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+
+/* ---------- NVFP4 simulation: e2m1 codes, per-16 block FP8 scale ---------- */
+const E2M1=[0,0.5,1,1.5,2,3,4,6];
+function quantBlock(vals){ // vals: 16 numbers -> {out, err} dequantized
+  const mx=Math.max(...vals.map(Math.abs));
+  const scale=Math.min(mx/6,448);           // FP8-e4m3 clamp like the kernel
+  const out=vals.map(v=>{
+    if(scale===0)return 0;
+    let n=v/scale,best=E2M1[0],bd=Infinity;
+    for(const L of E2M1){const d=Math.abs(Math.abs(n)-L);if(d<bd){bd=d;best=L}}
+    return Math.sign(n)*best*scale;
+  });
+  return {out,scale};
+}
+function quantizeRows(mat,block){ // mat: array of rows; block along K
+  const out=[];
+  for(const row of mat){
+    const r=[];
+    for(let j=0;j<row.length;j+=block){
+      const {out:o}=quantBlock(row.slice(j,j+block));
+      r.push(...o);
+    }
+    out.push(r);
+  }
+  return out;
+}
+const rmse=(a,b)=>{let s=0,n=0;for(let i=0;i<a.length;i++){const ai=Array.isArray(a[i])?a[i]:[a[i]],bi=Array.isArray(b[i])?b[i]:[b[i]];for(let j=0;j<ai.length;j++){const d=ai[j]-bi[j];s+=d*d;n++}}return Math.sqrt(s/n)};
+
+/* ---------- section 01: outlier grids ---------- */
+const NCELL=16,BLK=16;
+let baseCells=(()=>{const r=mulberry32(42),a=[];for(let i=0;i<NCELL*NCELL;i++)a.push(gauss(r));return a})();
+function drawGrid(cv,vals,mode){
+  const ctx=cv.getContext("2d"),W=cv.width,n=NCELL,cw=W/n;
+  const mx=Math.max(...vals.map(Math.abs));
+  let dq;
+  if(mode==="global"){dq=quantBlock(vals).out}
+  else{dq=[];for(let j=0;j<vals.length;j+=BLK)dq.push(...quantBlock(vals.slice(j,j+BLK)).out)}
+  ctx.clearRect(0,0,W,W);
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    const i=y*n+x,v=dq[i],t=Math.min(Math.abs(v)/3,1); // saturation at |v|=3
+    const r=Math.round(20+t*40),g=Math.round(60+t*180),b=Math.round(80+t*130);
+    ctx.fillStyle=`rgb(${r},${g},${b})`;
+    ctx.fillRect(x*cw+1,y*cw+1,cw-2,cw-2);
+    if(Math.abs(vals[i]-dq[i])>0.35){ctx.strokeStyle="rgba(248,113,113,.9)";ctx.lineWidth=2;ctx.strokeRect(x*cw+1.5,y*cw+1.5,cw-3,cw-3)}
+  }
+}
+function gridStats(vals,mode){
+  let dq;
+  if(mode==="global")dq=quantBlock(vals).out;
+  else{dq=[];for(let j=0;j<vals.length;j+=BLK)dq.push(...quantBlock(vals.slice(j,j+BLK)).out)}
+  const r=rmse(vals,dq);
+  const crushed=vals.filter((v,i)=>Math.abs(dq[i])<=0.5&&Math.abs(v)>0.75).length/vals.length;
+  return {r,c:crushed};
+}
+function updOutlier(){
+  const mag=+document.getElementById("outMag").value;
+  document.getElementById("outMagV").textContent=mag+"×";
+  const vals=baseCells.slice();vals[77]=mag*1.0; // one spiked cell
+  const A=gridStats(vals,"global"),B=gridStats(vals,"block");
+  drawGrid(document.getElementById("qgA"),vals,"global");
+  drawGrid(document.getElementById("qgB"),vals,"block");
+  document.getElementById("rmseA").textContent=A.r.toFixed(3);
+  document.getElementById("rmseB").textContent=B.r.toFixed(3);
+  document.getElementById("crushA").textContent=(A.c*100).toFixed(0)+"%";
+  document.getElementById("crushB").textContent=(B.c*100).toFixed(0)+"%";
+}
+document.getElementById("outMag").addEventListener("input",updOutlier);
+
+/* ---------- section 02: SVD absorption ---------- */
+const MSZ=40;
+let rng=mulberry32(7);
+function makeW(){
+  const W=[];
+  for(let i=0;i<MSZ;i++){const row=[];for(let j=0;j<MSZ;j++)row.push(gauss(rng)*0.35);W.push(row)}
+  for(const c of [6,23,31])for(let i=0;i<MSZ;i++)W[i][c]+= (gauss(rng)*0.5+ (rng()>0.5?1:-1)*2.6);
+  for(const r of [11,29])for(let j=0;j<MSZ;j++)W[r][j]+= (gauss(rng)*0.5+ (rng()>0.5?1:-1)*2.6);
+  return W;
+}
+let W=makeW();
+function svdTopR(M,r){ // power iteration + deflation, returns L (rank-r approx)
+  const n=M.length,m=M[0].length;
+  const A=M.map(row=>row.slice());
+  const L=Array.from({length:n},()=>new Array(m).fill(0));
+  const rr=mulberry32(1234+r);
+  for(let k=0;k<r;k++){
+    let v=Array.from({length:m},()=>rr()*2-1);
+    let u=null;
+    for(let it=0;it<220;it++){
+      u=new Array(n).fill(0);
+      for(let i=0;i<n;i++){let s=0;for(let j=0;j<m;j++)s+=A[i][j]*v[j];u[i]=s}
+      const un=Math.sqrt(u.reduce((a,b)=>a+b*b,0))||1;u=u.map(x=>x/un);
+      v=new Array(m).fill(0);
+      for(let j=0;j<m;j++){let s=0;for(let i=0;i<n;i++)s+=A[i][j]*u[i];v[j]=s}
+      const vn=Math.sqrt(v.reduce((a,b)=>a+b*b,0))||1;v=v.map(x=>x/vn);
+    }
+    let sig=0;for(let i=0;i<n;i++)for(let j=0;j<m;j++)sig+=u[i]*A[i][j]*v[j];
+    for(let i=0;i<n;i++)for(let j=0;j<m;j++){L[i][j]+=sig*u[i]*v[j];A[i][j]-=sig*u[i]*v[j]}
+  }
+  return L;
+}
+function drawHeat(cv,M){
+  const ctx=cv.getContext("2d"),n=M.length,Wp=cv.width,cw=Wp/n;
+  let mx=0;for(const row of M)for(const v of row)mx=Math.max(mx,Math.abs(v));
+  mx=Math.max(mx,0.4);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    const t=M[i][j]/mx; // -1..1
+    const a=Math.min(Math.abs(t),1);
+    ctx.fillStyle=t>=0?`rgba(34,211,238,${a*0.95})`:`rgba(251,191,36,${a*0.95})`;
+    if(a<0.04)ctx.fillStyle="#0d141c";
+    ctx.fillRect(j*cw,i*cw,cw,cw);
+  }
+}
+function updSvd(){
+  const r=+document.getElementById("rank").value;
+  document.getElementById("rankV").textContent=r;
+  const L=svdTopR(W,r),R=W.map((row,i)=>row.map((v,j)=>v-L[i][j]));
+  drawHeat(document.getElementById("hW"),W);
+  drawHeat(document.getElementById("hL"),L);
+  drawHeat(document.getElementById("hR"),R);
+  const qW=quantizeRows(W,16),qR=quantizeRows(R,16);
+  const back=qR.map((row,i)=>row.map((v,j)=>v+L[i][j]));
+  const eW=rmse(W,qW),eR=rmse(W,back);
+  document.getElementById("rmseW").textContent=eW.toFixed(3);
+  document.getElementById("rmseR").textContent=eR.toFixed(3);
+  const g=eW/eR;
+  const el=document.getElementById("rmseGain");
+  el.textContent=g.toFixed(2)+"× better";el.className=g>1.15?"good":"bad";
+}
+document.getElementById("rank").addEventListener("input",updSvd);
+document.getElementById("reseed").addEventListener("click",()=>{rng=mulberry32(Math.floor(Math.random()*1e9));W=makeW();updSvd()});
+
+/* ---------- section 03: fused toggle ---------- */
+const btnU=document.getElementById("btnUnfused"),btnF=document.getElementById("btnFused");
+function setFused(on){
+  btnF.classList.toggle("active",on);btnU.classList.toggle("active",!on);
+  document.getElementById("fuseBox").style.opacity=on?0.9:0;
+  document.getElementById("fuseLabel").style.opacity=on?1:0;
+}
+btnU.onclick=()=>setFused(false);btnF.onclick=()=>setFused(true);
+
+/* ---------- section 04: cost model ---------- */
+function updCost(){
+  const K=2**+document.getElementById("cK").value,N=2**+document.getElementById("cN").value;
+  const r=+document.getElementById("cR").value,s=+document.getElementById("cS").value/10;
+  document.getElementById("cKV").textContent=K;document.getElementById("cNV").textContent=N;
+  document.getElementById("cRV").textContent=r;document.getElementById("cSV").textContent=s.toFixed(1)+"×";
+  const main=1/s;                       // relative to BF16 GEMM time = 1
+  const lora=2*r*(K+N)/(2*K*N)*2;       // FLOP ratio, ×2 for skinny-GEMM inefficiency
+  const tot=main+lora;
+  const pct=(x)=>Math.max(x*100,1.2)+"%";
+  document.getElementById("bar2").style.width=pct(main);document.getElementById("barV2").textContent=main.toFixed(3)+"×";
+  document.getElementById("bar3").style.width=pct(lora);document.getElementById("barV3").textContent=lora.toFixed(3)+"×";
+  const b4=document.getElementById("bar4");
+  b4.style.width=pct(tot);
+  b4.style.background=`linear-gradient(90deg,#0e7490 ${(main/tot*100).toFixed(1)}%,#92600a ${(main/tot*100).toFixed(1)}%)`;
+  document.getElementById("barV4").textContent=tot.toFixed(3)+"× → "+(1/tot).toFixed(2)+"× speedup · weights "+(0.25+r*(K+N)/(2*K*N)).toFixed(3)+"×";
+  document.getElementById("barV1").textContent="1.00× compute · memory 0.25×";
+}
+["cK","cN","cR","cS"].forEach(id=>document.getElementById(id).addEventListener("input",updCost));
+
+/* ---------- flow animation ---------- */
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches){
+  const style=document.createElement("style");
+  style.textContent=`.flowpath{stroke-dasharray:6 5;animation:dash 1.1s linear infinite}.flowpath.bf{animation-duration:1.6s}@keyframes dash{to{stroke-dashoffset:-22}}`;
+  document.head.appendChild(style);
+}
+
+/* ---------- init ---------- */
+updOutlier();updSvd();updCost();
+</script>
+</body>
+</html>

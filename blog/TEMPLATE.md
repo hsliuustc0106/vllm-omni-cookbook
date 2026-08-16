@@ -2,8 +2,8 @@
 
 Copy this file to `blog/_posts/YYYY-MM-DD-<short-slug>.md` (the filename date is
 the publish date) and replace every placeholder. Sections marked *(omit if n/a)*
-can be deleted. The dummy post
-`blog/_posts/2026-08-16-pr-analysis-template.md` shows the template rendered.
+can be deleted. The rendered-template dummy post was removed once the first
+real post landed; copy this file and replace placeholders directly.
 
 Rules:
 
