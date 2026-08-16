@@ -9,6 +9,7 @@ summary: >-
   private copies — node PSS −47% on a two-worker MiniMax-H3 node.
 tags: [minimax-h3, offloader]
 category: PR Analysis
+feature: offloader
 math: true
 ---
 

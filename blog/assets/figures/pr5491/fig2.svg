@@ -1,0 +1,45 @@
+<svg width="1060" height="330" viewBox="0 0 1060 330" role="img" aria-label="Session state machine" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="1060" height="330" fill="#0e141c"/>
+    <defs>
+      <marker id="arrC2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#22d3ee"/></marker>
+      <marker id="arrE2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f87171"/></marker>
+      <marker id="arrG2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+      <marker id="arrM2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b98a9"/></marker>
+    </defs>
+    <!-- ACTIVE -->
+    <g>
+      <rect x="70" y="120" width="230" height="86" rx="12" fill="#101c26" stroke="#0e7490" stroke-width="1.5"/>
+      <text x="185" y="152" font-size="17" font-weight="700" fill="#22d3ee" text-anchor="middle">ACTIVE</text>
+      <text x="185" y="174" font-size="12" fill="#8b98a9" text-anchor="middle">chunk k · pending events queued</text>
+      <text x="185" y="192" font-size="12" fill="#8b98a9" text-anchor="middle">0 ≤ k ≤ 9 per generation epoch</text>
+    </g>
+    <!-- FAILED -->
+    <g>
+      <rect x="440" y="120" width="250" height="86" rx="12" fill="#211013" stroke="#7f1d1d" stroke-width="1.5"/>
+      <text x="565" y="148" font-size="17" font-weight="700" fill="#f87171" text-anchor="middle">FAILED</text>
+      <text x="565" y="170" font-size="12" fill="#8b98a9" text-anchor="middle">worker session already released</text>
+      <text x="565" y="188" font-size="12" fill="#8b98a9" text-anchor="middle">retry without reset → ARDiffusionSessionStateError</text>
+    </g>
+    <!-- CLOSED -->
+    <g>
+      <rect x="810" y="120" width="220" height="86" rx="12" fill="#141a22" stroke="#374151" stroke-width="1.5"/>
+      <text x="920" y="150" font-size="17" font-weight="700" fill="#8b98a9" text-anchor="middle">CLOSED</text>
+      <text x="920" y="172" font-size="12" fill="#8b98a9" text-anchor="middle">double-close is a no-op;</text>
+      <text x="920" y="190" font-size="12" fill="#8b98a9" text-anchor="middle">cleanup error → CLEANUP_FAILED tombstone (retryable)</text>
+    </g>
+    <!-- ACTIVE self loop -->
+    <path d="M 110 120 C 60 60, 260 40, 292 112" fill="none" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG2)"/>
+    <text x="180" y="62" font-size="12" fill="#4ade80" text-anchor="middle">tick committed → chunk k+1</text>
+    <text x="180" y="79" font-size="11.5" fill="#5c6a7d" text-anchor="middle">events applied · KV history grows</text>
+    <!-- ACTIVE -> FAILED -->
+    <line x1="300" y1="150" x2="436" y2="150" stroke="#f87171" stroke-width="2" marker-end="url(#arrE2)"/>
+    <text x="368" y="138" font-size="11.5" fill="#f87171" text-anchor="middle">any failure</text>
+    <text x="368" y="170" font-size="11" fill="#5c6a7d" text-anchor="middle">runner · metadata · commit</text>
+    <!-- FAILED -> ACTIVE via reset -->
+    <path d="M 540 206 C 500 290, 200 290, 160 210" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrC2)"/>
+    <text x="350" y="286" font-size="12" fill="#22d3ee" text-anchor="middle">reset() → ACTIVE at chunk 0 — events dropped, prompt/controls cleared, worker state re-released</text>
+    <!-- ACTIVE -> CLOSED -->
+    <path d="M 300 178 C 560 250, 700 250, 806 190" fill="none" stroke="#8b98a9" stroke-width="2" marker-end="url(#arrM2)"/>
+    <text x="565" y="246" font-size="12" fill="#8b98a9" text-anchor="middle">close()</text>
+    <!-- note -->
+    <text x="70" y="36" font-size="12.5" fill="#8b98a9">Epoch bound: the pipeline rejects an 11th tick before prompt encoding — 117 pixel frames of image condition ÷ 4 (VAE temporal) → 30 latent → 10 blocks × 3 frames.</text>
+  </svg>

@@ -3,6 +3,8 @@ layout: home
 title: Blog
 ---
 
+<div class="hero" markdown="1">
+
 Deep dives into important vLLM-Omni PRs, features, and model support — what
 changed, how it works, and the measured impact.
 
@@ -11,3 +13,6 @@ end: the problem it solves, the design, the key code changes, and the benchmark
 evidence. Measured numbers always trace back to the
 [performance cookbook](https://github.com/hsliuustc0106/vllm-omni-cookbook) —
 the cookbook is the ledger, this blog is the narrative.
+
+</div>
+

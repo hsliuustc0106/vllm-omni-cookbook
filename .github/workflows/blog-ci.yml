@@ -1,0 +1,38 @@
+# Blog CI: summary lint + Jekyll build check for PRs touching the blog.
+
+name: Blog CI
+
+on:
+  pull_request:
+    paths:
+      - "blog/**"
+      - "scripts/check-blog-summaries.rb"
+      - ".github/workflows/blog-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+
+      - name: Post summary lint
+        run: ruby scripts/check-blog-summaries.rb
+
+      - name: Install Jekyll
+        run: gem install jekyll jekyll-feed jekyll-seo-tag jekyll-redirect-from jekyll-gfm-admonitions jekyll-remote-theme --no-document
+
+      - name: Build blog
+        env:
+          JEKYLL_ENV: production
+          PAGES_REPO_NWO: hsliuustc0106/vllm-omni-cookbook
+        run: jekyll build --source blog --destination _site

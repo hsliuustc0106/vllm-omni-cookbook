@@ -17,6 +17,49 @@ remote_theme: jekyll/minima@5ce4006d175e6e5278bb63a0aad1a85e3bf2370b
 
 minima:
   skin: auto
+  social_links:
+    - title: vLLM-Omni on GitHub
+      icon: github
+      url: "https://github.com/vllm-project/vllm-omni"
+
+author:
+  name: "© vLLM-Omni contributors"
+
+# Canonical blog feature taxonomy, aligned with vLLM-Omni docs
+# (docs/design/feature/ in vllm-project/vllm-omni). One `feature: <slug>` per
+# post; the home sidebar filters by it and links each entry to its design doc.
+# Keep slugs identical to the docs file names where one exists.
+features:
+  - slug: quantization
+    label: Quantization
+    docs: quantization.md
+  - slug: offloader
+    label: Offloading
+    docs: offloader/
+  - slug: async_chunk
+    label: Async chunking
+    docs: async_chunk.md
+  - slug: disaggregated_inference
+    label: Disaggregation
+    docs: disaggregated_inference.md
+  - slug: realtime_ar_diffusion
+    label: Realtime AR diffusion
+    docs: realtime_ar_diffusion.md
+  - slug: parallelism
+    label: Parallelism
+    docs: tensor_parallel.md
+  - slug: continuous_batching
+    label: Continuous batching
+    docs: diffusion_continuous_batching.md
+  - slug: caching
+    label: Caching & speedups
+    docs: cache_dit.md
+  - slug: connectors
+    label: Omni connectors
+    docs: omni_connectors/
+  - slug: kernels
+    label: Kernels & attention
+    docs: attention_backend_selection.md
 
 header_pages:
   - about.md

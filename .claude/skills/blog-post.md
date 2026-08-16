@@ -38,8 +38,12 @@ Copy `blog/TEMPLATE.md` → `blog/_posts/$(date +%F)-pr<N>-<short-slug>.md`, the
 | Open follow-up issues, review TODOs | **Limitations & follow-ups** |
 
 Title: `Understanding PR #N — <feature>`. Tags: `[<model>, <area>]`. `summary`
-front matter ≤ 240 chars. **Never invent metrics** — if the cookbook has no
-numbers for it, write the design story and say performance is not yet measured.
+front matter ≤ 240 chars. `feature:` = one slug from `site.features` in
+`blog/_config.yml` (sidebar filter; slugs match vLLM-Omni
+`docs/design/feature/` names, e.g. `quantization`, `offloader`,
+`async_chunk`, `disaggregated_inference`). **Never invent metrics** — if the
+cookbook has no numbers for it, write the design story and say performance is
+not yet measured.
 
 ## Step 3 — Figures
 

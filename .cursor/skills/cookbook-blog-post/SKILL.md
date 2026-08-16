@@ -29,7 +29,10 @@ post explains the *how* and *why* for users.
    `{{ site.baseurl }}/assets/figures/<slug>/fig1.png`. Raw HTML (inline SVG,
    styled divs) passes through Markdown anywhere in the post.
 7. Front matter: `summary` ≤ 240 chars (SEO + index teaser), `category: PR
-   Analysis`, tags = model + technical area, `math: true` only if using `$…$`.
+   Analysis`, tags = model + technical area, `feature:` = one slug from
+   `site.features` in `blog/_config.yml` (home sidebar filter; slugs match
+   vLLM-Omni `docs/design/feature/` page names), `math: true` only if using
+   `$…$`.
 8. Preview locally:
    `cd blog && bundle install && bundle exec jekyll serve`
    → http://127.0.0.1:4000/vllm-omni-cookbook/

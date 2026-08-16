@@ -1,0 +1,50 @@
+---
+layout: base
+---
+
+{%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+{%- assign words = content | strip_html | split: " " | size -%}
+{%- assign minutes = words | divided_by: 200 | at_least: 1 -%}
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <a class="back-link" href="{{ '/' | relative_url }}">← All posts</a>
+    <h1 class="post-title p-name" itemprop="name headline">{{ page.title | escape }}</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
+        {{- page.date | date: date_format -}}
+      </time>
+      <span aria-hidden="true">·</span>
+      <span>{{ minutes }} min read</span>
+      {%- if page.author -%}
+      <span aria-hidden="true">·</span>
+      <span itemprop="author">{{ page.author }}</span>
+      {%- endif -%}
+    </p>
+    {%- if page.feature -%}
+    <div class="post-card-tags">
+      {%- for f in site.features -%}
+        {%- if f.slug == page.feature -%}
+      <a class="tag-pill feature-pill" href="{{ '/' | relative_url }}#feature-{{ f.slug }}">{{ f.label }}</a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+    {%- if page.tags.size > 0 -%}
+    <div class="post-card-tags">
+      {%- for tag in page.tags -%}
+      <a class="tag-pill" href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}">#{{ tag }}</a>
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    {{ content }}
+  </div>
+
+  <footer class="post-footer">
+    <a class="back-link" href="{{ '/' | relative_url }}">← All posts</a>
+    <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
+  </footer>
+</article>
