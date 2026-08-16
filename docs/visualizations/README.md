@@ -9,11 +9,11 @@ without it. SVG sources are editable; the matching PNG is a rendered snapshot.
 |----------|--------|-------|-------|
 | [pr-6094-kv-design.svg](pr-6094-kv-design.svg) · [PNG](pr-6094-kv-control-plane.png) | [vllm-project/vllm-omni#6094](https://github.com/vllm-project/vllm-omni/pull/6094) — diffusion KV cache control plane | 2026-08-16 | editable SVG source + render |
 | [pr-6206-vae-groups-design.html](pr-6206-vae-groups-design.html) · [PNG](pr-6206-vae-groups-design.png) | [vllm-project/vllm-omni#6206](https://github.com/vllm-project/vllm-omni/pull/6206) — H3 independent VAE process groups | 2026-08-16 | editable HTML source + render |
-| [pr-6213-dlo-host-weight-plans.html](pr-6213-dlo-host-weight-plans.html) | [vllm-project/vllm-omni#6213](https://github.com/vllm-project/vllm-omni/pull/6213) — loader-owned host-weight plans for DLO | 2026-08-16 | analyzed in the [blog post](https://github.com/hsliuustc0106/vllm-omni-cookbook/blob/main/blog/_posts/2026-08-16-pr-6213-loader-owned-host-weight-plans.md); a served copy lives under `blog/assets/figures/pr-6213-dlo-host-weight-plans/` |
+| [served on the blog](https://hsliuustc0106.github.io/vllm-omni-cookbook/assets/figures/pr-6213-dlo-host-weight-plans/pr-6213-dlo-host-weight-plans.html) · [source](https://github.com/hsliuustc0106/vllm-omni-cookbook/blob/main/blog/assets/figures/pr-6213-dlo-host-weight-plans/pr-6213-dlo-host-weight-plans.html) | [vllm-project/vllm-omni#6213](https://github.com/vllm-project/vllm-omni/pull/6213) — loader-owned host-weight plans for DLO | 2026-08-16 | analyzed in the [blog post](https://github.com/hsliuustc0106/vllm-omni-cookbook/blob/main/blog/_posts/2026-08-16-pr-6213-loader-owned-host-weight-plans.md); the blog is its only copy — new visualizations should ship with a post |
 
 ## PR #6213 — loader-owned host-weight plans for DLO
 
-Reviewed at PR head `5ce549bc` (merged as `9d2bb23ff6`). Contents:
+Reviewed at PR head `5ce549bc` (merged as `9d2bb23ff6`). The interactive page is served by the blog (row above); contents:
 
 1. **Ownership flow** — before (two comment-synced gates) vs. after (the loader as
    single owner of checkpoint semantics, one-shot `HostWeightPlan` transfer).

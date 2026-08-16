@@ -152,4 +152,4 @@ with `--mode dlo-dp2-no-allgather`.
 - [RFC #6195 — Decouple DLO host-weight storage from DP request scheduling](https://github.com/vllm-project/vllm-omni/issues/6195)
 - [Issue #6231 — DLO runtime-cache compatibility across parallelism dimensions](https://github.com/vllm-project/vllm-omni/issues/6231)
 - [DLO feature design](https://github.com/vllm-project/vllm-omni/blob/9d2bb23ff6/docs/design/feature/offloader/distributed_layerwise_offload.md) (upstream repo)
-- [Interactive design visualization]({{ site.baseurl }}/assets/figures/pr-6213-dlo-host-weight-plans/pr-6213-dlo-host-weight-plans.html) — also in the cookbook at [`docs/visualizations/`](https://github.com/hsliuustc0106/vllm-omni-cookbook/blob/main/docs/visualizations/README.md)
+- [Interactive design visualization]({{ site.baseurl }}/assets/figures/pr-6213-dlo-host-weight-plans/pr-6213-dlo-host-weight-plans.html) — the served copy this blog owns; the [visualization index](https://github.com/hsliuustc0106/vllm-omni-cookbook/blob/main/docs/visualizations/README.md) links back to it
