@@ -1,0 +1,401 @@
+@charset "utf-8";
+
+/* vllm.ai-style presentation layer for the vLLM-Omni blog.
+   Loaded through minima's `custom-styles` import hook (last in initialize.scss),
+   so the skin's light/dark SCSS variables stay in scope below. */
+
+$accent: var(--minima-link-base-color);
+$muted: var(--minima-table-text-color);
+$card-border: var(--minima-border-color-02);
+$card-radius: 12px;
+
+/* --- base ---------------------------------------------------------------- */
+
+/* Transparent figures shouldn't glow on dark backgrounds (as on vllm.ai). */
+img {
+  background-color: var(--minima-background-color);
+}
+
+/* --- header --------------------------------------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--minima-background-color);
+  border-bottom: 1px solid $card-border;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 3.5rem;
+}
+
+.site-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 1.05rem;
+
+  .wordmark {
+    font-weight: 700;
+    color: var(--minima-text-color);
+  }
+  .wordmark-sub {
+    color: $muted;
+    font-weight: 400;
+  }
+}
+
+.site-nav .trigger {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.page-link {
+  color: $muted;
+  font-size: 0.95rem;
+
+  &:hover,
+  &.active {
+    color: var(--minima-text-color);
+    background: none;
+  }
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: $muted;
+  cursor: pointer;
+
+  &:hover { color: var(--minima-text-color); background: var(--minima-code-background-color); }
+}
+
+/* Sun shows while in dark mode (click -> light), moon while light. */
+.icon-moon { display: block; }
+.icon-sun { display: none; }
+[data-theme-effective="dark"] .icon-moon { display: none; }
+[data-theme-effective="dark"] .icon-sun { display: block; }
+
+/* --- hero ----------------------------------------------------------------- */
+
+.hero {
+  margin: 2.5rem 0 2rem;
+
+  p {
+    font-size: 1.15rem;
+    color: $muted;
+    max-width: 44rem;
+    margin-bottom: 0.5rem;
+  }
+  a { color: $accent; }
+}
+
+/* --- post cards ------------------------------------------------------------ */
+
+.post-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+.post-card {
+  position: relative;
+  display: flex;
+  border: 1px solid $card-border;
+  border-radius: $card-radius;
+  background: var(--minima-background-color);
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: $accent;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+  }
+}
+
+.post-card-media {
+  flex: 0 0 34%;
+  min-width: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.post-card-body {
+  padding: 1.15rem 1.35rem;
+  min-width: 0;
+}
+
+.post-card-featured {
+  border-color: $accent;
+  box-shadow: 0 0 0 1px $accent;
+
+  &:hover { transform: none; }
+
+  .post-card-title { font-size: 1.45rem; }
+}
+
+.post-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: $muted;
+  font-size: 0.85rem;
+  margin-bottom: 0.45rem;
+}
+
+.featured-badge {
+  color: $accent;
+  border: 1px solid $accent;
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.post-card-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+  line-height: 1.3;
+
+  a { color: var(--minima-text-color); }
+  a:hover { color: $accent; }
+}
+
+/* Whole card clickable; tags stay above the stretched link. */
+.card-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.post-card-summary {
+  color: $muted;
+  margin: 0 0 0.7rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  .tag-pill { position: relative; z-index: 1; }
+}
+
+.tag-pill {
+  display: inline-block;
+  font-size: 0.78rem;
+  color: $muted;
+  border: 1px solid var(--minima-border-color-01);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+
+  &:hover { color: $accent; border-color: $accent; }
+}
+
+/* --- post page -------------------------------------------------------------- */
+
+.post {
+  max-width: 46rem;
+}
+
+.post-header {
+  margin: 2.5rem 0 1.5rem;
+
+  .post-title {
+    font-size: 2rem;
+    line-height: 1.2;
+    margin-bottom: 0.6rem;
+  }
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  color: $muted;
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.back-link {
+  display: inline-block;
+  color: $muted;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+
+  &:hover { color: $accent; }
+}
+
+.post-footer {
+  margin-top: 3rem;
+  border-top: 1px solid $card-border;
+  padding-top: 1.25rem;
+}
+
+/* --- search modal ----------------------------------------------------------- */
+
+.search-open { overflow: hidden; }
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh 1rem 1rem;
+}
+
+.search-modal {
+  width: 100%;
+  max-width: 36rem;
+  background: var(--minima-background-color);
+  border: 1px solid $card-border;
+  border-radius: $card-radius;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid $card-border;
+  color: $muted;
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--minima-text-color);
+    font-size: 1rem;
+  }
+  kbd {
+    font-size: 0.7rem;
+    border: 1px solid var(--minima-border-color-01);
+    border-radius: 5px;
+    padding: 0.1rem 0.35rem;
+    color: $muted;
+  }
+}
+
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+  max-height: 46vh;
+  overflow-y: auto;
+
+  li a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+  }
+  li.active a,
+  li a:hover { background: var(--minima-code-background-color); }
+}
+
+.search-result-title { color: var(--minima-text-color); font-weight: 600; }
+.search-result-meta { color: $muted; font-size: 0.8rem; }
+
+.search-status {
+  padding: 0.6rem 1rem 0.75rem;
+  color: $muted;
+  font-size: 0.85rem;
+  border-top: 1px solid $card-border;
+}
+
+/* --- manual theme override ---------------------------------------------------
+   The `auto` skin follows the OS via prefers-color-scheme; an explicit
+   data-theme wins over it by re-declaring the same variables. */
+
+[data-theme="dark"] {
+  --minima-brand-color: #{$dm-brand-color};
+  --minima-brand-color-light: #{$dm-brand-color-light};
+  --minima-brand-color-dark: #{$dm-brand-color-dark};
+  --minima-site-title-color: #{$dm-site-title-color};
+  --minima-text-color: #{$dm-text-color};
+  --minima-background-color: #{$dm-background-color};
+  --minima-code-background-color: #{$dm-code-background-color};
+  --minima-link-base-color: #{$dm-link-base-color};
+  --minima-link-visited-color: #{$dm-link-visited-color};
+  --minima-link-hover-color: #{$dm-link-hover-color};
+  --minima-border-color-01: #{$dm-border-color-01};
+  --minima-border-color-02: #{$dm-border-color-02};
+  --minima-border-color-03: #{$dm-border-color-03};
+  --minima-table-text-color: #{$dm-table-text-color};
+  --minima-table-zebra-color: #{$dm-table-zebra-color};
+  --minima-table-header-bg-color: #{$dm-table-header-bg-color};
+  --minima-table-header-border: #{$dm-table-header-border};
+  --minima-table-border-color: #{$dm-table-border-color};
+}
+
+[data-theme="light"] {
+  --minima-brand-color: #{$lm-brand-color};
+  --minima-brand-color-light: #{$lm-brand-color-light};
+  --minima-brand-color-dark: #{$lm-brand-color-dark};
+  --minima-site-title-color: #{$lm-site-title-color};
+  --minima-text-color: #{$lm-text-color};
+  --minima-background-color: #{$lm-background-color};
+  --minima-code-background-color: #{$lm-code-background-color};
+  --minima-link-base-color: #{$lm-link-base-color};
+  --minima-link-visited-color: #{$lm-link-visited-color};
+  --minima-link-hover-color: #{$lm-link-hover-color};
+  --minima-border-color-01: #{$lm-border-color-01};
+  --minima-border-color-02: #{$lm-border-color-02};
+  --minima-border-color-03: #{$lm-border-color-03};
+  --minima-table-text-color: #{$lm-table-text-color};
+  --minima-table-zebra-color: #{$lm-table-zebra-color};
+  --minima-table-header-bg-color: #{$lm-table-header-bg-color};
+  --minima-table-header-border: #{$lm-table-header-border};
+  --minima-table-border-color: #{$lm-table-border-color};
+}
+
+/* --- responsive ---------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .header-inner { gap: 0.75rem; }
+  .site-nav .trigger { gap: 0.75rem; }
+  .page-link { font-size: 0.85rem; }
+  .page-link[href*="docs.vllm.ai"] { display: none; } /* Docs link too wide on phones */
+
+  .post-card { flex-direction: column; }
+  .post-card-media { flex: none; height: 160px; }
+  .post-header .post-title { font-size: 1.5rem; }
+}

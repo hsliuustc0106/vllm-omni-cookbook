@@ -1,0 +1,8 @@
+---
+---
+/* Local stylesheet entry — mirrors the theme's own assets/css/style.scss so
+   that _sass/minima/custom-styles.scss (our vllm.ai-style layer) is pulled in
+   through minima's `custom-styles` import hook. */
+@import
+  "minima/skins/{{ site.minima.skin | default: 'classic' }}",
+  "minima/initialize";

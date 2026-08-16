@@ -1,0 +1,34 @@
+{%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+{%- assign words = include.post.content | strip_html | split: " " | size -%}
+{%- assign minutes = words | divided_by: 200 | at_least: 1 -%}
+
+<article class="post-card{% if include.featured %} post-card-featured{% endif %}">
+  {%- if include.post.image -%}
+  <div class="post-card-media">
+    <img src="{{ include.post.image | relative_url }}" alt="" loading="lazy" decoding="async">
+  </div>
+  {%- endif -%}
+  <div class="post-card-body">
+    <div class="post-card-meta">
+      <time datetime="{{ include.post.date | date_to_xmlschema }}">{{ include.post.date | date: date_format }}</time>
+      <span aria-hidden="true">·</span>
+      <span>{{ minutes }} min read</span>
+      {%- if include.featured -%}
+      <span class="featured-badge">Featured</span>
+      {%- endif -%}
+    </div>
+    <h2 class="post-card-title">
+      <a class="card-link" href="{{ include.post.url | relative_url }}">{{ include.post.title | escape }}</a>
+    </h2>
+    {%- if include.post.summary -%}
+    <p class="post-card-summary">{{ include.post.summary | escape }}</p>
+    {%- endif -%}
+    {%- if include.post.tags.size > 0 -%}
+    <div class="post-card-tags">
+      {%- for tag in include.post.tags -%}
+      <a class="tag-pill" href="{{ '/tags/' | relative_url }}#{{ tag | slugify }}">#{{ tag }}</a>
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+  </div>
+</article>

@@ -13,6 +13,8 @@ description: >-
   interactive LingBot World 2.0 worlds at 2.66 s per steady tick on H200.
 tags: [lingbot-world-2, ar-diffusion]
 category: PR Analysis
+featured: true
+image: /assets/figures/pr5491/fig1.png
 ---
 
 ## TL;DR

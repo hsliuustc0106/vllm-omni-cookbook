@@ -1,8 +1,20 @@
 {%- comment -%}
   Loaded by minima's default layout at the end of <head>.
-  MathJax is pulled in only on pages that set `math: true` in front matter
-  (same behavior as vllm.ai/blog posts).
+  1. Apply the saved theme before first paint (no flash of wrong theme).
+  2. Expose baseurl-aware asset URLs to the static JS files.
+  3. MathJax is pulled in only on pages that set `math: true` in front matter.
 {%- endcomment -%}
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    } catch (e) { /* private mode */ }
+    window.VOMNI_SEARCH_URL = {{ '/' | append: 'search.json' | relative_url | jsonify }};
+  })();
+</script>
+<script defer src="{{ '/assets/js/theme.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/search.js' | relative_url }}"></script>
 {%- if page.math -%}
 <script>
   MathJax = {

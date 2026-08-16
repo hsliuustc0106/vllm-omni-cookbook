@@ -17,6 +17,13 @@ remote_theme: jekyll/minima@5ce4006d175e6e5278bb63a0aad1a85e3bf2370b
 
 minima:
   skin: auto
+  social_links:
+    - title: vLLM-Omni on GitHub
+      icon: github
+      url: "https://github.com/vllm-project/vllm-omni"
+
+author:
+  name: "© vLLM-Omni contributors"
 
 header_pages:
   - about.md

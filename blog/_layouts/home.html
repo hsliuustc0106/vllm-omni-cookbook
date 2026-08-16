@@ -1,0 +1,28 @@
+---
+layout: base
+---
+
+{{ content }}
+
+{%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+
+{%- comment -%} Featured post: first post flagged `featured: true`, else the newest. {%- endcomment -%}
+{%- assign featured = site.posts | where: "featured", true | first | default: site.posts.first -%}
+
+<div class="home">
+
+  {%- if featured -%}
+    {%- include post-card.html post=featured featured=true -%}
+  {%- endif -%}
+
+  <div class="post-cards">
+    {%- for post in site.posts -%}
+      {%- if post.url == featured.url -%}
+        {%- continue -%}
+      {%- endif -%}
+      {%- include post-card.html post=post -%}
+    {%- endfor -%}
+  </div>
+
+  <p class="rss-subscribe">subscribe <a href="{{ 'feed.xml' | relative_url }}">via RSS</a></p>
+</div>

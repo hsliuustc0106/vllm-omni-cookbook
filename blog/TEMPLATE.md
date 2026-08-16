@@ -17,6 +17,9 @@ Rules:
 - `summary` front matter ≤ 240 characters (SEO description + index teaser).
 - One post per PR or feature. Tags: the model plus the technical area
   (e.g. `qwen3-omni`, `scheduler`).
+- Optional card front matter: `image:` (cover shown on the home-page card) and
+  `featured: true` (pins the post as the featured card; newest is featured when
+  unset).
 - Figures go in `blog/assets/figures/<slug>/`.
 
 ---
@@ -33,6 +36,8 @@ summary: >-
 tags: [<model, e.g. qwen3-omni>, <area, e.g. scheduler>]
 category: PR Analysis
 math: true   # omit when the post has no math
+# image: /assets/figures/<slug>/cover.png   # optional home-card cover
+# featured: true                            # optional: pin as featured card
 ---
 
 > [!NOTE]
