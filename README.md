@@ -1,20 +1,30 @@
-# vLLM-Omni Performance Cookbook
+# vLLM-Omni Blog
 
-**Release-by-release performance summary** for models running on [vLLM-Omni](https://github.com/vllm-project/vllm-omni). For each tracked model, the cookbook records **what improved, by how much, and why** at every **even** stable release — measured numbers plus links to the PRs and optimizations behind them.
+**Deep dives into important [vLLM-Omni](https://github.com/vllm-project/vllm-omni) PRs, features, and new model support** — what changed, how it works, and the measured impact.
 
-**Update cadence:** the cookbook is updated only on **even** vLLM-Omni minor releases — v0.14.0, v0.16.0, v0.18.0, v0.20.0, v0.22.0, … Odd minors (v0.19, v0.21, …) are skipped. Deltas always compare to the **previous even** release (e.g. v0.22 vs v0.20).
+Read it live at **[hsliuustc0106.github.io/vllm-omni-cookbook](https://hsliuustc0106.github.io/vllm-omni-cookbook/)**.
+
+Whenever an important PR, feature, or model is finalized, it gets a **PR Analysis** post explaining it for users: the problem it solves, the design, the key code changes, and the benchmark evidence. Posts have no fixed cadence — they publish when something important lands. The blog is a self-contained Jekyll site in [`blog/`](blog/) (same stack as [vllm.ai/blog](https://vllm.ai/blog)), redeployed to GitHub Pages automatically on every push that touches `blog/`. New posts start from [`blog/TEMPLATE.md`](blog/TEMPLATE.md).
+
+Local preview (needs Ruby ≥ 3, e.g. `brew install ruby`):
+`cd blog && bundle install && bundle exec jekyll serve`
+
+Behind the posts, this repo maintains the **vLLM-Omni performance cookbook** — the authoritative numbers the blog cites. For each tracked model it records **what improved, by how much, and why** at every **even** stable release, measured and linked to the PRs behind each change.
+
+**Cookbook cadence:** updated only on **even** vLLM-Omni minor releases — v0.14.0, v0.16.0, v0.18.0, v0.20.0, v0.22.0, … Odd minors (v0.19, v0.21, …) are skipped. Deltas always compare to the **previous even** release (e.g. v0.22 vs v0.20).
 
 ## How it is organized
 
 | Layer | File | Role |
 |-------|------|------|
-| **Per model** | `{category}/{model}/index.md` | Full improvement history — one `## vX.Y.Z` section per **even** release (metrics, delta vs prior even release, optimization notes) |
-| **Per release** | `SUMMARY.md` | Cross-model snapshot for each **even** release only |
-| **Per PR** | [`blog/`](blog/) | "PR Analysis" deep-dive posts — one per important PR/feature, published as a [blog](https://hsliuustc0106.github.io/vllm-omni-cookbook/) |
+| **Blog posts** | `blog/_posts/` | One deep-dive "PR Analysis" post per important PR/feature — the user-facing narrative |
+| **Blog site** | [`blog/`](blog/) | Self-contained Jekyll site (config, template, figures) deployed to GitHub Pages |
+| **Per model** | `{category}/{model}/index.md` | Cookbook ledger — one `## vX.Y.Z` section per **even** release (metrics, delta vs prior even release, optimization notes) |
+| **Per release** | `SUMMARY.md` | Cross-model cookbook snapshot for each **even** release only |
 | **Update notes** | [`notes/`](notes/) | Chronological feature, RFC, and PR updates with no fixed cadence |
 
 vLLM-Omni owns deployment recipes and benchmark harnesses; this repo publishes the
-performance history and the related update notes.
+blog, the performance history, and the related update notes.
 
 ## Models Tracked
 
@@ -26,25 +36,11 @@ performance history and the related update notes.
 | Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
 | Qwen-Image-Edit | [diffusion](diffusion/qwen-image-edit/) | Image-to-image editing (DiT) |
 
-## Latest Cookbook Release: v0.20.0
+## Latest Cookbook Release: v0.22.0
 
-See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.22.0). Next cookbook update: **v0.22.0**.
+See [SUMMARY.md](SUMMARY.md) for the cross-model overview (even releases: v0.14.0 → v0.22.0).
 
 **WAN2.2** — [index](diffusion/wan2.2/index.md) · [Zhihu draft](diffusion/wan2.2/wan22-i2v-performance-zhihu.md).
-
-## Blog — PR Analysis
-
-Whenever an important PR, feature, or model lands in vLLM-Omni, [`blog/`](blog/)
-gets a deep-dive post explaining it for users: the problem, the design, the key
-code changes, and the measured impact (numbers always cited from this cookbook).
-The blog is a self-contained Jekyll site — same stack as
-[vllm.ai/blog](https://vllm.ai/blog) — deployed to
-[GitHub Pages](https://hsliuustc0106.github.io/vllm-omni-cookbook/) on every
-push that touches `blog/`. Posts have no fixed cadence; start from
-[`blog/TEMPLATE.md`](blog/TEMPLATE.md).
-
-Local preview (needs Ruby ≥ 3, e.g. `brew install ruby`):
-`cd blog && bundle install && bundle exec jekyll serve`
 
 ## Update Notes
 
@@ -61,9 +57,17 @@ period. Use [the template](notes/TEMPLATE.md) for new entries.
 | Diffusion  | E2E latency, throughput            |
 | All        | GPU memory, hardware efficiency    |
 
-## How to Add a New Release
+## How to Add a New Blog Post
 
-Update the cookbook only when vLLM-Omni ships an **even** minor release (`v0.22.0`, `v0.24.0`, …). Skip odd minors.
+1. Copy [`blog/TEMPLATE.md`](blog/TEMPLATE.md) → `blog/_posts/YYYY-MM-DD-<slug>.md`
+2. Write for users: TL;DR → Background → What the PR does → Key changes → Measured impact → How to use it → Limitations → References
+3. Cite numbers only from the cookbook ledgers or upstream perf JSON, with absolute GitHub URLs
+4. Figures go in `blog/assets/figures/<slug>/`; preview locally with `bundle exec jekyll serve`
+5. Merging to `main` auto-deploys the blog
+
+## How to Add a New Cookbook Release
+
+Update the cookbook only when vLLM-Omni ships an **even** minor release (`v0.24.0`, …). Skip odd minors.
 
 For that release, append the improvement summary for **each tracked model**:
 
@@ -83,10 +87,10 @@ Then write `<category>/<model-name>/index.md` following the format of existing m
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and agent skills in [.cursor/skills/](.cursor/skills/) for step-by-step workflows (add model, add release, write narrative).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and agent skills in [.cursor/skills/](.cursor/skills/) for step-by-step workflows (write a blog post, add model, add release, write narrative).
 
 ## Resources
 
+- [Blog](https://hsliuustc0106.github.io/vllm-omni-cookbook/) — PR Analysis deep dives
 - [vLLM-Omni](https://github.com/vllm-project/vllm-omni) — source repository
 - [vLLM-Omni Docs](https://docs.vllm.ai/projects/vllm-omni/en/latest/)
-- [Blog](https://hsliuustc0106.github.io/vllm-omni-cookbook/) — PR Analysis deep dives
