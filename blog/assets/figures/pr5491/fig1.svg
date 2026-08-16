@@ -1,0 +1,149 @@
+<svg width="1060" height="1030" viewBox="0 0 1060 1030" role="img" aria-label="Architecture: caller, session control plane, tick consumer, omni engine, worker and runner, LingBot pipeline, KV subsystem" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="1060" height="1030" fill="#0e141c"/>
+    <defs>
+      <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#22d3ee"/></marker>
+      <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+      <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/></marker>
+      <marker id="arrV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/></marker>
+    </defs>
+
+    <!-- ===== Layer 1: caller ===== -->
+    <g>
+      <rect x="60" y="14" width="640" height="64" rx="10" fill="#0e1726" stroke="#1f2937"/>
+      <text x="80" y="39" font-size="14" font-weight="600" fill="#e6edf3">Caller / transport adapter</text>
+      <text x="80" y="60" font-size="12" fill="#8b98a9">This PR ships no public HTTP/WS endpoint — the example script stands in.</text>
+      <text x="620" y="39" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">examples/…/lingbot_world_v2_realtime.py</text>
+    </g>
+    <line x1="380" y1="78" x2="380" y2="112" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrC)"/>
+    <text x="394" y="100" font-size="11.5" fill="#22d3ee" class="mono">ARDiffusionSessionEvent(event_id, prompt?, controls)</text>
+
+    <!-- ===== Layer 2: control plane ===== -->
+    <g>
+      <rect x="60" y="116" width="640" height="150" rx="12" fill="#101c26" stroke="#0e7490" stroke-width="1.5"/>
+      <text x="80" y="140" font-size="14" font-weight="600" fill="#22d3ee">Session control plane — client side</text>
+      <text x="692" y="140" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">experimental/ar_diffusion/session.py</text>
+
+      <rect x="80" y="154" width="292" height="94" rx="8" fill="#0b1420" stroke="#1f2937"/>
+      <text x="92" y="175" font-size="12.5" font-weight="600" fill="#e6edf3" class="mono">ARDiffusionSessionManager → Session</text>
+      <text x="92" y="194" font-size="11.5" fill="#8b98a9">accept_event(): monotonic ids, dedup, stale floor,</text>
+      <text x="92" y="210" font-size="11.5" fill="#8b98a9">queue backpressure — events are queued, not applied</text>
+      <text x="92" y="226" font-size="11.5" fill="#8b98a9">next_chunk(): immutable tick snapshot (chunk_index, ids)</text>
+      <text x="92" y="242" font-size="11.5" fill="#8b98a9">lifecycle: ACTIVE / FAILED / CLOSED (+ tombstone)</text>
+
+      <rect x="384" y="154" width="150" height="94" rx="8" fill="#0b1420" stroke="#1f2937"/>
+      <text x="396" y="177" font-size="12" font-weight="600" fill="#e6edf3" class="mono">Reducer</text>
+      <text x="396" y="196" font-size="11.5" fill="#8b98a9">LingBotCamera</text>
+      <text x="396" y="212" font-size="11.5" fill="#8b98a9">ControlReducer</text>
+      <text x="396" y="231" font-size="11.5" fill="#8b98a9">prepare() is pure;</text>
+      <text x="396" y="247" font-size="11.5" fill="#8b98a9">commit() on tick success</text>
+
+      <rect x="546" y="154" width="136" height="94" rx="8" fill="#0b1420" stroke="#1f2937"/>
+      <text x="558" y="177" font-size="12" font-weight="600" fill="#e6edf3" class="mono">Lifecycle</text>
+      <text x="558" y="196" font-size="11.5" fill="#8b98a9">ARDiffusion</text>
+      <text x="558" y="212" font-size="11.5" fill="#8b98a9">WorkerLifecycle</text>
+      <text x="558" y="231" font-size="11.5" fill="#8b98a9">reset / close</text>
+      <text x="558" y="247" font-size="11.5" fill="#8b98a9">collective RPCs</text>
+    </g>
+    <line x1="380" y1="266" x2="380" y2="300" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrC)"/>
+    <text x="394" y="288" font-size="11.5" fill="#22d3ee" class="mono">next_chunk() → ARDiffusionTickRequest</text>
+
+    <!-- ===== Layer 3: consumer ===== -->
+    <g>
+      <rect x="60" y="304" width="640" height="92" rx="10" fill="#101c26" stroke="#0e7490" stroke-width="1.5"/>
+      <text x="80" y="328" font-size="14" font-weight="600" fill="#22d3ee">Tick consumer</text>
+      <text x="692" y="328" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">experimental/ar_diffusion/consumer.py</text>
+      <text x="80" y="350" font-size="12" fill="#8b98a9">execute_tick(): serialize tick into <tspan class="mono" fill="#e6edf3">extra_args["ar_diffusion_tick"]</tspan>, call normal</text>
+      <text x="80" y="368" font-size="12" fill="#8b98a9"><tspan class="mono" fill="#e6edf3">AsyncOmni.generate()</tspan> (per-tick sampling-params copy). On return: parse + validate the</text>
+      <text x="80" y="386" font-size="12" fill="#8b98a9">full typed metadata; reject replicated AR stages (num_replicas &gt; 1) at construction.</text>
+    </g>
+
+    <!-- ===== process boundary ===== -->
+    <line x1="30" y1="424" x2="1030" y2="424" stroke="#374151" stroke-width="1.5" stroke-dasharray="7 6"/>
+    <rect x="424" y="412" width="212" height="24" rx="12" fill="#0b0f14" stroke="#374151"/>
+    <text x="530" y="428" font-size="11.5" fill="#8b98a9" text-anchor="middle">process boundary · one engine, one AR replica</text>
+
+    <line x1="380" y1="396" x2="380" y2="446" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrA)"/>
+    <text x="394" y="425" font-size="11.5" fill="#fbbf24" class="mono">standard generate() request — no private protocol</text>
+
+    <!-- ===== Layer 4: engine seams ===== -->
+    <g>
+      <rect x="60" y="452" width="640" height="88" rx="10" fill="#1c1710" stroke="#92600a" stroke-width="1.5"/>
+      <text x="80" y="476" font-size="14" font-weight="600" fill="#fbbf24">Omni engine — minimal seams</text>
+      <text x="692" y="476" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">engine/async_omni_engine.py:987</text>
+      <text x="80" y="498" font-size="12" fill="#8b98a9">AsyncOmni keeps its own UUID-suffixed routing id; stage routing selects</text>
+      <text x="80" y="516" font-size="12" fill="#8b98a9"><tspan class="mono" fill="#e6edf3">ARDiffusionEngine</tspan> via the propagated <tspan class="mono" fill="#e6edf3">engine_backend</tspan>. Reset/close ride the existing</text>
+      <text x="80" y="532" font-size="12" fill="#8b98a9">StagePool.collective_rpc lane — no second request lifecycle.</text>
+    </g>
+    <line x1="380" y1="540" x2="380" y2="574" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrA)"/>
+
+    <!-- ===== Layer 5: worker + runner ===== -->
+    <g>
+      <rect x="60" y="578" width="640" height="128" rx="10" fill="#1c1710" stroke="#92600a" stroke-width="1.5"/>
+      <text x="80" y="602" font-size="14" font-weight="600" fill="#fbbf24">Diffusion worker → AR model runner</text>
+      <text x="692" y="602" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">worker/diffusion_worker.py · ar_diffusion/runner.py</text>
+      <text x="80" y="624" font-size="12" fill="#8b98a9">Parse tick from extra_args → <tspan class="mono" fill="#e6edf3">_get_or_create_session()</tspan>: worker-local KV + model state,</text>
+      <text x="80" y="642" font-size="12" fill="#8b98a9">LRU-evict at capacity → bind <tspan class="mono" fill="#e6edf3">ARDiffusionKVState</tspan> → invoke pipeline. Guards at load:</text>
+      <text x="80" y="660" font-size="12" fill="#8b98a9"><tspan class="mono" fill="#e6edf3">max_num_seqs=1</tspan>, no step/batch execution, CUDA device, KV prealloc from free memory.</text>
+      <text x="80" y="678" font-size="12" fill="#8b98a9">Any forward exception → <tspan class="mono" fill="#e6edf3">_release_session()</tspan> (idempotent close) — the runner never keeps</text>
+      <text x="80" y="694" font-size="12" fill="#8b98a9">poisoned session state.</text>
+    </g>
+    <line x1="380" y1="706" x2="380" y2="740" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrA)"/>
+
+    <!-- ===== Layer 6: pipeline ===== -->
+    <g>
+      <rect x="60" y="744" width="640" height="128" rx="10" fill="#1c1710" stroke="#92600a" stroke-width="1.5"/>
+      <text x="80" y="768" font-size="14" font-weight="600" fill="#fbbf24">LingBot causal DMD pipeline — one block</text>
+      <text x="692" y="768" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">diffusion/models/lingbot_world/pipeline.py</text>
+      <text x="80" y="790" font-size="12" fill="#8b98a9">Validate → horizon fail-fast (chunk_index ≥ 10 → error <tspan fill="#4ade80">before</tspan> prompt encoding) →</text>
+      <text x="80" y="808" font-size="12" fill="#8b98a9">chunk continuity vs model-side next index → image + camera-Plücker conditioning (anchor</text>
+      <text x="80" y="826" font-size="12" fill="#8b98a9">chain carries pose across chunk boundaries) → 4-step DMD denoise, probe KV → scratch blocks →</text>
+      <text x="80" y="844" font-size="12" fill="#8b98a9">final pass commits <tspan class="mono" fill="#e6edf3">3 clean latent frames</tspan> to paged KV → payload + typed metadata.</text>
+      <text x="80" y="862" font-size="12" fill="#8b98a9">Prompt switch: clear text cross-attention only; self-attention history survives.</text>
+    </g>
+
+    <!-- ===== KV side band ===== -->
+    <g>
+      <rect x="726" y="578" width="304" height="294" rx="10" fill="#16102a" stroke="#6d28d9" stroke-width="1.5"/>
+      <text x="742" y="602" font-size="14" font-weight="600" fill="#a78bfa">Paged KV subsystem</text>
+      <text x="1014" y="602" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">ar_diffusion/kv_cache/</text>
+
+      <text x="742" y="628" font-size="12" fill="#8b98a9" class="mono">ARDiffusionKVCache (manager.py)</text>
+      <text x="742" y="645" font-size="11.5" fill="#8b98a9">per-layer/branch pools · scratch · capacity</text>
+      <text x="742" y="661" font-size="11.5" fill="#8b98a9">from free-memory budget, ≥ 1 session</text>
+
+      <text x="742" y="688" font-size="12" fill="#8b98a9" class="mono">ARDiffusionKVState (state.py)</text>
+      <text x="742" y="705" font-size="11.5" fill="#8b98a9">per-session block tables + cross-attn cache</text>
+      <text x="742" y="721" font-size="11.5" fill="#8b98a9">close() idempotent · reset(keep_cross_attn)</text>
+
+      <text x="742" y="748" font-size="12" fill="#8b98a9" class="mono">paged.py · sink 9 | window 18 | block 3</text>
+      <text x="742" y="765" font-size="11.5" fill="#8b98a9">post-commit prune of middle blocks via vLLM</text>
+      <text x="742" y="781" font-size="11.5" fill="#8b98a9">KVCacheManager; null-block padding — no leak</text>
+
+      <text x="742" y="808" font-size="12" fill="#8b98a9" class="mono">paged_attention.py</text>
+      <text x="742" y="825" font-size="11.5" fill="#8b98a9">explicit key_pool/value_pool op inputs with</text>
+      <text x="742" y="841" font-size="11.5" fill="#8b98a9">mutates_args — torch.compile-safe mutation</text>
+      <text x="742" y="857" font-size="11.5" fill="#8b98a9">of pool tensors; block table rebuilt per forward</text>
+    </g>
+    <line x1="700" y1="736" x2="726" y2="736" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrV)"/>
+    <line x1="726" y1="700" x2="700" y2="700" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrV)"/>
+
+    <!-- ===== return path ===== -->
+    <path d="M 700 808 C 980 808, 1000 500, 1000 400 C 1000 350, 990 330, 940 322 L 704 322" fill="none" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG)"/>
+    <text x="1006" y="560" font-size="11.5" fill="#4ade80" class="mono" transform="rotate(90 1006 560)" text-anchor="middle">DiffusionOutput: payload latents [1,16,3,h,w] + metadata["ar_diffusion"]</text>
+
+    <!-- commit box -->
+    <g>
+      <rect x="60" y="892" width="640" height="76" rx="10" fill="#0f1f16" stroke="#166534" stroke-width="1.5"/>
+      <text x="80" y="916" font-size="14" font-weight="600" fill="#4ade80">Commit boundary — accepted ≠ applied</text>
+      <text x="80" y="938" font-size="12" fill="#8b98a9">Session compares the returned metadata to the frozen tick snapshot — session_id, request_id,</text>
+      <text x="80" y="956" font-size="12" fill="#8b98a9">chunk_index, applied_event_ids — all four must match exactly. Only then: pop events, commit reducer, chunk_index+1.</text>
+    </g>
+    <line x1="380" y1="872" x2="380" y2="892" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG)"/>
+
+    <!-- legend -->
+    <g font-size="11.5">
+      <rect x="726" y="906" width="14" height="14" rx="3" fill="#101c26" stroke="#0e7490"/><text x="748" y="917" fill="#8b98a9">client / control plane</text>
+      <rect x="726" y="928" width="14" height="14" rx="3" fill="#1c1710" stroke="#92600a"/><text x="748" y="939" fill="#8b98a9">engine side</text>
+      <rect x="726" y="950" width="14" height="14" rx="3" fill="#16102a" stroke="#6d28d9"/><text x="748" y="961" fill="#8b98a9">KV subsystem</text>
+      <rect x="890" y="906" width="14" height="14" rx="3" fill="#0f1f16" stroke="#166534"/><text x="912" y="917" fill="#8b98a9">commit / return path</text>
+    </g>
+  </svg>

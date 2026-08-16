@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR #5491 — Realtime AR-Diffusion tick sessions, visually</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --panel: #121821;
+    --panel2: #0e141c;
+    --line: #1f2937;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --faint: #5c6a7d;
+    --ctl: #22d3ee;       /* client / control plane */
+    --ctl-dim: #0e7490;
+    --eng: #fbbf24;       /* engine side */
+    --eng-dim: #92600a;
+    --kv: #a78bfa;        /* KV subsystem */
+    --kv-dim: #6d28d9;
+    --ok: #4ade80;
+    --err: #f87171;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 20px 80px; }
+  section { margin-top: 64px; }
+  h1 { font-size: 33px; line-height: 1.2; margin: 8px 0 4px; letter-spacing: -0.5px; }
+  h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.3px; }
+  h2 .idx { color: var(--faint); font-weight: 400; margin-right: 10px; font-size: 18px; }
+  p { margin: 10px 0; max-width: 80ch; }
+  .lede { color: var(--muted); font-size: 18px; max-width: 72ch; }
+  a { color: var(--ctl); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .chip {
+    font-family: var(--mono); font-size: 13px; background: #182230;
+    border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; margin-top: 14px;
+  }
+  .figwrap { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel2); padding: 10px; overflow-x: auto; }
+  svg { display: block; margin: 0 auto; }
+  svg text { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  svg .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .cap { color: var(--faint); font-size: 13px; margin-top: 8px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+  .meta-row .chip { color: var(--muted); }
+  .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 14px; }
+  @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; position: relative; padding-left: 52px;
+  }
+  .step .n {
+    position: absolute; left: 12px; top: 12px; width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font: 600 14px var(--mono); color: var(--bg); background: var(--ctl);
+  }
+  .step.engine .n { background: var(--eng); }
+  .step.kv .n { background: var(--kv); }
+  .step.commit .n { background: var(--ok); }
+  .step h4 { margin: 0 0 4px; font-size: 14.5px; }
+  .step p { margin: 0; font-size: 13.5px; color: var(--muted); max-width: none; }
+  .step p code { font-size: 12px; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  @media (max-width: 900px) { .facts { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 620px) { .facts { grid-template-columns: 1fr; } }
+  .fact { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .fact .v { font: 600 21px var(--mono); letter-spacing: -0.5px; }
+  .fact .v.ctl { color: var(--ctl); } .fact .v.eng { color: var(--eng); } .fact .v.kv { color: var(--kv); } .fact .v.ok { color: var(--ok); }
+  .fact .k { color: var(--muted); font-size: 12.5px; margin-top: 2px; line-height: 1.45; }
+  table.fu { border-collapse: collapse; width: 100%; margin-top: 14px; font-size: 13.5px; }
+  table.fu th { text-align: left; color: var(--faint); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+  table.fu td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.fu td:first-child { white-space: nowrap; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  table.fu td.loc { font-family: var(--mono); font-size: 12px; color: var(--ctl); white-space: nowrap; }
+  .footnote { color: var(--faint); font-size: 13px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="tag">vllm-omni · PR #5491 · merged 3875f8de · 2026-08-16</div>
+  <h1>Realtime AR-Diffusion tick sessions for LingBot World 2.0</h1>
+  <p class="lede">
+    A typed, fail-closed realtime path: one request generates exactly one autoregressive
+    latent block, with per-session paged KV history, interaction events applied only at chunk
+    boundaries, and a model-neutral control plane that keeps LingBot specifics out of the engine.
+    53 files, +10,754 / −129, 28 new. Reviewed post-merge 2026-08-16.
+  </p>
+  <div class="meta-row">
+    <span class="chip">experimental/ar_diffusion/ — control plane</span>
+    <span class="chip">diffusion/models/lingbot_world/ — model</span>
+    <span class="chip">3 engine seams: registry · worker · engine</span>
+    <span class="chip">no public HTTP/WS API (companion draft #5527)</span>
+  </div>
+</header>
+
+<section id="arch">
+  <h2><span class="idx">1</span>The big picture — one tick's journey</h2>
+  <p>
+    The stack splits at a process boundary: the <b style="color:var(--ctl)">control plane</b> owns
+    event ordering and commit semantics; the <b style="color:var(--eng)">engine side</b> owns
+    worker-local session state, model execution, and paged KV. They talk over the
+    <i>standard</i> Omni request path — the tick hides inside
+    <code>sampling_params.extra_args["ar_diffusion_tick"]</code> — and comes back as a typed
+    metadata envelope that the control plane must match <i>exactly</i> before committing anything.
+  </p>
+  <div class="figwrap">
+  <svg width="1060" height="1030" viewBox="0 0 1060 1030" role="img" aria-label="Architecture: caller, session control plane, tick consumer, omni engine, worker and runner, LingBot pipeline, KV subsystem">
+    <defs>
+      <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#22d3ee"/></marker>
+      <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+      <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/></marker>
+      <marker id="arrV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/></marker>
+    </defs>
+
+    <!-- ===== Layer 1: caller ===== -->
+    <g>
+      <rect x="60" y="14" width="640" height="64" rx="10" fill="#0e1726" stroke="#1f2937"/>
+      <text x="80" y="39" font-size="14" font-weight="600" fill="#e6edf3">Caller / transport adapter</text>
+      <text x="80" y="60" font-size="12" fill="#8b98a9">This PR ships no public HTTP/WS endpoint — the example script stands in.</text>
+      <text x="620" y="39" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">examples/…/lingbot_world_v2_realtime.py</text>
+    </g>
+    <line x1="380" y1="78" x2="380" y2="112" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrC)"/>
+    <text x="394" y="100" font-size="11.5" fill="#22d3ee" class="mono">ARDiffusionSessionEvent(event_id, prompt?, controls)</text>
+
+    <!-- ===== Layer 2: control plane ===== -->
+    <g>
+      <rect x="60" y="116" width="640" height="150" rx="12" fill="#101c26" stroke="#0e7490" stroke-width="1.5"/>
+      <text x="80" y="140" font-size="14" font-weight="600" fill="#22d3ee">Session control plane — client side</text>
+      <text x="692" y="140" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">experimental/ar_diffusion/session.py</text>
+
+      <rect x="80" y="154" width="292" height="94" rx="8" fill="#0b1420" stroke="#1f2937"/>
+      <text x="92" y="175" font-size="12.5" font-weight="600" fill="#e6edf3" class="mono">ARDiffusionSessionManager → Session</text>
+      <text x="92" y="194" font-size="11.5" fill="#8b98a9">accept_event(): monotonic ids, dedup, stale floor,</text>
+      <text x="92" y="210" font-size="11.5" fill="#8b98a9">queue backpressure — events are queued, not applied</text>
+      <text x="92" y="226" font-size="11.5" fill="#8b98a9">next_chunk(): immutable tick snapshot (chunk_index, ids)</text>
+      <text x="92" y="242" font-size="11.5" fill="#8b98a9">lifecycle: ACTIVE / FAILED / CLOSED (+ tombstone)</text>
+
+      <rect x="384" y="154" width="150" height="94" rx="8" fill="#0b1420" stroke="#1f2937"/>
+      <text x="396" y="177" font-size="12" font-weight="600" fill="#e6edf3" class="mono">Reducer</text>
+      <text x="396" y="196" font-size="11.5" fill="#8b98a9">LingBotCamera</text>
+      <text x="396" y="212" font-size="11.5" fill="#8b98a9">ControlReducer</text>
+      <text x="396" y="231" font-size="11.5" fill="#8b98a9">prepare() is pure;</text>
+      <text x="396" y="247" font-size="11.5" fill="#8b98a9">commit() on tick success</text>
+
+      <rect x="546" y="154" width="136" height="94" rx="8" fill="#0b1420" stroke="#1f2937"/>
+      <text x="558" y="177" font-size="12" font-weight="600" fill="#e6edf3" class="mono">Lifecycle</text>
+      <text x="558" y="196" font-size="11.5" fill="#8b98a9">ARDiffusion</text>
+      <text x="558" y="212" font-size="11.5" fill="#8b98a9">WorkerLifecycle</text>
+      <text x="558" y="231" font-size="11.5" fill="#8b98a9">reset / close</text>
+      <text x="558" y="247" font-size="11.5" fill="#8b98a9">collective RPCs</text>
+    </g>
+    <line x1="380" y1="266" x2="380" y2="300" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrC)"/>
+    <text x="394" y="288" font-size="11.5" fill="#22d3ee" class="mono">next_chunk() → ARDiffusionTickRequest</text>
+
+    <!-- ===== Layer 3: consumer ===== -->
+    <g>
+      <rect x="60" y="304" width="640" height="92" rx="10" fill="#101c26" stroke="#0e7490" stroke-width="1.5"/>
+      <text x="80" y="328" font-size="14" font-weight="600" fill="#22d3ee">Tick consumer</text>
+      <text x="692" y="328" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">experimental/ar_diffusion/consumer.py</text>
+      <text x="80" y="350" font-size="12" fill="#8b98a9">execute_tick(): serialize tick into <tspan class="mono" fill="#e6edf3">extra_args["ar_diffusion_tick"]</tspan>, call normal</text>
+      <text x="80" y="368" font-size="12" fill="#8b98a9"><tspan class="mono" fill="#e6edf3">AsyncOmni.generate()</tspan> (per-tick sampling-params copy). On return: parse + validate the</text>
+      <text x="80" y="386" font-size="12" fill="#8b98a9">full typed metadata; reject replicated AR stages (num_replicas &gt; 1) at construction.</text>
+    </g>
+
+    <!-- ===== process boundary ===== -->
+    <line x1="30" y1="424" x2="1030" y2="424" stroke="#374151" stroke-width="1.5" stroke-dasharray="7 6"/>
+    <rect x="424" y="412" width="212" height="24" rx="12" fill="#0b0f14" stroke="#374151"/>
+    <text x="530" y="428" font-size="11.5" fill="#8b98a9" text-anchor="middle">process boundary · one engine, one AR replica</text>
+
+    <line x1="380" y1="396" x2="380" y2="446" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrA)"/>
+    <text x="394" y="425" font-size="11.5" fill="#fbbf24" class="mono">standard generate() request — no private protocol</text>
+
+    <!-- ===== Layer 4: engine seams ===== -->
+    <g>
+      <rect x="60" y="452" width="640" height="88" rx="10" fill="#1c1710" stroke="#92600a" stroke-width="1.5"/>
+      <text x="80" y="476" font-size="14" font-weight="600" fill="#fbbf24">Omni engine — minimal seams</text>
+      <text x="692" y="476" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">engine/async_omni_engine.py:987</text>
+      <text x="80" y="498" font-size="12" fill="#8b98a9">AsyncOmni keeps its own UUID-suffixed routing id; stage routing selects</text>
+      <text x="80" y="516" font-size="12" fill="#8b98a9"><tspan class="mono" fill="#e6edf3">ARDiffusionEngine</tspan> via the propagated <tspan class="mono" fill="#e6edf3">engine_backend</tspan>. Reset/close ride the existing</text>
+      <text x="80" y="532" font-size="12" fill="#8b98a9">StagePool.collective_rpc lane — no second request lifecycle.</text>
+    </g>
+    <line x1="380" y1="540" x2="380" y2="574" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrA)"/>
+
+    <!-- ===== Layer 5: worker + runner ===== -->
+    <g>
+      <rect x="60" y="578" width="640" height="128" rx="10" fill="#1c1710" stroke="#92600a" stroke-width="1.5"/>
+      <text x="80" y="602" font-size="14" font-weight="600" fill="#fbbf24">Diffusion worker → AR model runner</text>
+      <text x="692" y="602" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">worker/diffusion_worker.py · ar_diffusion/runner.py</text>
+      <text x="80" y="624" font-size="12" fill="#8b98a9">Parse tick from extra_args → <tspan class="mono" fill="#e6edf3">_get_or_create_session()</tspan>: worker-local KV + model state,</text>
+      <text x="80" y="642" font-size="12" fill="#8b98a9">LRU-evict at capacity → bind <tspan class="mono" fill="#e6edf3">ARDiffusionKVState</tspan> → invoke pipeline. Guards at load:</text>
+      <text x="80" y="660" font-size="12" fill="#8b98a9"><tspan class="mono" fill="#e6edf3">max_num_seqs=1</tspan>, no step/batch execution, CUDA device, KV prealloc from free memory.</text>
+      <text x="80" y="678" font-size="12" fill="#8b98a9">Any forward exception → <tspan class="mono" fill="#e6edf3">_release_session()</tspan> (idempotent close) — the runner never keeps</text>
+      <text x="80" y="694" font-size="12" fill="#8b98a9">poisoned session state.</text>
+    </g>
+    <line x1="380" y1="706" x2="380" y2="740" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrA)"/>
+
+    <!-- ===== Layer 6: pipeline ===== -->
+    <g>
+      <rect x="60" y="744" width="640" height="128" rx="10" fill="#1c1710" stroke="#92600a" stroke-width="1.5"/>
+      <text x="80" y="768" font-size="14" font-weight="600" fill="#fbbf24">LingBot causal DMD pipeline — one block</text>
+      <text x="692" y="768" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">diffusion/models/lingbot_world/pipeline.py</text>
+      <text x="80" y="790" font-size="12" fill="#8b98a9">Validate → horizon fail-fast (chunk_index ≥ 10 → error <tspan fill="#4ade80">before</tspan> prompt encoding) →</text>
+      <text x="80" y="808" font-size="12" fill="#8b98a9">chunk continuity vs model-side next index → image + camera-Plücker conditioning (anchor</text>
+      <text x="80" y="826" font-size="12" fill="#8b98a9">chain carries pose across chunk boundaries) → 4-step DMD denoise, probe KV → scratch blocks →</text>
+      <text x="80" y="844" font-size="12" fill="#8b98a9">final pass commits <tspan class="mono" fill="#e6edf3">3 clean latent frames</tspan> to paged KV → payload + typed metadata.</text>
+      <text x="80" y="862" font-size="12" fill="#8b98a9">Prompt switch: clear text cross-attention only; self-attention history survives.</text>
+    </g>
+
+    <!-- ===== KV side band ===== -->
+    <g>
+      <rect x="726" y="578" width="304" height="294" rx="10" fill="#16102a" stroke="#6d28d9" stroke-width="1.5"/>
+      <text x="742" y="602" font-size="14" font-weight="600" fill="#a78bfa">Paged KV subsystem</text>
+      <text x="1014" y="602" font-size="12" fill="#5c6a7d" text-anchor="end" class="mono">ar_diffusion/kv_cache/</text>
+
+      <text x="742" y="628" font-size="12" fill="#8b98a9" class="mono">ARDiffusionKVCache (manager.py)</text>
+      <text x="742" y="645" font-size="11.5" fill="#8b98a9">per-layer/branch pools · scratch · capacity</text>
+      <text x="742" y="661" font-size="11.5" fill="#8b98a9">from free-memory budget, ≥ 1 session</text>
+
+      <text x="742" y="688" font-size="12" fill="#8b98a9" class="mono">ARDiffusionKVState (state.py)</text>
+      <text x="742" y="705" font-size="11.5" fill="#8b98a9">per-session block tables + cross-attn cache</text>
+      <text x="742" y="721" font-size="11.5" fill="#8b98a9">close() idempotent · reset(keep_cross_attn)</text>
+
+      <text x="742" y="748" font-size="12" fill="#8b98a9" class="mono">paged.py · sink 9 | window 18 | block 3</text>
+      <text x="742" y="765" font-size="11.5" fill="#8b98a9">post-commit prune of middle blocks via vLLM</text>
+      <text x="742" y="781" font-size="11.5" fill="#8b98a9">KVCacheManager; null-block padding — no leak</text>
+
+      <text x="742" y="808" font-size="12" fill="#8b98a9" class="mono">paged_attention.py</text>
+      <text x="742" y="825" font-size="11.5" fill="#8b98a9">explicit key_pool/value_pool op inputs with</text>
+      <text x="742" y="841" font-size="11.5" fill="#8b98a9">mutates_args — torch.compile-safe mutation</text>
+      <text x="742" y="857" font-size="11.5" fill="#8b98a9">of pool tensors; block table rebuilt per forward</text>
+    </g>
+    <line x1="700" y1="736" x2="726" y2="736" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrV)"/>
+    <line x1="726" y1="700" x2="700" y2="700" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrV)"/>
+
+    <!-- ===== return path ===== -->
+    <path d="M 700 808 C 980 808, 1000 500, 1000 400 C 1000 350, 990 330, 940 322 L 704 322"
+          fill="none" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG)"/>
+    <text x="1006" y="560" font-size="11.5" fill="#4ade80" class="mono" transform="rotate(90 1006 560)" text-anchor="middle">DiffusionOutput: payload latents [1,16,3,h,w] + metadata["ar_diffusion"]</text>
+
+    <!-- commit box -->
+    <g>
+      <rect x="60" y="892" width="640" height="76" rx="10" fill="#0f1f16" stroke="#166534" stroke-width="1.5"/>
+      <text x="80" y="916" font-size="14" font-weight="600" fill="#4ade80">Commit boundary — accepted ≠ applied</text>
+      <text x="80" y="938" font-size="12" fill="#8b98a9">Session compares the returned metadata to the frozen tick snapshot — session_id, request_id,</text>
+      <text x="80" y="956" font-size="12" fill="#8b98a9">chunk_index, applied_event_ids — all four must match exactly. Only then: pop events, commit reducer, chunk_index+1.</text>
+    </g>
+    <line x1="380" y1="872" x2="380" y2="892" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG)"/>
+
+    <!-- legend -->
+    <g font-size="11.5">
+      <rect x="726" y="906" width="14" height="14" rx="3" fill="#101c26" stroke="#0e7490"/><text x="748" y="917" fill="#8b98a9">client / control plane</text>
+      <rect x="726" y="928" width="14" height="14" rx="3" fill="#1c1710" stroke="#92600a"/><text x="748" y="939" fill="#8b98a9">engine side</text>
+      <rect x="726" y="950" width="14" height="14" rx="3" fill="#16102a" stroke="#6d28d9"/><text x="748" y="961" fill="#8b98a9">KV subsystem</text>
+      <rect x="890" y="906" width="14" height="14" rx="3" fill="#0f1f16" stroke="#166534"/><text x="912" y="917" fill="#8b98a9">commit / return path</text>
+    </g>
+  </svg>
+  </div>
+  <p class="cap">Fig 1 — Layers and ownership. The engine seam is three touch points: registry entries, the
+  worker delegation, and one engine-args propagation hunk. Everything stateful about sessions is
+  worker-local; everything about ordering and commit lives client-side.</p>
+</section>
+
+<section id="tick">
+  <h2><span class="idx">2</span>One tick, end to end</h2>
+  <p>The eight steps below are the PR's realtime request lifecycle, verified against the merged code.
+  Steps 1–3 run client-side, 4–6 in the engine, 7–8 back client-side.</p>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><h4>Accept interaction event</h4>
+      <p><code>accept_event()</code> validates monotonic <code>event_id</code>, dedups, rejects stale ids against the
+      committed/in-flight floors, enforces queue backpressure. The event is <b>queued only</b>.</p></div>
+    <div class="step"><span class="n">2</span><h4>Build an immutable tick</h4>
+      <p><code>next_chunk()</code> snapshots pending events; the reducer's <code>prepare()</code> turns them into one
+      block of camera controls without touching committed state. Output: <code>ARDiffusionTickRequest</code>
+      with session / request / chunk / applied-event identities.</p></div>
+    <div class="step"><span class="n">3</span><h4>Enter the standard Omni path</h4>
+      <p><code>execute_tick()</code> asks the prompt provider for a normal prompt, hides the tick in
+      <code>extra_args</code>, and calls <code>AsyncOmni.generate()</code>. Engine routing keeps its UUID suffix;
+      <code>tick.request_id</code> stays the independent correlation id.</p></div>
+    <div class="step engine"><span class="n">4</span><h4>Bind worker-local AR state</h4>
+      <p><code>DiffusionWorker.execute_model</code> delegates to the AR runner, which parses the tick, finds or
+      creates the session (LRU eviction at capacity), and binds its <code>ARDiffusionKVState</code>.</p></div>
+    <div class="step engine"><span class="n">5</span><h4>Generate one block</h4>
+      <p>Pipeline validates continuity, builds conditioning, reuses paged self-attention history, runs 4
+      DMD steps (probe KV in scratch), and commits <b>3 clean latent frames</b> during the final pass.</p></div>
+    <div class="step engine"><span class="n">6</span><h4>Return the typed envelope</h4>
+      <p><code>DiffusionOutput(output={"payload": latents, "metadata": {"ar_diffusion": …}})</code>. Realtime output is
+      latent-only — no streaming VAE in this PR.</p></div>
+    <div class="step commit"><span class="n">7</span><h4>Validate + commit</h4>
+      <p>Consumer validates the complete metadata snapshot, including the correlation request id. Only then
+      does the session commit the reducer, remove applied events, and advance <code>chunk_index</code>.</p></div>
+    <div class="step commit"><span class="n">8</span><h4>Fail closed</h4>
+      <p>Any worker, metadata, or commit failure marks the session <b>FAILED</b>, releases worker state, and
+      rejects in-place retry — callers must explicitly reset or close.</p></div>
+  </div>
+</section>
+
+<section id="states">
+  <h2><span class="idx">3</span>Fail-closed session state machine</h2>
+  <p>A successful worker call alone never commits transport state; a failed one always tears down both
+  sides. The only way back from <span style="color:var(--err)">FAILED</span> is an explicit reset.</p>
+  <div class="figwrap">
+  <svg width="1060" height="330" viewBox="0 0 1060 330" role="img" aria-label="Session state machine">
+    <defs>
+      <marker id="arrC2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#22d3ee"/></marker>
+      <marker id="arrE2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f87171"/></marker>
+      <marker id="arrG2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4ade80"/></marker>
+      <marker id="arrM2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b98a9"/></marker>
+    </defs>
+    <!-- ACTIVE -->
+    <g>
+      <rect x="70" y="120" width="230" height="86" rx="12" fill="#101c26" stroke="#0e7490" stroke-width="1.5"/>
+      <text x="185" y="152" font-size="17" font-weight="700" fill="#22d3ee" text-anchor="middle">ACTIVE</text>
+      <text x="185" y="174" font-size="12" fill="#8b98a9" text-anchor="middle">chunk k · pending events queued</text>
+      <text x="185" y="192" font-size="12" fill="#8b98a9" text-anchor="middle">0 ≤ k ≤ 9 per generation epoch</text>
+    </g>
+    <!-- FAILED -->
+    <g>
+      <rect x="440" y="120" width="250" height="86" rx="12" fill="#211013" stroke="#7f1d1d" stroke-width="1.5"/>
+      <text x="565" y="148" font-size="17" font-weight="700" fill="#f87171" text-anchor="middle">FAILED</text>
+      <text x="565" y="170" font-size="12" fill="#8b98a9" text-anchor="middle">worker session already released</text>
+      <text x="565" y="188" font-size="12" fill="#8b98a9" text-anchor="middle">retry without reset → ARDiffusionSessionStateError</text>
+    </g>
+    <!-- CLOSED -->
+    <g>
+      <rect x="810" y="120" width="220" height="86" rx="12" fill="#141a22" stroke="#374151" stroke-width="1.5"/>
+      <text x="920" y="150" font-size="17" font-weight="700" fill="#8b98a9" text-anchor="middle">CLOSED</text>
+      <text x="920" y="172" font-size="12" fill="#8b98a9" text-anchor="middle">double-close is a no-op;</text>
+      <text x="920" y="190" font-size="12" fill="#8b98a9" text-anchor="middle">cleanup error → CLEANUP_FAILED tombstone (retryable)</text>
+    </g>
+    <!-- ACTIVE self loop -->
+    <path d="M 110 120 C 60 60, 260 40, 292 112" fill="none" stroke="#4ade80" stroke-width="2" marker-end="url(#arrG2)"/>
+    <text x="180" y="62" font-size="12" fill="#4ade80" text-anchor="middle">tick committed → chunk k+1</text>
+    <text x="180" y="79" font-size="11.5" fill="#5c6a7d" text-anchor="middle">events applied · KV history grows</text>
+    <!-- ACTIVE -> FAILED -->
+    <line x1="300" y1="150" x2="436" y2="150" stroke="#f87171" stroke-width="2" marker-end="url(#arrE2)"/>
+    <text x="368" y="138" font-size="11.5" fill="#f87171" text-anchor="middle">any failure</text>
+    <text x="368" y="170" font-size="11" fill="#5c6a7d" text-anchor="middle">runner · metadata · commit</text>
+    <!-- FAILED -> ACTIVE via reset -->
+    <path d="M 540 206 C 500 290, 200 290, 160 210" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrC2)"/>
+    <text x="350" y="286" font-size="12" fill="#22d3ee" text-anchor="middle">reset() → ACTIVE at chunk 0 — events dropped, prompt/controls cleared, worker state re-released</text>
+    <!-- ACTIVE -> CLOSED -->
+    <path d="M 300 178 C 560 250, 700 250, 806 190" fill="none" stroke="#8b98a9" stroke-width="2" marker-end="url(#arrM2)"/>
+    <text x="565" y="246" font-size="12" fill="#8b98a9" text-anchor="middle">close()</text>
+    <!-- note -->
+    <text x="70" y="36" font-size="12.5" fill="#8b98a9">Epoch bound: the pipeline rejects an 11th tick before prompt encoding — 117 pixel frames of image condition ÷ 4 (VAE temporal) → 30 latent → 10 blocks × 3 frames.</text>
+  </svg>
+  </div>
+  <p class="cap">Fig 2 — Lifecycle transitions. Fail-closed is structural: the runner releases its side on any
+  forward exception, and the second close from the session layer is idempotent.</p>
+</section>
+
+<section id="kv">
+  <h2><span class="idx">4</span>Paged KV residency — sink, window, current block</h2>
+  <p>Each session keeps an attention <b>sink</b> (first 9 chunks), a <b>recent window</b> (18 chunks), and the
+  in-flight block. Everything in between is pruned after each commit, so residency per session is
+  bounded while the world stays consistent with the offline oracle's sink+tail policy.</p>
+  <div class="figwrap">
+  <svg width="1060" height="240" viewBox="0 0 1060 240" role="img" aria-label="Paged KV block residency and pruning">
+    <defs>
+      <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/></marker>
+    </defs>
+    <!-- block strip -->
+    <g>
+      <text x="70" y="60" font-size="12.5" fill="#8b98a9">blocks over session history (1 block = 1 chunk = 3 latent frames):</text>
+      <rect x="70"  y="76" width="180" height="46" rx="6" fill="#2a1f4d" stroke="#6d28d9"/><text x="160" y="98" font-size="13" fill="#c4b5fd" text-anchor="middle" class="mono">SINK · 9 chunks</text><text x="160" y="114" font-size="11" fill="#8b98a9" text-anchor="middle">never evicted</text>
+      <rect x="252" y="76" width="330" height="46" rx="6" fill="#121821" stroke="#374151" stroke-dasharray="5 4"/><text x="417" y="98" font-size="13" fill="#5c6a7d" text-anchor="middle" class="mono">middle history · pruned post-commit</text><text x="417" y="114" font-size="11" fill="#5c6a7d" text-anchor="middle">freed to the block pool exactly once (null-block guard)</text>
+      <rect x="584" y="76" width="250" height="46" rx="6" fill="#2a1f4d" stroke="#6d28d9"/><text x="709" y="98" font-size="13" fill="#c4b5fd" text-anchor="middle" class="mono">RECENT WINDOW · 18 chunks</text><text x="709" y="114" font-size="11" fill="#8b98a9" text-anchor="middle">sliding</text>
+      <rect x="836" y="76" width="120" height="46" rx="6" fill="#0f1f16" stroke="#4ade80"/><text x="896" y="98" font-size="13" fill="#4ade80" text-anchor="middle" class="mono">current · 3</text><text x="896" y="114" font-size="11" fill="#8b98a9" text-anchor="middle">in-flight commit</text>
+      <path d="M 900 66 L 900 46 L 896 40" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+    </g>
+    <!-- prune arrow -->
+    <line x1="417" y1="126" x2="417" y2="160" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrP)"/>
+    <text x="432" y="150" font-size="11.5" fill="#a78bfa">skip = floor((N − sink − window)/chunk) · snapped to chunk multiples</text>
+    <!-- facts under strip -->
+    <g font-size="12.5" fill="#8b98a9">
+      <text x="70" y="196" class="mono"><tspan fill="#c4b5fd">resident/session = sink + window (+1 in-flight)</tspan> · capacity = KV budget ÷ per-session bytes</text>
+      <text x="70" y="214" class="mono">effective = max(configured, required(1)) · LRU eviction at capacity</text>
+      <text x="70" y="232">prompt switch clears text cross-attn only, self-attention history survives · probes write to scratch, only the clean final pass commits</text>
+    </g>
+  </svg>
+  </div>
+  <p class="cap">Fig 3 — Geometry pinned by the model contract: sink 9 / block 3 / window 18. The offline
+  direct path replays the same sink+tail window, which is why direct-vs-paged parity was bit-exact.</p>
+</section>
+
+<section id="invariants">
+  <h2><span class="idx">5</span>Invariants and numbers</h2>
+  <div class="facts">
+    <div class="fact"><div class="v ctl">1 : 1 : 3</div><div class="k">one request → one AR block → three clean latent frames (9 pixel frames). One epoch = 10 ticks.</div></div>
+    <div class="fact"><div class="v kv">117 → 30 → 10</div><div class="k">image-condition horizon 117 pixel frames ÷ 4 temporal VAE = 30 latent = 10 blocks. Fail-fast fires before prompt encoding.</div></div>
+    <div class="fact"><div class="v eng">sink 9 · win 18</div><div class="k">paged-KV geometry per session, block = 3 latent frames; bounded residency with post-commit pruning.</div></div>
+    <div class="fact"><div class="v ok">accepted ≠ applied</div><div class="k">events commit only after exact typed-metadata match on session, request, chunk, and applied-event ids.</div></div>
+    <div class="fact"><div class="v eng">1 replica</div><div class="k">AR stage rejects replication until session-affinity routing exists; also max_num_seqs=1, request mode only.</div></div>
+    <div class="fact"><div class="v ctl">latent-only</div><div class="k">realtime ticks return latents + metadata; stateful streaming VAE decode is out of scope (offline path decodes fully).</div></div>
+    <div class="fact"><div class="v kv">mutates_args</div><div class="k">key/value pools are explicit mutable op inputs — pool tensors never rebound, torch.compile-safe.</div></div>
+    <div class="fact"><div class="v ctl">4 ids</div><div class="k">session = world · request = chunk computation · event = interaction (monotonic) · chunk_index = block position in epoch.</div></div>
+    <div class="fact"><div class="v ok">fail-closed</div><div class="k">any failure → FAILED + worker release; no in-place retry; explicit reset or close only.</div></div>
+  </div>
+</section>
+
+<section id="followups">
+  <h2><span class="idx">6</span>Post-merge follow-ups (reviewed 2026-08-16)</h2>
+  <p>Six inline follow-up comments posted on the merged PR; none are data-corrupting on supported paths —
+  the core state machine and KV lifecycle held up under inspection.</p>
+  <table class="fu">
+    <tr><th>#</th><th>Location</th><th>Issue</th></tr>
+    <tr><td>1</td><td class="loc">recipes/Robbyant/LingBot-World-2.0.md:52</td><td>Documented realtime command fails at argparse — missing required <code>--prompt</code>; recipe also lacks the TEMPLATE.md sections.</td></tr>
+    <tr><td>2</td><td class="loc">examples/…/lingbot_world_v2*.py</td><td>Both new model-specific example files violate the #6046 examples policy (in effect four days pre-merge); fold into recipe / generic runner presets.</td></tr>
+    <tr><td>3</td><td class="loc">lingbot_world/pipeline.py:1107</td><td>Request-shaped validation raises plain <code>ValueError</code> — no status code for HTTP clients; siblings use <code>OmniClientError</code>.</td></tr>
+    <tr><td>4</td><td class="loc">ar_diffusion/kv_cache/config.py:23</td><td>Config unvalidated: negative sink/window chunks silently corrupt attention; <code>0</code> silently means "model default".</td></tr>
+    <tr><td>5</td><td class="loc">ar_diffusion/runner.py:143</td><td>Per-rank capacity from local free memory can diverge on TP&gt;1 → one-rank eviction mid-session → collective desync / NCCL hang.</td></tr>
+    <tr><td>6</td><td class="loc">tests/e2e/…/test_lingbot_world_v2.py:51</td><td>Headline realtime wiring has no automated e2e — session/consumer tests run on fakes; GPU validation list is manual-only.</td></tr>
+  </table>
+  <p class="footnote">Unposted P2 backlog (on the wiki review page): transport-layer session bound + eviction
+  visibility, control-plane horizon enforcement, injectable underscore <code>extra_args</code> keys hitting an
+  assert, chunk-vs-block unit conflation in the generic paging layer, private vLLM API dependency, dead
+  code, and two camera pacing/normalization design questions.</p>
+</section>
+
+<footer>
+  <p class="footnote">Built from the post-merge review of <a href="https://github.com/vllm-project/vllm-omni/pull/5491">PR #5491</a>
+  (merge commit 3875f8de). Every claim traced to code in the frozen worktree; CI green at head
+  (Buildkite #13645). Author GPU evidence: H200 seven-tick realtime run, direct-vs-paged bit-exact
+  parity, TP1-vs-TP2 drift within direct baseline, CUDA-graph ticks PASS.</p>
+</footer>
+
+</main>
+</body>
+</html>
