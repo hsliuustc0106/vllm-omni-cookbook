@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sequence Parallelism in vLLM-Omni — Ulysses · Ring · Hybrid · AllGather-KV</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --panel: #121821;
+    --panel2: #0e141c;
+    --line: #1f2937;
+    --text: #e6edf3;
+    --muted: #8b98a9;
+    --faint: #5c6a7d;
+    --cyan: #22d3ee;
+    --amber: #fbbf24;
+    --violet: #a78bfa;
+    --green: #4ade80;
+    --red: #f87171;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 20px 80px; }
+  section { margin-top: 64px; }
+  h1 { font-size: 33px; line-height: 1.2; margin: 8px 0 4px; letter-spacing: -0.5px; }
+  h2 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.3px; }
+  h2 .idx { color: var(--faint); font-weight: 400; margin-right: 10px; font-size: 18px; }
+  h3 { font-size: 15px; margin: 22px 0 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  p { margin: 10px 0; max-width: 78ch; }
+  .lede { color: var(--muted); font-size: 18px; max-width: 72ch; }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: var(--mono); font-size: 13px; background: #182230;
+    border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; margin-top: 14px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 12px; }
+  .controls .spacer { flex: 1; }
+  button.tog, button.step {
+    background: var(--panel2); color: var(--muted); border: 1px solid var(--line);
+    border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; font-family: inherit;
+  }
+  button.tog.on { color: var(--text); border-color: #2c3e55; background: #16202e; }
+  button.tog:hover, button.step:hover { color: var(--text); }
+  button.step { font-family: var(--mono); }
+  .phase-label {
+    font-family: var(--mono); font-size: 13px; color: var(--text);
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 4px 10px; min-width: 320px; display: inline-block;
+  }
+  svg text { font-family: var(--mono); }
+  svg .lbl { fill: #e6edf3; font-size: 12px; }
+  svg .sub { fill: #8b98a9; font-size: 10.5px; }
+  svg .tiny { fill: #5c6a7d; font-size: 9.5px; }
+  svg .frame { fill: none; stroke: #1f2937; stroke-width: 1; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin-top: 10px; }
+  th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; background: #0e141c; font-size: 12.5px; letter-spacing: 0.03em; }
+  td code { white-space: normal; }
+  .ok { color: var(--green); }
+  .no { color: var(--red); }
+  .warn { color: var(--amber); }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; background: #182230;
+    border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; white-space: nowrap;
+  }
+  .chip.y { border-color: #1d3a2b; color: var(--green); background: #0e1a14; }
+  .chip.n { border-color: #3a2020; color: var(--red); background: #1a0e0e; }
+  .chip.q { border-color: #3a311d; color: var(--amber); background: #1a160e; }
+  .anchor { font-family: var(--mono); font-size: 12px; color: var(--faint); margin-top: 10px; line-height: 1.8; overflow-wrap: anywhere; }
+  .anchor b { color: var(--muted); font-weight: 600; overflow-wrap: anywhere; }
+  .note {
+    border-left: 3px solid var(--amber); background: #14120850;
+    padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 14px 0; color: #d8cba8;
+    font-size: 14.5px; max-width: 80ch;
+  }
+  .note.blue { border-left-color: var(--cyan); background: #08161a50; color: #a9ccd6; }
+  footer { margin-top: 70px; color: var(--faint); font-size: 13px; border-top: 1px solid var(--line); padding-top: 18px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+  .toc a { font-family: var(--mono); font-size: 12.5px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin: 6px 0 10px; font-size: 12.5px; color: var(--muted); }
+  .sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  /* Adapt to narrow screens when opened from the blog: SVGs carry a viewBox and
+     scale down; wide tables scroll inside their own box. */
+  svg { max-width: 100%; height: auto; }
+  @media (max-width: 560px) {
+    .phase-label { min-width: 0 !important; }
+    code { white-space: normal; overflow-wrap: anywhere; }
+    h1, h2, h3 { overflow-wrap: anywhere; }
+  }
+  .tablewrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div style="font-family:var(--mono);font-size:13px;color:var(--cyan);letter-spacing:.04em;">vllm-omni · diffusion · distributed</div>
+  <h1>Sequence Parallelism: how Ulysses, Ring, Hybrid&nbsp;and AllGather-KV talk to each other</h1>
+  <p class="lede">
+    Diffusion transformers turn a 2K image or a long video into a huge token sequence.
+    Sequence parallelism (SP) keeps that sequence sharded across GPUs so every rank runs the
+    whole network on <span style="white-space:nowrap">S/P</span> tokens, and only the attention
+    layers pay a communication tax. vLLM-Omni ships four strategies behind one plug-in interface.
+  </p>
+  <div class="toc">
+    <a href="#skeleton">0 · skeleton</a>
+    <a href="#topology">1 · group topology</a>
+    <a href="#ulysses">2 · Ulysses</a>
+    <a href="#ring">3 · Ring</a>
+    <a href="#hybrid">4 · Hybrid</a>
+    <a href="#allgather">5 · AllGather-KV</a>
+    <a href="#cheat">6 · cheat sheet</a>
+    <a href="#support">7 · model support</a>
+  </div>
+</header>
+
+<!-- ============================================================ 0 -->
+<section id="skeleton">
+  <h2><span class="idx">0</span>The shared skeleton: strategies are plug-ins around the attention kernel</h2>
+  <p>
+    Every SP mode reshards <em>in and out of attention only</em>. The rest of the DiT block —
+    norms, MLPs, modulations, QKV/O projections — is sequence-independent, so it just runs on a
+    shorter sequence. Two pieces make this work:
+  </p>
+  <div class="panel">
+    <ul style="margin:6px 0;padding-left:22px;max-width:82ch;">
+      <li style="margin:7px 0;">
+        A declarative <code>_sp_plan</code> on the transformer: split inputs like
+        <code>hidden_states</code> along dim&nbsp;1 before <code>forward()</code>, re-gather after
+        <code>proj_out</code>. No manual sharding code in the model body.
+      </li>
+      <li style="margin:7px 0;">
+        A <code>ParallelAttentionStrategy</code> selected per-forward in
+        <code>build_parallel_attention_strategy()</code>: its <code>pre_attention()</code> /
+        <code>post_attention()</code> hooks wrap whatever kernel backend (FA2/FA3/FA4, AITER,
+        SDPA, TRT-LLM) the model picked. Strategy and kernel are orthogonal axes.
+      </li>
+    </ul>
+  </div>
+
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="skelSvg" width="1040" height="238" viewBox="0 0 1040 238" role="img" aria-label="SP skeleton diagram"></svg>
+  </div>
+  <p class="anchor"><b>Anchors</b> — hooks: <b>vllm_omni/diffusion/attention/layer.py:286-298</b> · factory: <b>vllm_omni/diffusion/attention/parallel/factory.py:26</b> · plan types: <b>vllm_omni/diffusion/distributed/sp_plan.py</b></p>
+</section>
+
+<!-- ============================================================ 1 -->
+<section id="topology">
+  <h2><span class="idx">1</span>Group topology: one SP group, factored two ways</h2>
+  <p>
+    <code>sp_size = ulysses_degree × ring_degree</code>. At init,
+    <code>set_seq_parallel_pg()</code> splits each SP group into an <b>Ulysses subgroup</b> and a
+    <b>Ring subgroup</b>. With the default <code>use_ulysses_low=True</code>, Ulysses groups are
+    <em>contiguous rank chunks</em> and Ring groups are <em>strided</em>. Try the presets — this
+    factorization is exactly what hybrid mode composes.
+  </p>
+  <div class="controls">
+    <button class="tog on" data-u="2" data-r="2" onclick="setTopo(this)">ulysses=2 · ring=2</button>
+    <button class="tog" data-u="4" data-r="1" onclick="setTopo(this)">ulysses=4 · ring=1 (pure Ulysses)</button>
+    <button class="tog" data-u="1" data-r="4" onclick="setTopo(this)">ulysses=1 · ring=4 (pure Ring)</button>
+    <span class="spacer"></span>
+    <span class="phase-label" id="topoInfo" style="min-width:430px;"></span>
+  </div>
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="topoSvg" width="1040" height="300" viewBox="0 0 1040 300" role="img" aria-label="SP group topology"></svg>
+  </div>
+  <p class="anchor"><b>Anchor</b> — <b>vllm_omni/diffusion/distributed/parallel_state.py:551</b> <code>set_seq_parallel_pg()</code> · group wrapper: <b>group_coordinator.py:995</b> <code>SequenceParallelGroupCoordinator</code> (holds <code>ulysses_group</code>, <code>ring_group</code>, <code>allgather_group</code>)</p>
+</section>
+
+<!-- ============================================================ 2 -->
+<section id="ulysses">
+  <h2><span class="idx">2</span>Ulysses: trade your sequence shard for a head shard</h2>
+  <p>
+    Each rank enters attention with <code>(B, S/P, H, D)</code> — a slice of tokens, <em>all</em>
+    heads. A single <code>dist.all_to_all_single</code> per tensor swaps the two: rank&nbsp;i sends
+    its token slice to every peer and receives the slices that match its head subset, leaving
+    <code>(B, S, H/P, D)</code> — the <em>full</em> sequence, a fraction of the heads. Attention is
+    then an ordinary local kernel, and a reverse all-to-all restores the sequence shard.
+    4 collectives per layer: Q, K, V forward + output reverse.
+  </p>
+  <div class="controls">
+    <button class="step" onclick="ulyssesStep(-1)">← prev</button>
+    <button class="step" onclick="ulyssesStep(1)">next →</button>
+    <span class="spacer"></span>
+    <span class="phase-label" id="ulyssesInfo"></span>
+  </div>
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="ulyssesSvg" width="1040" height="330" viewBox="0 0 1040 330" role="img" aria-label="Ulysses all-to-all phases"></svg>
+  </div>
+
+  <h3>Text / joint stream</h3>
+  <p>
+    Joint (text-conditioning) Q/K/V are assumed <em>replicated</em> on all ranks. They are sliced
+    <em>by heads</em> per Ulysses rank, concatenated to the image stream <em>after</em> the
+    all-to-all, and the joint slice of the output is recombined with an
+    <code>all_gather</code> over the head dimension on the way out.
+  </p>
+
+  <h3>Constraints &amp; UAA mode</h3>
+  <p>
+    Strict mode fails fast unless <code>H % P == 0</code> and shards divide evenly. The
+    experimental <code>ulysses_mode="advanced_uaa"</code> (Ulysses Anything Attention) lifts both:
+    it all-gathers the per-rank sequence lengths and feeds them to the all-to-all as
+    <code>output_split_sizes</code>, and pads the head dim to the next multiple of P only inside
+    the exchange, slicing the pad away after the reverse. That is what lets Z-Image-Turbo
+    (30 heads) run <code>ulysses_degree=4</code>.
+  </p>
+  <div class="note blue">
+    Best for: ≥1536px images and moderate sequences on fat interconnects (NVLink) — it moves the
+    full Q/K/V/output volume twice per layer, but leaves a completely standard attention kernel
+    in the middle and overlaps well with high bandwidth.
+  </div>
+  <p class="anchor"><b>Anchors</b> — <b>ulysses.py:167</b> <code>UlyssesParallelAttention</code> · <b>comm.py:16</b> <code>all_to_all_4D</code> / <code>SeqAllToAll4D</code> · UAA: <b>ulysses.py:52-101</b> variable-split all-to-all</p>
+</section>
+
+<!-- ============================================================ 3 -->
+<section id="ring">
+  <h2><span class="idx">3</span>Ring: Q never moves; K/V take a lap while you compute</h2>
+  <p>
+    No resharding at all. Each rank keeps its query shard and its K/V block; the kernel rotates
+    K/V blocks around the ring with P2P <code>isend/irecv</code> (<code>batch_isend_irecv</code>),
+    posting the transfer <em>before</em> calling attention so communication overlaps compute.
+    After P steps every rank has attended to every K/V block; per-step partial outputs merge via
+    online softmax (running <code>out</code> + log-sum-exp <code>lse</code>), fp32 by default.
+    The output needs no post-processing — it is already sequence-sharded.
+  </p>
+  <div class="controls">
+    <button class="step" onclick="ringStep(-1)">← prev</button>
+    <button class="step" onclick="ringStep(1)">next →</button>
+    <button class="step" id="ringPlay" onclick="ringTogglePlay(this)">▶ play</button>
+    <span class="spacer"></span>
+    <span class="phase-label" id="ringInfo" style="min-width:400px;"></span>
+  </div>
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="ringSvg" width="1040" height="360" viewBox="0 0 1040 360" role="img" aria-label="Ring attention rotation"></svg>
+  </div>
+
+  <h3>The online-softmax merge</h3>
+  <div class="panel" style="font-family:var(--mono);font-size:13.5px;color:#c7d3e0;overflow-x:auto;">
+    m&nbsp;=&nbsp;max(lse,&nbsp;lse<sub>block</sub>)<br>
+    out&nbsp;=&nbsp;out·e<sup>lse−m</sup>&nbsp;+&nbsp;block_out·e<sup>lse<sub>block</sub>−m</sup>&nbsp;&nbsp;&nbsp;,&nbsp;&nbsp;&nbsp;lse&nbsp;=&nbsp;m
+  </div>
+
+  <h3>Details that matter</h3>
+  <ul style="max-width:82ch;padding-left:22px;">
+    <li style="margin:7px 0;"><b>Joint / text K/V never rotate</b> — they are concatenated as a static prefix at step&nbsp;0 only. <code>joint_strategy="rear"</code> + causal is rejected (the mask would hide the prefix).</li>
+    <li style="margin:7px 0;"><b>Causal works</b> by skipping steps where <code>step &gt; rank</code>; diffusion is usually non-causal anyway.</li>
+    <li style="margin:7px 0;"><b>Kernels:</b> FA4 on Blackwell, FA3 elsewhere on NVIDIA, AITER on ROCm, PyTorch SDPA fallback (forced for fp32 and on hosts without flash wheels).</li>
+    <li style="margin:7px 0;"><b>Fixed-shape P2P buffers</b> — every rank in a ring group must hold the same K/V shape. That is the constraint hybrid mode has to respect.</li>
+  </ul>
+  <div class="note blue">
+    Best for: videos and very long sequences. K/V travel one hop per step (not P−1), memory stays
+    O(S/P), comm overlaps compute — but you pay P sequential block-wise attention calls, so short
+    sequences drown in loop overhead.
+  </div>
+  <p class="anchor"><b>Anchors</b> — <b>ring.py:36</b> <code>RingParallelAttention</code> · <b>comm.py:228</b> <code>RingComm.send_recv/commit/wait</code> · kernels: <b>ring_flash_attn.py</b>, <b>ring_pytorch_attn.py</b> · LSE merge: <b>ring/ring_utils.py</b> <code>update_out_and_lse</code></p>
+</section>
+
+<!-- ============================================================ 4 -->
+<section id="hybrid">
+  <h2><span class="idx">4</span>Hybrid Ulysses × Ring: all-to-all inner, ring outer</h2>
+  <p>
+    Set both degrees &gt; 1 and the two compose over the factored groups from §1. The Ulysses
+    all-to-all runs first <em>inside each Ulysses subgroup</em> — every rank now holds the full
+    sequence for its head subset — and the ring then rotates those full-sequence K/V tensors
+    across the strided Ring group. In the default layout (ranks 0-3, u=2, r=2): pairs
+    {0,1} and {2,3} exchange heads, then ring pairs {0,2} and {1,3} rotate K/V.
+  </p>
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="hybSvg" width="1040" height="320" viewBox="0 0 1040 320" role="img" aria-label="Hybrid Ulysses plus Ring"></svg>
+  </div>
+  <div class="note">
+    <b>Shape rule:</b> Ring's P2P buffers are fixed-shape, so every rank in a ring group must end
+    up with the same post-Ulysses <code>S_global</code>. UAA in hybrid mode validates this up front
+    and raises instead of hanging the ring (<b>ulysses.py:322-331</b>). UAA also cannot pad K/V
+    heads when Ring is active — padded zero heads would be repeated as real GQA/MQA heads.
+  </div>
+</section>
+
+<!-- ============================================================ 5 -->
+<section id="allgather">
+  <h2><span class="idx">5</span>AllGather-KV: two all-gathers, zero reverse</h2>
+  <p>
+    The v1 minimalist. <code>all_gather_into_tensor</code> rebuilds the full K/V along the sequence
+    dim on every rank; each rank then runs local attention of its <code>S/P</code> queries against
+    the full keys and slices its attention mask / query-ranges to its own window. Q never moves,
+    so there is no post-processing at all. Non-causal only — exactly diffusion's usual case — and
+    mutually exclusive with Ulysses/Ring.
+  </p>
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="agSvg" width="1040" height="270" viewBox="0 0 1040 270" role="img" aria-label="AllGather-KV"></svg>
+  </div>
+  <p class="anchor"><b>Anchor</b> — <b>allgather_kv.py:26</b> <code>AllGatherKVParallelAttention</code> · metadata slicing: <code>_slice_attn_metadata_for_local_query</code> (<b>allgather_kv.py:111</b>)</p>
+</section>
+
+<!-- ============================================================ 6 -->
+<section id="cheat">
+  <h2><span class="idx">6</span>Cheat sheet</h2>
+  <div class="tablewrap">
+  <table>
+    <tr>
+      <th></th>
+      <th>Ulysses</th>
+      <th>Ring</th>
+      <th>Hybrid u×r</th>
+      <th>AllGather-KV</th>
+    </tr>
+    <tr>
+      <td><b>Collectives / attention layer</b></td>
+      <td>3 all-to-all (Q,K,V) + 1 reverse</td>
+      <td>2 P2P per step × (P−1) steps, overlapped with compute</td>
+      <td>Ulysses set + ring lap</td>
+      <td>2 all-gathers (K,V), no reverse</td>
+    </tr>
+    <tr>
+      <td><b>What moves</b></td>
+      <td>Full Q/K/V/O volume, twice</td>
+      <td>K/V blocks, one hop per step</td>
+      <td>heads first, then K/V lap</td>
+      <td>K/V once; Q local</td>
+    </tr>
+    <tr>
+      <td><b>Attention kernel sees</b></td>
+      <td>full S, H/P heads — any backend</td>
+      <td>S/P queries vs rotating blocks — ring kernels (FA2/3/4, AITER, SDPA)</td>
+      <td>full S<sub>global</sub>, H/u heads, ring rotation</td>
+      <td>S/P queries vs full K/V — any backend</td>
+    </tr>
+    <tr>
+      <td><b>Divisibility constraints</b></td>
+      <td>H and S divisible by u (or <code>advanced_uaa</code>)</td>
+      <td>equal shard sizes per ring peer</td>
+      <td>Ulysses rules + equal post-A2A S<sub>global</sub> per ring peer</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><b>Causal</b></td>
+      <td>yes</td>
+      <td>yes (step ≤ rank skip)</td>
+      <td>yes</td>
+      <td class="no">no</td>
+    </tr>
+    <tr>
+      <td><b>Best for</b></td>
+      <td>big images, NVLink</td>
+      <td>very long sequences, tight memory</td>
+      <td>&gt;8 GPU scale-out</td>
+      <td>small KV, cheap fabric</td>
+    </tr>
+    <tr>
+      <td><b>Config</b></td>
+      <td><code>ulysses_degree</code></td>
+      <td><code>ring_degree</code></td>
+      <td>both</td>
+      <td><code>allgather_degree</code></td>
+    </tr>
+  </table>
+  </div>
+
+  <h3>Selection order (factory.py)</h3>
+  <p style="font-family:var(--mono);font-size:13px;color:#c7d3e0;">
+    sp_world &gt; 1 required → <span style="color:#4ade80">allgather_degree&gt;1</span> → AllGatherKV (else error if mixed) · else <span style="color:#4ade80">ulysses_degree&gt;1</span> → Ulysses (hybrid if ring&gt;1) · else <span style="color:#4ade80">ring_degree&gt;1</span> → Ring · else NoParallelAttention
+  </p>
+
+  <h3>Composability</h3>
+  <div class="chips">
+    <span class="chip y">✓ TeaCache / Cache-DiT</span>
+    <span class="chip y">✓ CFG-Parallel</span>
+    <span class="chip y">✓ Tensor Parallel</span>
+    <span class="chip y">✓ VAE patch-parallel</span>
+    <span class="chip y">✓ Module-wise CPU offload</span>
+    <span class="chip q">? HSDP (unverified)</span>
+    <span class="chip q">? Expert Parallel (unverified)</span>
+    <span class="chip n">✗ Layerwise CPU offload</span>
+  </div>
+  <p style="color:var(--muted);font-size:14px;">GPU budget: <code>ulysses × ring × cfg × tp (× dp)</code>. CLI: <code>--usp/--ulysses-degree</code>, <code>--ring/--ring-degree</code>, <code>--ulysses-mode strict|advanced_uaa</code>; config: <code>DiffusionParallelConfig</code> (<b>omni_config.py:448</b>).</p>
+</section>
+
+<!-- ============================================================ 7 -->
+<section id="support">
+  <h2><span class="idx">7</span>Model support (docs/user_guide/diffusion_features.md)</h2>
+  <div class="grid2">
+    <div class="panel">
+      <h3 style="margin-top:0;">✅ SP wired &amp; validated</h3>
+      <div class="chips">
+        <span class="chip y">Qwen-Image (all variants)</span>
+        <span class="chip y">Wan2.2 / S2V / 2.1-VACE</span>
+        <span class="chip y">LTX-2 / LTX-2.3</span>
+        <span class="chip y">HunyuanVideo-1.5</span>
+        <span class="chip y">LongCat-Image / -Edit</span>
+        <span class="chip y">FLUX.2-dev / -klein</span>
+        <span class="chip y">Z-Image</span>
+        <span class="chip y">ERNIE-Image</span>
+        <span class="chip y">OmniGen2</span>
+        <span class="chip y">Bagel</span>
+        <span class="chip y">SDXL</span>
+        <span class="chip y">Cosmos3</span>
+        <span class="chip y">Helios</span>
+        <span class="chip y">MiniMax-H3</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0;">❌ not wired / no plan</h3>
+      <div class="chips">
+        <span class="chip n">FLUX.1 family</span>
+        <span class="chip n">GLM-Image *</span>
+        <span class="chip n">HunyuanImage3 *</span>
+        <span class="chip n">Krea 2</span>
+        <span class="chip n">SD3.5</span>
+        <span class="chip n">HiDream-I1</span>
+        <span class="chip n">DreamID-Omni</span>
+        <span class="chip n">Ovis-Image</span>
+        <span class="chip n">SenseNova-U1</span>
+        <span class="chip n">MagiHuman</span>
+        <span class="chip n">MammothModa2</span>
+        <span class="chip n">Nextstep_1</span>
+      </div>
+      <p class="anchor" style="margin-top:6px;">* declares an <code>_sp_plan</code> in code but the feature table marks it unsupported — scaffolding exists, not validated end-to-end.</p>
+    </div>
+  </div>
+  <p style="color:var(--muted);font-size:14px;">19 transformer files declare <code>_sp_plan</code>. Docs report 1.5×–3.6× speedups on large images/videos at 2–8 GPUs: <code>docs/user_guide/diffusion/parallelism/sequence_parallel.md</code>.</p>
+</section>
+
+<footer>
+  Generated 2026-08-16 from the vllm-omni checkout @ main (c588208cc) · diagrams are illustrative; shapes and step counts follow the code paths cited in each section.
+</footer>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+  const RC = ["#22d3ee", "#fbbf24", "#a78bfa", "#4ade80"];       // rank colors 0..3
+  const RCBG = ["#0b2b33", "#33290b", "#241d3d", "#0f2e1c"];      // dim fills
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(x, y, s, cls, anchor, parent) {
+  const t = el("text", { x: x, y: y, "class": cls || "lbl", "text-anchor": anchor || "start" }, parent);
+  t.textContent = s; return t;
+}
+
+/* ============================================================= 0 skeleton */
+(function drawSkeleton() {
+  const s = document.getElementById("skelSvg");
+  const y = 60, h = 118;
+  // input tokens strip
+  for (let i = 0; i < 16; i++) el("rect", { x: 20 + i * 11, y: y - 26, width: 9, height: 14, rx: 2, fill: RC[i % 4], opacity: .85 }, s);
+  txt(20, y - 34, "full sequence  S  (latent tokens)", "sub", "start", s);
+  el("path", { d: "M 100 " + (y - 8) + " L 100 " + (y + 10), stroke: "#5c6a7d", "stroke-width": 1.4, fill: "none" }, s);
+  // split arrow
+  el("path", { d: "M 108 " + y + " C 140 " + y + ", 150 " + (y + 50) + ", 185 " + (y + 50), stroke: "#22d3ee", "stroke-width": 1.6, fill: "none", "marker-end": "url(#arr)" }, s);
+  txt(112, y - 12, "_sp_plan splits dim 1", "tiny", "start", s);
+
+  // rank lanes
+  const laneX = 195, laneW = 610;
+  for (let r = 0; r < 4; r++) {
+    const ly = y + 4 + r * 30;
+    el("rect", { x: laneX, y: ly, width: laneW, height: 24, rx: 5, fill: "#0e141c", stroke: "#1f2937" }, s);
+    el("rect", { x: laneX + 6, y: ly + 6, width: 60, height: 12, rx: 2, fill: RC[r], opacity: .8 }, s);
+    txt(laneX + 74, ly + 16, "rank " + r + "  ·  S/4 tokens  ·  norms / MLP / projections (no comm)", "sub", "start", s);
+  }
+  // attention box overlays lane 1-2 region visually as a column
+  const ax = 470, aw = 220;
+  el("rect", { x: ax, y: y - 4, width: aw, height: 128, rx: 8, fill: "#121821", stroke: "#22d3ee", "stroke-dasharray": "4 3" }, s);
+  txt(ax + aw / 2, y + 14, "Attention layer", "lbl", "middle", s);
+  txt(ax + aw / 2, y + 32, "pre_attention() → kernel → post_attention()", "tiny", "middle", s);
+  txt(ax + aw / 2, y + 47, "THE ONLY PLACE THAT COMMUNICATES", "tiny", "middle", s);
+  el("text", { x: ax + aw / 2, y: y + 90, "class": "sub", "text-anchor": "middle", fill: "#22d3ee", "font-size": 20 }, s).textContent = "⟲ strategy hooks";
+
+  // gather
+  el("path", { d: "M " + (laneX + laneW) + " " + (y + 64) + " C " + (laneX + laneW + 40) + " " + (y + 64) + ", " + (laneX + laneW + 50) + " " + (y + 10) + ", " + (laneX + laneW + 85) + " " + (y + 10), stroke: "#4ade80", "stroke-width": 1.6, fill: "none", "marker-end": "url(#arrG)" }, s);
+  txt(laneX + laneW - 6, y - 12, "gather after proj_out (rank 0, or last VAE stage)", "tiny", "end", s);
+  for (let i = 0; i < 16; i++) el("rect", { x: 912 + (i % 8) * 11, y: y + 2 + Math.floor(i / 8) * 16, width: 9, height: 12, rx: 2, fill: RC[i % 4], opacity: .85 }, s);
+  txt(912, y + 48, "S again", "sub", "start", s);
+  // defs
+  const defs = el("defs", {}, s);
+  const mk = (id, col) => { const m = el("marker", { id: id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" }, defs); el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: col }, m); };
+  mk("arr", "#22d3ee"); mk("arrG", "#4ade80"); mk("arrA", "#fbbf24");
+})();
+
+/* ============================================================= 1 topology */
+let topoU = 2, topoR = 2;
+function setTopo(btn) {
+  document.querySelectorAll("#topology .tog").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  topoU = +btn.dataset.u; topoR = +btn.dataset.r;
+  drawTopo();
+}
+function drawTopo() {
+  const s = document.getElementById("topoSvg");
+  s.innerHTML = "";
+  const defs = el("defs", {}, s);
+  const mk = (id, col) => { const m = el("marker", { id: id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" }, defs); el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: col }, m); };
+  mk("tArrC", "#22d3ee"); mk("tArrV", "#a78bfa");
+  const u = topoU, r = topoR, sp = u * r, world = 8, dp = world / sp;
+  const CW = 210, CH = 92, GX = 30, GY = 76;
+  txt(20, 30, "world_size = 8   ·   sp_size = " + u + " × " + r + " = " + sp + "   ·   dp = " + dp, "lbl", "start", s);
+  txt(20, 48, "use_ulysses_low = true: Ulysses groups contiguous, Ring groups strided within each SP block", "sub", "start", s);
+  for (let d = 0; d < dp; d++) {
+    const bx = GX + d * 2 * (CW + 40), by = GY;
+    txt(bx, by - 12, "dp slice " + d + "  (sp block, ranks " + (d * sp) + "–" + (d * sp + sp - 1) + ")", "sub", "start", s);
+    // ulysses groups: contiguous chunks of u
+    for (let g = 0; g < r; g++) {
+      const ux = bx + 8 + g * (u * 44 + 10), uy = by + 6;
+      el("rect", { x: ux - 5, y: uy - 5, width: u * 44 + 4, height: 74, rx: 10, fill: "#22d3ee12", stroke: "#22d3ee", "stroke-width": 1.1, "stroke-dasharray": "5 3" }, s);
+      txt(ux + (u * 44) / 2 - 3, uy - 12, "ulysses " + (g + 1), "tiny", "middle", s).setAttribute("fill", "#22d3ee");
+      for (let i = 0; i < u; i++) {
+        const rank = d * sp + g * u + i, rx = ux + i * 44;
+        el("rect", { x: rx, y: uy, width: 38, height: 34, rx: 6, fill: "#121821", stroke: "#2c3e55" }, s);
+        txt(rx + 19, uy + 22, "r" + rank, "lbl", "middle", s);
+      }
+    }
+    // ring groups: strided by u within block
+    for (let g = 0; g < u; g++) {
+      const members = [];
+      for (let k = 0; k < r; k++) members.push(d * sp + g + k * u);
+      for (let k = 0; k < members.length; k++) {
+        const a = members[k], b = members[(k + 1) % members.length];
+        if (a === b) continue;
+        const pa = rankPos(a, d, sp, u, r, bx, by), pb = rankPos(b, d, sp, u, r, bx, by);
+        el("path", { d: arcPath(pa, pb, 16), stroke: "#a78bfa", "stroke-width": 1.3, fill: "none", "marker-end": "url(#tArrV)", opacity: .9 }, s);
+      }
+      txt(bx + 8 + g * 44 + 19, by + 66, "ring " + (g + 1), "tiny", "middle", s).setAttribute("fill", "#a78bfa");
+    }
+  }
+  const info = document.getElementById("topoInfo");
+  if (u > 1 && r > 1) info.textContent = "hybrid: all-to-all inside dashed cyan groups, K/V lap along violet arrows";
+  else if (u > 1) info.textContent = "pure Ulysses: one all-to-all group per dp slice, ring groups are singletons";
+  else info.textContent = "pure Ring: K/V rotate around the whole sp block, ulysses groups are singletons";
+  const lg = el("g", {}, s);
+  txt(20, 262, "— — ulysses_group (all-to-all)", "sub", "start", lg).setAttribute("fill", "#22d3ee");
+  txt(240, 262, "→ ring_group (P2P lap)", "sub", "start", lg).setAttribute("fill", "#a78bfa");
+  txt(450, 262, "r# = global rank", "sub", "start", lg);
+}
+function rankPos(rank, d, sp, u, r, bx, by) {
+  const local = rank - d * sp, g = Math.floor(local / u), i = local % u;
+  return { x: bx + 8 + g * (u * 44 + 10) + i * 44 + 19, y: by + 6 + 17 };
+}
+function arcPath(a, b, bend) {
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+  const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len, ny = dx / len;
+  const cx = mx + nx * bend, cy = my + ny * bend;
+  return "M " + a.x + " " + a.y + " Q " + cx + " " + cy + " " + b.x + " " + b.y;
+}
+
+/* ============================================================= 2 ulysses */
+const ULY_PHASES = 4;
+let ulyssesPhase = 0;
+function ulyssesStep(d) { ulyssesPhase = (ulyssesPhase + d + ULY_PHASES) % ULY_PHASES; drawUlysses(); }
+function drawUlysses() {
+  const s = document.getElementById("ulyssesSvg");
+  s.innerHTML = "";
+  const P = 4, H = 8, Hloc = H / P;
+  const colW = 210, x0 = 40, topY = 74;
+  const infos = [
+    "phase 0 — sharded input: every rank holds S/4 tokens × all 8 heads  (B, S/4, 8, D)",
+    "phase 1 — all_to_all_single ×3 (Q,K,V): send token slice, receive head subset  →  (B, S, 2, D)",
+    "phase 2 — plain local attention kernel on full sequence / 2 heads — any backend",
+    "phase 3 — reverse all-to-all on output: back to (B, S/4, 8, D). 4 collectives per layer total."
+  ];
+  document.getElementById("ulyssesInfo").textContent = infos[ulyssesPhase];
+
+  for (let r = 0; r < P; r++) {
+    const cx = x0 + r * (colW + 22);
+    txt(cx + colW / 2, 40, "rank " + r, "lbl", "middle", s);
+    el("rect", { x: cx, y: topY, width: colW, height: 190, rx: 10, fill: "#0e141c", stroke: "#1f2937" }, s);
+
+    if (ulyssesPhase === 0 || ulyssesPhase === 3) {
+      // tall seq bar in rank color + 8 head cells
+      const bx = cx + 22, bw = 54;
+      el("rect", { x: bx, y: topY + 18, width: bw, height: 150, rx: 4, fill: RC[r], opacity: .55 }, s);
+      el("rect", { x: bx, y: topY + 18, width: bw, height: 150, rx: 4, fill: "none", stroke: RC[r] }, s);
+      txt(bx + bw / 2, topY + 98, "S/4", "lbl", "middle", s);
+      txt(bx + bw / 2, topY + 114, "tokens", "tiny", "middle", s);
+      txt(bx + bw + 12, topY + 30, "heads:", "sub", "start", s);
+      for (let h2 = 0; h2 < H; h2++) {
+        const hx = bx + bw + 12, hy = topY + 42 + h2 * 15;
+        el("rect", { x: hx, y: hy, width: 110, height: 12, rx: 2, fill: "#243247" }, s);
+        txt(hx + 56, hy + 9.5, "h" + h2, "tiny", "middle", s);
+      }
+      if (ulyssesPhase === 3) {
+        txt(cx + colW / 2, topY + 184, "output restored ✓", "tiny", "middle", s).setAttribute("fill", "#4ade80");
+        txt(cx + colW / 2, topY + 172, "reverse all-to-all", "tiny", "middle", s).setAttribute("fill", "#8b98a9");
+      }
+    } else {
+      // full sequence (4 stacked slices) + Hloc head cells
+      const bx = cx + 22, bw = 54;
+      for (let k = 0; k < P; k++) {
+        el("rect", { x: bx, y: topY + 18 + k * 37.5, width: bw, height: 35, fill: RC[k], opacity: .55 }, s);
+        txt(bx + bw / 2, topY + 40 + k * 37.5, "S" + k, "tiny", "middle", s);
+      }
+      el("rect", { x: bx, y: topY + 18, width: bw, height: 150, fill: "none", stroke: "#8b98a9", "stroke-dasharray": "3 3" }, s);
+      txt(bx + bw / 2, topY + 178, "full S", "tiny", "middle", s);
+      txt(bx + bw + 12, topY + 30, "heads:", "sub", "start", s);
+      const allot = (ulyssesPhase === 1) ? [r * Hloc, r * Hloc + 1] : [r * Hloc, r * Hloc + 1];
+      for (let h2 = 0; h2 < Hloc; h2++) {
+        const hx = bx + bw + 12, hy = topY + 42 + h2 * 60;
+        el("rect", { x: hx, y: hy, width: 110, height: 50, rx: 3, fill: "#243247", stroke: RC[r] }, s);
+        txt(hx + 55, hy + 29, "h" + allot[h2] + (ulyssesPhase === 2 ? "  attn" : ""), "lbl", "middle", s);
+      }
+      if (ulyssesPhase === 1) {
+        // exchange arrows
+        for (let dst = 0; dst < P; dst++) {
+          if (dst === r) continue;
+          const x1 = cx + colW + (dst > r ? 0 : 0), y1 = topY + 100;
+          const xd = x0 + dst * (colW + 22);
+          const midx = (cx + xd + colW) / 2;
+          el("path", { d: "M " + (cx + colW * .72) + " " + (topY + 90 + dst * 9) + " C " + midx + " " + (topY + 40) + ", " + midx + " " + (topY + 200) + ", " + (xd + colW * .28) + " " + (topY + 108 + dst * 9), stroke: "#22d3ee", "stroke-width": 1, fill: "none", opacity: .55, "marker-end": "url(#uArr)" }, s);
+        }
+        txt(cx + colW / 2, topY + 184, "all-to-all ×3 (Q,K,V)", "tiny", "middle", s).setAttribute("fill", "#22d3ee");
+      } else {
+        txt(cx + colW / 2, topY + 184, "local kernel ✓", "tiny", "middle", s).setAttribute("fill", "#4ade80");
+        el("rect", { x: cx + 6, y: topY + 6, width: colW - 12, height: 178, rx: 8, fill: "none", stroke: "#4ade80", opacity: .35 }, s);
+      }
+    }
+  }
+  const defs = el("defs", {}, s);
+  const m = el("marker", { id: "uArr", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: "auto-start-reverse" }, defs);
+  el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#22d3ee" }, m);
+  txt(x0, 22, "H = 8 heads, P = 4 ranks  ·  a rank's head subset = 2 heads", "sub", "start", s);
+}
+
+/* ============================================================= 3 ring */
+let ringT = 0, ringTimer = null;
+const RP = 4;
+function ringStep(d) { ringT = (ringT + d + RP) % RP; drawRing(); }
+function ringTogglePlay(btn) {
+  if (ringTimer) { clearInterval(ringTimer); ringTimer = null; btn.textContent = "▶ play"; }
+  else { ringTimer = setInterval(() => ringStep(1), 1500); btn.textContent = "⏸ pause"; ringStep(1); }
+}
+function drawRing() {
+  const s = document.getElementById("ringSvg");
+  s.innerHTML = "";
+  const cx = 300, cy = 175, R = 118;
+  const pos = i => ({ x: cx + R * Math.sin(i * Math.PI / 2), y: cy - R * Math.cos(i * Math.PI / 2) });
+  document.getElementById("ringInfo").textContent =
+    "step " + ringT + "/" + (RP - 1) + " — every rank: post send/recv of its K/V block, then attend(Q_local, K/V in hand) → merge into (out, lse)";
+  // ring arrows
+  for (let i = 0; i < RP; i++) {
+    const a = pos(i), b = pos((i + 1) % RP);
+    const midx = (a.x + b.x) / 2 + (b.y - a.y) * .18, midy = (a.y + b.y) / 2 - (b.x - a.x) * .18;
+    el("path", { d: "M " + (a.x * .92 + cx * .08) + " " + (a.y * .92 + cy * .08) + " Q " + midx + " " + midy + " " + (b.x * .92 + cx * .08) + " " + (b.y * .92 + cy * .08), stroke: "#5c6a7d", "stroke-width": 1.3, fill: "none", "marker-end": "url(#rArr)" }, s);
+  }
+  txt(cx, cy - 10, "K/V blocks rotate ↻", "sub", "middle", s);
+  txt(cx, cy + 8, "1 hop per step", "tiny", "middle", s);
+  for (let i = 0; i < RP; i++) {
+    const p = pos(i);
+    el("rect", { x: p.x - 52, y: p.y - 44, width: 104, height: 88, rx: 10, fill: "#0e141c", stroke: "#1f2937" }, s);
+    txt(p.x, p.y - 27, "rank " + i, "lbl", "middle", s);
+    // Q stays
+    el("rect", { x: p.x - 42, y: p.y - 16, width: 84, height: 16, rx: 3, fill: "#243247", stroke: "#e6edf3", "stroke-dasharray": "2 2" }, s);
+    txt(p.x, p.y - 4.5, "Q" + i + " — never moves", "tiny", "middle", s);
+    // KV block: at step t, rank i holds block (i - t) mod P
+    const owner = ((i - ringT) % RP + RP) % RP;
+    el("rect", { x: p.x - 42, y: p.y + 6, width: 84, height: 20, rx: 3, fill: RC[owner], opacity: .7 }, s);
+    txt(p.x, p.y + 20, "K/V" + owner + (owner === i ? " (own)" : " ← recv"), "tiny", "middle", s);
+    // joint prefix at step 0
+    if (ringT === 0) {
+      el("rect", { x: p.x - 42, y: p.y + 30, width: 84, height: 12, rx: 3, fill: "none", stroke: "#fbbf24", "stroke-dasharray": "3 2" }, s);
+      txt(p.x, p.y + 39, "text prefix (static)", "tiny", "middle", s).setAttribute("fill", "#fbbf24");
+    }
+  }
+  // right side: step ledger
+  const lx = 640;
+  txt(lx, 70, "rank 0's view of the lap (what its Q0 attends to):", "sub", "start", s);
+  for (let t = 0; t < RP; t++) {
+    const own = ((0 - t) % RP + RP) % RP;
+    const row = el("g", { opacity: t <= ringT ? 1 : .3 }, s);
+    el("rect", { x: lx, y: 84 + t * 34, width: 22, height: 22, rx: 4, fill: RC[own], opacity: .75 }, row);
+    txt(lx + 32, 92 + t * 34, "step " + t + "  ·  hold K/V" + own + "  ·  compute  →  out,lse " + (t === 0 ? "= block" : "← merge"), "sub", "start", row);
+    if (t === ringT) el("rect", { x: lx - 8, y: 78 + t * 34, width: 400, height: 34, rx: 6, fill: "none", stroke: "#22d3ee" }, row);
+  }
+  txt(lx, 84 + RP * 34 + 16, "out needs no reshard — already S/4 per rank", "tiny", "start", s).setAttribute("fill", "#4ade80");
+  txt(lx + 32, 84 + RP * 34 + 34, "P2P posted BEFORE attention call → comm hides under compute", "tiny", "start", s);
+  const defs = el("defs", {}, s);
+  const m = el("marker", { id: "rArr", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" }, defs);
+  el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#8b98a9" }, m);
+}
+
+/* ============================================================= 4 hybrid */
+(function drawHybrid() {
+  const s = document.getElementById("hybSvg");
+  const defs = el("defs", {}, s);
+  const mk = (id, col) => { const m = el("marker", { id: id, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" }, defs); el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: col }, m); };
+  mk("hC", "#22d3ee"); mk("hV", "#a78bfa");
+  txt(20, 26, "phase A — Ulysses all-to-all inside contiguous pairs", "sub", "start", s).setAttribute("fill", "#22d3ee");
+  txt(20, 42, "phase B — Ring lap along strided groups, on full-sequence tensors", "sub", "start", s).setAttribute("fill", "#a78bfa");
+  const box = (x, y, rank, kvColor, tag) => {
+    el("rect", { x: x, y: y, width: 92, height: 64, rx: 9, fill: "#0e141c", stroke: "#1f2937" }, s);
+    txt(x + 46, y + 17, "rank " + rank, "lbl", "middle", s);
+    el("rect", { x: x + 10, y: y + 26, width: 72, height: 14, rx: 3, fill: kvColor, opacity: .65 }, s);
+    txt(x + 46, y + 37, "K/V (S_global, H/2)", "tiny", "middle", s);
+    txt(x + 46, y + 54, tag, "tiny", "middle", s);
+  };
+  const X = [60, 240, 60, 240], Y = [80, 80, 200, 200];
+  // ulysses pairs
+  for (const [a, b] of [[0, 1], [2, 3]]) {
+    const x1 = X[a] + 92, x2 = X[b], ymid = Y[a] + 32;
+    el("path", { d: "M " + x1 + " " + ymid + " L " + x2 + " " + ymid, stroke: "#22d3ee", "stroke-width": 1.6, fill: "none", "marker-end": "url(#hC)", "marker-start": "url(#hC)" }, s);
+  }
+  txt(196, 70, "all-to-all", "tiny", "middle", s).setAttribute("fill", "#22d3ee");
+  txt(196, 230, "all-to-all", "tiny", "middle", s).setAttribute("fill", "#22d3ee");
+  box(X[0], Y[0], 0, RC[0], "heads h0-h1");
+  box(X[1], Y[1], 1, RC[1], "heads h2-h3");
+  box(X[2], Y[2], 2, RC[2], "heads h0-h1");
+  box(X[3], Y[3], 3, RC[3], "heads h2-h3");
+  // ring arrows strided {0,2} {1,3}
+  const c04 = { x: X[0] + 46, y: Y[0] + 64 }, c24 = { x: X[2] + 46, y: Y[2] };
+  const c14 = { x: X[1] + 46, y: Y[1] + 64 }, c34 = { x: X[3] + 46, y: Y[3] };
+  el("path", { d: arcPath(c04, c24, 26), stroke: "#a78bfa", "stroke-width": 1.6, fill: "none", "marker-end": "url(#hV)" }, s);
+  el("path", { d: arcPath(c24, c04, 26), stroke: "#a78bfa", "stroke-width": 1.6, fill: "none", "marker-end": "url(#hV)" }, s);
+  el("path", { d: arcPath(c14, c34, 26), stroke: "#a78bfa", "stroke-width": 1.6, fill: "none", "marker-end": "url(#hV)" }, s);
+  el("path", { d: arcPath(c34, c14, 26), stroke: "#a78bfa", "stroke-width": 1.6, fill: "none", "marker-end": "url(#hV)" }, s);
+  txt(X[0] + 46 - 62, 172, "ring {0,2}", "tiny", "middle", s).setAttribute("fill", "#a78bfa");
+  txt(X[1] + 46 + 62, 172, "ring {1,3}", "tiny", "middle", s).setAttribute("fill", "#a78bfa");
+  // right explanation
+  const rx = 420;
+  el("rect", { x: rx, y: 66, width: 600, height: 220, rx: 10, fill: "#121821", stroke: "#1f2937" }, s);
+  const lines = [
+    ["1", "Each rank starts with (B, S/4, H, D)."],
+    ["2", "Ulysses all-to-all inside {0,1} and {2,3}:  → (B, S, H/2, D)."],
+    ["3", "Ring lap on {0,2} and {1,3}: K/V rotate while Q stays."],
+    ["4", "Attention per step: full-sequence queries × rotating full-seq K/V."],
+    ["5", "sp_size = 2 × 2 = 4 with only degree-2 collectives each phase."],
+    ["!", "Constraint: S_global must match across each ring group"]
+  ];
+  lines.forEach((L, i) => {
+    const warn = L[0] === "!";
+    el("rect", { x: rx + 18, y: 88 + i * 32, width: 22, height: 22, rx: 5, fill: warn ? "#fbbf24" : "#22d3ee", opacity: .18 }, s);
+    txt(rx + 29, 104 + i * 32, L[0], "lbl", "middle", s).setAttribute("fill", warn ? "#fbbf24" : "#22d3ee");
+    txt(rx + 52, 104 + i * 32, L[1], "sub", "start", s);
+  });
+})();
+
+/* ============================================================= 5 allgather */
+(function drawAG() {
+  const s = document.getElementById("agSvg");
+  const defs = el("defs", {}, s);
+  const m = el("marker", { id: "aG", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse" }, defs);
+  el("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: "#4ade80" }, m);
+  txt(20, 26, "K/V: all_gather_into_tensor (dim = seq)  ·  Q: stays local  ·  no reverse step", "sub", "start", s);
+  const P = 4, W = 118, X = [], Y = 66;
+  for (let r = 0; r < P; r++) X.push(40 + r * 160);
+  // gather bus
+  el("rect", { x: 30, y: 40, width: 660, height: 10, rx: 4, fill: "#1a2a3c" }, s);
+  txt(700, 49, "gather bus", "tiny", "end", s);
+  for (let r = 0; r < P; r++) {
+    el("path", { d: "M " + (X[r] + W / 2) + " 50 L " + (X[r] + W / 2) + " " + Y, stroke: "#4ade80", "stroke-width": 1.4, "marker-end": "url(#aG)" }, s);
+    el("rect", { x: X[r], y: Y, width: W, height: 150, rx: 10, fill: "#0e141c", stroke: "#1f2937" }, s);
+    txt(X[r] + W / 2, Y + 18, "rank " + r, "lbl", "middle", s);
+    // local Q strip
+    el("rect", { x: X[r] + 12, y: Y + 30, width: W - 24, height: 16, rx: 3, fill: RC[r], opacity: .75 }, s);
+    txt(X[r] + W / 2, Y + 41.5, "Q" + r + "  (S/4, local)", "tiny", "middle", s);
+    // full K/V rebuilt: four slices
+    for (let k = 0; k < P; k++) {
+      el("rect", { x: X[r] + 12 + k * ((W - 24) / P), y: Y + 56, width: (W - 24) / P - 2, height: 26, rx: 2, fill: RC[k], opacity: .7 }, s);
+    }
+    txt(X[r] + W / 2, Y + 96, "full K/V (S)", "tiny", "middle", s);
+    // attention
+    el("rect", { x: X[r] + 12, y: Y + 106, width: W - 24, height: 24, rx: 5, fill: "#243247" }, s);
+    txt(X[r] + W / 2, Y + 122, "attn: Q" + r + " × K/V", "tiny", "middle", s);
+    txt(X[r] + W / 2, Y + 144, "mask sliced to", "tiny", "middle", s);
+    txt(X[r] + W / 2, Y + 156, "rank-" + r + " window", "tiny", "middle", s);
+  }
+  const rx = 730;
+  el("rect", { x: rx, y: Y, width: 290, height: 150, rx: 10, fill: "#121821", stroke: "#1f2937" }, s);
+  const lines = [
+    "2 collectives / layer (K + V)",
+    "Q never leaves the rank",
+    "non-causal only",
+    "mutually exclusive with",
+    "ulysses/ring (v1 rule)",
+    "cheapest on small K/V"
+  ];
+  lines.forEach((t, i) => txt(rx + 20, Y + 28 + i * 21, t, "sub", "start", s));
+})();
+
+/* init */
+drawTopo();
+drawUlysses();
+drawRing();
+</script>
+</body>
+</html>
