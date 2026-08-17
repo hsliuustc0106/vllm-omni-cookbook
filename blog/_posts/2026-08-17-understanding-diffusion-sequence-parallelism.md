@@ -97,7 +97,15 @@ standard-shape input, and a reverse all-to-all restores the sequence shard.
 Four collectives per attention layer: Q, K, V forward plus the output reverse
 ([`all_to_all_4D`](https://github.com/vllm-project/vllm-omni/blob/c588208cc/vllm_omni/diffusion/distributed/comm.py)).
 
-![Figure 2 — the phase stepper: rank 0 goes from S/4 tokens × 8 heads (phase 0) to the full stacked sequence × 2 heads after the all-to-all (phase 1), runs any local kernel (phase 2), and reverses (phase 3)]({{ site.baseurl }}/assets/figures/diffusion-sequence-parallelism/fig2-ulysses.png)
+Concretely, the all-to-all moves **P pieces per rank, per tensor**. Rank *i*'s
+local `(S/P, H)` block is cut along heads into P groups, and **piece k —
+rank *i*'s tokens × head group k — goes to rank k**. Symmetrically, rank *i*
+receives from every rank *r* that rank's tokens × **rank *i*'s own head
+group**. Stacking the P received pieces along the sequence axis is exactly
+what turns `(S/P, H)` into `(S, H/P)`: after the swap, rank *i* owns every
+token but only heads `[i·H/P, (i+1)·H/P)`.
+
+![Figure 2 — top: the phase stepper, rank 0 going from S/4 tokens × 8 heads (phase 0) to the full stacked sequence × 2 heads after the all-to-all (phase 1), local kernel (phase 2), reverse (phase 3). Bottom: the send matrix — cell (r, k) is the one piece rank r sends to rank k (r's tokens × k's head group); rank 0's highlighted row is its four sends, the green-dashed column is what it receives back and stacks into the full sequence]({{ site.baseurl }}/assets/figures/diffusion-sequence-parallelism/fig2-ulysses.png)
 
 Text conditioning rides along differently: joint Q/K/V are replicated on all
 ranks, sliced **by heads** per Ulysses rank, concatenated to the image stream

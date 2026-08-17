@@ -203,6 +203,27 @@
     <svg id="ulyssesSvg" width="1040" height="330" viewBox="0 0 1040 330" role="img" aria-label="Ulysses all-to-all phases"></svg>
   </div>
 
+  <h3>What exactly crosses the wire</h3>
+  <p>
+    The all-to-all moves <b>P pieces per rank, per tensor</b>. Rank&nbsp;i's local
+    <code>(S/P, H)</code> block is cut along heads into P groups; <b>piece&nbsp;k — rank&nbsp;i's
+    tokens × head group&nbsp;k — goes to rank&nbsp;k</b>. Symmetrically, rank&nbsp;i receives from
+    every rank&nbsp;r that rank's tokens × <b>rank&nbsp;i's own head group</b>. Stacking the P
+    received pieces along the sequence axis is what turns <code>(S/P, H)</code> into
+    <code>(S, H/P)</code>. Pick a rank to trace its row (sends) and column (receives):
+  </p>
+  <div class="controls" id="ulyssesXRanks">
+    <button class="tog on" data-r="0" onclick="setUlyssesX(this)">trace rank 0</button>
+    <button class="tog" data-r="1" onclick="setUlyssesX(this)">trace rank 1</button>
+    <button class="tog" data-r="2" onclick="setUlyssesX(this)">trace rank 2</button>
+    <button class="tog" data-r="3" onclick="setUlyssesX(this)">trace rank 3</button>
+    <span class="spacer"></span>
+    <span class="phase-label" id="ulyssesXInfo"></span>
+  </div>
+  <div class="panel" style="padding:10px 14px;">
+    <svg id="ulyssesXSvg" width="1040" height="348" viewBox="0 0 1040 348" role="img" aria-label="Ulysses all-to-all exchange matrix"></svg>
+  </div>
+
   <h3>Text / joint stream</h3>
   <p>
     Joint (text-conditioning) Q/K/V are assumed <em>replicated</em> on all ranks. They are sliced
@@ -640,6 +661,74 @@ function drawUlysses() {
   txt(x0, 22, "H = 8 heads, P = 4 ranks  ·  a rank's head subset = 2 heads", "sub", "start", s);
 }
 
+/* ============================================================= 2b ulysses exchange matrix */
+let ulyssesXRank = 0;
+function setUlyssesX(btn) {
+  document.querySelectorAll("#ulyssesXRanks .tog").forEach(b => b.classList.remove("on"));
+  btn.classList.add("on");
+  ulyssesXRank = +btn.dataset.r;
+  drawUlyssesX();
+}
+function drawUlyssesX() {
+  const s = document.getElementById("ulyssesXSvg");
+  s.innerHTML = "";
+  const P = 4, HG = 2; // H=8 heads -> head group k = heads 2k..2k+1
+  const i = ulyssesXRank;
+  document.getElementById("ulyssesXInfo").textContent =
+    "rank " + i + ": row " + i + " = the P pieces it sends · column " + i + " = the P pieces it receives";
+
+  txt(20, 24, "send matrix — rows: sender rank · columns: destination rank (owns head group k after the swap)", "sub", "start", s);
+  txt(20, 40, "every cell is one piece: (B, S/P, H/P, D) — the sender's tokens × the receiver's head group", "tiny", "start", s);
+
+  const colX = k => 150 + k * 140;
+  const rowY = r => 78 + r * 52;
+
+  for (let k = 0; k < P; k++) {
+    txt(colX(k) + 65, 64, "→ r" + k + " · h" + (k * HG) + "–" + (k * HG + 1), "sub", "middle", s).setAttribute("fill", k === i ? "#4ade80" : "#8b98a9");
+  }
+  for (let r = 0; r < P; r++) {
+    el("rect", { x: 24, y: rowY(r) + 6, width: 12, height: 32, rx: 3, fill: RC[r], opacity: .85 }, s);
+    txt(44, rowY(r) + 27, "from r" + r, "sub", "start", s).setAttribute("fill", r === i ? RC[r] : "#8b98a9");
+    for (let k = 0; k < P; k++) {
+      const cx = colX(k), cy = rowY(r);
+      const isSend = r === i, isRecv = k === i;
+      el("rect", {
+        x: cx, y: cy, width: 130, height: 44, rx: 6,
+        fill: RC[r], "fill-opacity": isSend || isRecv ? .38 : .18,
+        stroke: isSend ? RC[r] : (isRecv ? "#4ade80" : "#1f2937"),
+        "stroke-width": isSend || isRecv ? 1.6 : 1,
+        "stroke-dasharray": isRecv && !isSend ? "5 3" : "none"
+      }, s);
+      txt(cx + 65, cy + 20, "S" + r + " × h" + (k * HG) + "–" + (k * HG + 1), "lbl", "middle", s);
+      txt(cx + 65, cy + 35, r === k ? "stays on r" + k : "→ r" + k, "tiny", "middle", s);
+    }
+  }
+  // left bracket: row i = sends
+  el("path", { d: "M 138 " + (rowY(i) - 2) + " L 132 " + (rowY(i) - 2) + " L 132 " + (rowY(i) + 46) + " L 138 " + (rowY(i) + 46), stroke: RC[i], "stroke-width": 1.6, fill: "none" }, s);
+  txt(130, rowY(i) + 66, "row " + i + ": sends", "tiny", "end", s).setAttribute("fill", RC[i]);
+
+  // right trace panel
+  const px = 745, pw = 275;
+  el("rect", { x: px, y: 60, width: pw, height: 226, rx: 10, fill: "#0e141c", stroke: "#1f2937" }, s);
+  txt(px + 16, 84, "rank " + i + " — full exchange", "lbl", "start", s);
+  txt(px + 16, 104, "sends (its tokens S" + i + "):", "sub", "start", s).setAttribute("fill", RC[i]);
+  for (let k = 0; k < P; k++) {
+    el("rect", { x: px + 16, y: 112 + k * 24, width: pw - 32, height: 20, rx: 4, fill: RC[i], "fill-opacity": .22, stroke: "#1f2937" }, s);
+    txt(px + 26, 126 + k * 24, "S" + i + " × h" + (k * HG) + "–" + (k * HG + 1) + (k === i ? "  (self)" : ""), "sub", "start", s);
+  }
+  txt(px + 16, 220, "receives (its heads h" + (i * HG) + "–" + (i * HG + 1) + "):", "sub", "start", s).setAttribute("fill", "#4ade80");
+  for (let r = 0; r < P; r++) {
+    el("rect", { x: px + 16 + r * ((pw - 32) / P), y: 228, width: (pw - 32) / P - 4, height: 22, rx: 3, fill: RC[r], opacity: .55 }, s);
+    txt(px + 16 + r * ((pw - 32) / P) + ((pw - 32) / P - 4) / 2, 243, "S" + r, "tiny", "middle", s);
+  }
+  txt(px + 16, 268, "stack along S → full sequence", "tiny", "start", s);
+  txt(px + 16, 282, "heads h" + (i * HG) + "–" + (i * HG + 1) + " only", "tiny", "start", s);
+  el("rect", { x: px + 16, y: 250, width: pw - 32, height: 40, rx: 5, fill: "none", stroke: "#4ade80", "stroke-dasharray": "4 3" }, s);
+  txt(px + 92, 268 + 24, "", "tiny", "middle", s);
+
+  txt(150, 322, "after the swap rank " + i + " holds (B, S, H/P, D): all four S-shards stacked, heads h" + (i * HG) + "–" + (i * HG + 1) + " — run the stepper above to see the result", "tiny", "start", s).setAttribute("fill", "#4ade80");
+}
+
 /* ============================================================= 3 ring */
 let ringT = 0, ringTimer = null;
 const RP = 4;
@@ -798,6 +887,7 @@ function drawRing() {
 /* init */
 drawTopo();
 drawUlysses();
+drawUlyssesX();
 drawRing();
 </script>
 </body>
