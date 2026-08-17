@@ -32,6 +32,34 @@ skill for blog posts (`blog-post.md`) and condensed stubs for the rest.
 4. Update model `index.md` and `SUMMARY.md`
 5. Open a pull request
 
+## How to Add a New Blog Post
+
+1. Copy [`blog/TEMPLATE.md`](blog/TEMPLATE.md) → `blog/_posts/YYYY-MM-DD-<slug>.md`
+2. Write for users: TL;DR → Background → What the PR does → Key changes → Measured impact → How to use it → Limitations → References
+3. Cite numbers only from the cookbook ledgers or upstream perf JSON, with absolute GitHub URLs
+4. Figures go in `blog/assets/figures/<slug>/`; preview locally with `bundle exec jekyll serve`
+5. Merging to `main` auto-deploys the blog
+
+## How to Add a New Cookbook Release
+
+Update the cookbook only when vLLM-Omni ships an **even** minor release (`v0.24.0`, …). Skip odd minors.
+
+For that release, append the improvement summary for **each tracked model**:
+
+1. Add `## vX.Y.Z (YYYY-MM-DD)` to the model's `index.md` — metrics, **delta from the previous even release**, optimization notes (PR links)
+2. Update retro comparison tables if new tag columns were measured
+3. Add figures under `assets/` when helpful
+4. Update `SUMMARY.md` with the cross-model headline row for this release
+
+## How to Add a New Model
+
+```bash
+mkdir -p <category>/<model-name>/assets
+touch <category>/<model-name>/assets/.gitkeep
+```
+
+Then write `<category>/<model-name>/index.md` following the format of existing models.
+
 ## What to contribute
 
 | Change | Files |
