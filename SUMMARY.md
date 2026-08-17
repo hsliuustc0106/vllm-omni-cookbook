@@ -1,6 +1,6 @@
 # vLLM-Omni Performance Summary
 
-Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v0.20, v0.22, …). Odd minors are not cookbook releases. Each row is a snapshot at that even release; full history lives in each model's `index.md`.
+Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v0.20, v0.22, …). The cookbook is updated only on **even** vLLM-Omni minor releases — odd minors (v0.19, v0.21, …) are skipped — and deltas always compare to the **previous even** release (e.g. v0.22 vs v0.20). Each row is a snapshot at that even release; full history lives in each model's `index.md`.
 
 ---
 
