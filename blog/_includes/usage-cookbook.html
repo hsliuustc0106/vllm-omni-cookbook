@@ -1,0 +1,40 @@
+{%- comment -%}
+  Usage cookbook: mode tabs + copy-ready command panels.
+  Driven by a `usage:` front-matter array (see blog/TEMPLATE.md):
+
+    usage:
+      - label: "DP + AG"          # tab title (short)
+        blurb: "throughput path"  # optional tab subtitle
+        title: "Cosmos3 · DP4"    # optional panel heading (defaults to label)
+        code: |                   # multi-line command; YAML literal block
+          vllm serve ...
+        note: >-                  # optional one-line caveat shown under the code
+
+  Render in the post body with:
+    {% include usage-cookbook.html modes=page.usage %}
+  One cookbook per page (tab/panel ids are not namespaced).
+{%- endcomment -%}
+{%- if include.modes and include.modes.size > 0 -%}
+<div class="usage-cookbook">
+  <div class="usage-tabs" role="tablist" aria-label="Usage modes">
+    {%- for m in include.modes -%}
+    <button class="usage-tab" type="button" role="tab" id="usage-tab-{{ forloop.index0 }}" aria-controls="usage-panel-{{ forloop.index0 }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+      <b>{{ m.label | escape }}</b>
+      {%- if m.blurb -%}<span>{{ m.blurb | escape }}</span>{%- endif -%}
+    </button>
+    {%- endfor -%}
+  </div>
+  {%- for m in include.modes -%}
+  <div class="usage-panel" id="usage-panel-{{ forloop.index0 }}" role="tabpanel" aria-labelledby="usage-tab-{{ forloop.index0 }}" {% unless forloop.first %}hidden{% endunless %}>
+    <div class="usage-meta">
+      <strong>{{ m.title | default: m.label | escape }}</strong>
+      <button class="usage-copy copy-btn" type="button">Copy</button>
+    </div>
+    <pre><code>{{ m.code | strip | escape }}</code></pre>
+    {%- if m.note -%}
+    <p class="usage-note">{{ m.note | escape }}</p>
+    {%- endif -%}
+  </div>
+  {%- endfor -%}
+</div>
+{%- endif -%}

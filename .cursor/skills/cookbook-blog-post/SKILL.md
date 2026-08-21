@@ -20,7 +20,8 @@ post explains the *how* and *why* for users.
 2. Gather context — see **Starting from a PR or issue** below.
 3. Write for users, not for reviewers: **TL;DR → Background (symptom, then
    cause) → What the PR does (design + diagram) → Key changes (file-by-file
-   excerpts) → Measured impact → How to use it → Limitations → References.**
+   excerpts) → Measured impact → How to use it (tabbed cookbook) →
+   How to choose (decision cards) → Limitations → References.**
 4. Metrics may **only** come from the cookbook (`{category}/{model}/index.md`,
    `SUMMARY.md`) or upstream perf JSON. Never invent or estimate numbers.
 5. Link the cookbook with **absolute GitHub URLs** — the blog deploys standalone
@@ -65,7 +66,8 @@ Map gathered material onto the skeleton:
 | PR description + review discussion | **What the PR does** (surface debated design decisions) |
 | `gh pr diff` (biggest files) | **Key changes** (short excerpts + GitHub file links) |
 | Cookbook grep hits (`index.md`, `SUMMARY.md`) | **Measured impact** (absolute GitHub URLs) |
-| PR usage example / upstream recipe | **How to use it** |
+| PR usage example / upstream recipe | **How to use it** (`usage:` front matter → `{% include usage-cookbook.html modes=page.usage %}`) |
+| Limitations, upstream "best for" guidance | **How to choose** (`decisions:` front matter → `{% include decision-cards.html items=page.decisions %}`) |
 | Open follow-up issues, review TODOs | **Limitations & follow-ups** |
 
 If `docs/visualizations/pr-<N>-*` diagrams exist (e.g. pr-6094 KV control

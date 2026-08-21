@@ -34,7 +34,8 @@ Copy `blog/TEMPLATE.md` → `blog/_posts/$(date +%F)-pr<N>-<short-slug>.md`, the
 | PR description + review discussion | **What the PR does** (surface design decisions that reviewers debated) |
 | `gh pr diff` (biggest files) | **Key changes** (short excerpts + GitHub file links) |
 | Cookbook grep hits (`index.md`, `SUMMARY.md`) | **Measured impact** (cite with absolute GitHub URLs) |
-| PR body usage example / recipes | **How to use it** |
+| PR body usage example / recipes | **How to use it** (`usage:` front matter → tabbed cookbook) |
+| Limitations, upstream "best for" guidance | **How to choose** (`decisions:` front matter → cards) |
 | Open follow-up issues, review TODOs | **Limitations & follow-ups** |
 
 Title: `Understanding PR #N — <feature>`. Tags: `[<model>, <area>]`. `summary`

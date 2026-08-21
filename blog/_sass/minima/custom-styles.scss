@@ -22,14 +22,20 @@ img {
   background-color: var(--minima-background-color);
 }
 
-/* Reading measure for prose pages (posts, about, 404) inside the wide canvas. */
-main .wrapper > article.post,
+/* Reading measure for prose pages (about, 404) inside the wide canvas.
+   Posts center themselves via .post-layout below instead. */
 main .wrapper > article.page,
 main .wrapper > div.page {
   max-width: 46rem;
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Anchor jumps land below the sticky site header. */
+.post-content h2 { scroll-margin-top: 5.5rem; }
+
+/* TOC links glide; users who ask for less motion get instant jumps. */
+html:has(.post-toc) { scroll-behavior: smooth; }
 
 /* --- header --------------------------------------------------------------- */
 
@@ -392,8 +398,269 @@ main .wrapper > div.page {
 
 /* --- post page -------------------------------------------------------------- */
 
+$post-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+/* TOC rail + article measure, centered as a pair in the wide canvas. */
+.post-layout {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 46rem);
+  justify-content: center;
+  gap: 2.75rem;
+  align-items: start;
+}
+
+.post-layout > article.post {
+  min-width: 0;
+}
+
 .post {
   max-width: 46rem;
+}
+
+/* Auto section numbers ("01", "02" …) above each h2 — pure CSS, authors do
+   nothing. Only direct children of .post-content count (markdown headings). */
+.post-content {
+  counter-reset: postsection;
+}
+
+.post-content > h2 {
+  counter-increment: postsection;
+
+  &::before {
+    content: counter(postsection, decimal-leading-zero);
+    display: block;
+    margin-bottom: 0.35rem;
+    color: $accent;
+    font-family: $post-mono;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+  }
+}
+
+/* --- left TOC --------------------------------------------------------------- */
+
+.post-toc {
+  position: sticky;
+  top: 4.5rem;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+
+.post-toc-label {
+  margin: 0 0 0.6rem 0.5rem;
+  color: $muted;
+  font-family: $post-mono;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.post-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  li { counter-increment: toc; }
+
+  a {
+    display: grid;
+    grid-template-columns: 1.8rem minmax(0, 1fr);
+    gap: 0.4rem;
+    padding: 0.42rem 0.5rem;
+    border-left: 2px solid var(--minima-border-color-01);
+    color: $muted;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    text-decoration: none;
+
+    &::before {
+      content: counter(toc, decimal-leading-zero);
+      color: var(--minima-border-color-03);
+      font-family: $post-mono;
+      font-size: 0.7rem;
+      padding-top: 0.12rem;
+    }
+
+    &:hover,
+    &.active {
+      color: var(--minima-text-color);
+      border-left-color: $accent;
+      background: var(--minima-code-background-color);
+    }
+
+    &.active::before { color: $accent; font-weight: 600; }
+  }
+}
+
+/* --- reading progress -------------------------------------------------------- */
+
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 30;
+  height: 2px;
+  pointer-events: none;
+
+  span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--minima-brand-color), $accent);
+  }
+}
+
+/* --- copy buttons -------------------------------------------------------------- */
+
+.copy-btn {
+  border: 1px solid var(--minima-border-color-01);
+  border-radius: 6px;
+  padding: 0.22rem 0.6rem;
+  background: var(--minima-background-color);
+  color: $muted;
+  font-family: $post-mono;
+  font-size: 0.7rem;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--minima-text-color);
+    border-color: $accent;
+  }
+}
+
+/* Buttons injected into body code blocks; panel buttons sit in .usage-meta. */
+.post-content pre { position: relative; }
+
+.post-content pre > .code-copy {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.post-content pre:hover > .code-copy,
+.post-content pre > .code-copy:focus-visible { opacity: 1; }
+
+@media (hover: none) {
+  .post-content pre > .code-copy { opacity: 0.85; }
+}
+
+/* --- usage cookbook (mode tabs + command panel) -------------------------------- */
+
+.usage-cookbook { margin: 1.5rem 0; }
+
+.usage-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.usage-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid $card-border;
+  border-radius: 10px;
+  background: var(--minima-background-color);
+  color: $muted;
+  text-align: left;
+  cursor: pointer;
+
+  b {
+    color: var(--minima-text-color);
+    font-size: 0.85rem;
+  }
+
+  span { font-size: 0.72rem; line-height: 1.35; }
+
+  &:hover { border-color: $accent; }
+
+  &[aria-selected="true"] {
+    border-color: $accent;
+    color: var(--minima-text-color);
+    background: var(--minima-code-background-color);
+    box-shadow: inset 0 -2px 0 $accent;
+  }
+}
+
+.usage-panel {
+  border: 1px solid $card-border;
+  border-radius: $card-radius;
+  overflow: hidden;
+}
+
+.usage-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid $card-border;
+  background: var(--minima-code-background-color);
+
+  strong { font-size: 0.85rem; }
+}
+
+.usage-panel pre {
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  background: var(--minima-code-background-color);
+  font-size: 0.8rem;
+}
+
+.usage-note {
+  margin: 0;
+  padding: 0.7rem 0.95rem;
+  border-top: 1px solid $card-border;
+  color: $muted;
+  font-size: 0.83rem;
+}
+
+/* --- decision cards ------------------------------------------------------------ */
+
+.decision-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.9rem;
+  margin: 1.5rem 0;
+}
+
+.decision-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid $card-border;
+  border-radius: $card-radius;
+
+  b {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: $accent;
+    font-family: $post-mono;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .decision-why p {
+    margin: 0;
+    color: $muted;
+    font-size: 0.85rem;
+  }
 }
 
 .post-header {
@@ -577,4 +844,37 @@ main .wrapper > div.page {
 
   .post-card-media { aspect-ratio: 16 / 9; }
   .post-header .post-title { font-size: 1.5rem; }
+}
+
+/* --- post layout responsive --------------------------------------------------- */
+
+/* TOC stops being a rail: it becomes a bordered box above the article,
+   two columns on tablets, one on phones. */
+@media (max-width: 960px) {
+  .post-layout { display: block; }
+
+  .post-toc {
+    position: static;
+    max-height: none;
+    margin: 1.5rem 0 2rem;
+    padding: 1rem;
+    border: 1px solid $card-border;
+    border-radius: $card-radius;
+  }
+
+  .post-toc-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .post-toc-list { grid-template-columns: 1fr; }
+  .usage-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .decision-cards { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.post-toc) { scroll-behavior: auto; }
 }

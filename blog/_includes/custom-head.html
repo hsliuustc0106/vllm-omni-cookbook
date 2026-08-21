@@ -16,6 +16,9 @@
 <script defer src="{{ '/assets/js/theme.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/search.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/filter.js' | relative_url }}"></script>
+{%- if page.layout == 'post' -%}
+<script defer src="{{ '/assets/js/post.js' | relative_url }}"></script>
+{%- endif -%}
 {%- if page.math -%}
 <script>
   MathJax = {

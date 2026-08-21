@@ -11,6 +11,61 @@ tags: [sequence-parallelism, multi-GPU]
 category: PR Analysis
 feature: parallelism
 math: true
+usage:
+  - label: "Ulysses"
+    blurb: "big images, NVLink"
+    title: "Ulysses-SP · online serving (>= 2 GPUs)"
+    code: |
+      vllm serve Qwen/Qwen-Image --omni --port 8091 --usp 2
+  - label: "UAA"
+    blurb: "head count not divisible"
+    title: "advanced_uaa · e.g. Z-Image-Turbo (30 heads)"
+    code: |
+      vllm serve Tongyi-MAI/Z-Image-Turbo --omni --port 8091 --usp 4 --ulysses-mode advanced_uaa
+    note: >-
+      Experimental; in hybrid mode it adds the equal-global-S ring constraint
+      plus a K/V-head-padding restriction.
+  - label: "Ring"
+    blurb: "very long sequences"
+    title: "Ring · 2 GPUs"
+    code: |
+      vllm serve Qwen/Qwen-Image --omni --port 8091 --ring 2
+  - label: "Hybrid"
+    blurb: "compose u×r"
+    title: "Hybrid · Ulysses 2 × Ring 2 = 4 GPUs"
+    code: |
+      vllm serve Qwen/Qwen-Image --omni --port 8091 --usp 2 --ring 2
+  - label: "Python API"
+    blurb: "offline Omni"
+    title: "Omni · DiffusionParallelConfig"
+    code: |
+      from vllm_omni import Omni
+      from vllm_omni.diffusion.data import DiffusionParallelConfig
+
+      omni = Omni(model="Qwen/Qwen-Image",
+                  parallel_config=DiffusionParallelConfig(ulysses_degree=2, ring_degree=2))
+decisions:
+  - when: "Big images on NVLink"
+    pick: "Ulysses"
+    why: "Full Q/K/V/O moves twice per layer (3 all-to-all + 1 reverse); kernel sees full sequence at H/P heads."
+  - when: "Very long sequences, tight memory"
+    pick: "Ring"
+    why: "Q never moves; K/V take one P2P hop per step, overlapped with compute — 2 P2P x (P-1) steps per layer."
+  - when: "Beyond ~8 GPUs"
+    pick: "Hybrid u×r"
+    why: "Ulysses set first, then a K/V ring lap — avoids oversharding heads on big nodes."
+  - when: "Small K/V, cheap fabric"
+    pick: "AllGather-KV"
+    why: "Two all-gathers; K/V moves once, Q stays local — no divisibility constraints."
+  - when: "Short sequences (below ~1024px)"
+    pick: "Stay single-GPU"
+    why: "Ring loop overhead dominates short sequences — the guide's own advice."
+  - when: "Heads not divisible by u"
+    pick: "advanced_uaa"
+    why: "Ulysses-mode workaround (e.g. 30 heads on Z-Image-Turbo); experimental."
+  - when: "Layerwise CPU offload"
+    pick: "SP not available"
+    why: "SP does not compose with layerwise CPU offloading; HSDP/Expert-Parallel combinations are unverified."
 ---
 
 ## TL;DR
@@ -186,29 +241,19 @@ mutually exclusive with the other two modes.
 
 ## How to use it
 
-```bash
-# Ulysses-SP online serving (>= 2 GPUs)
-vllm serve Qwen/Qwen-Image --omni --port 8091 --usp 2
+Pick a topology; commands are copy-ready:
 
-# UAA mode when head count is not divisible (Z-Image-Turbo: 30 heads)
-vllm serve Tongyi-MAI/Z-Image-Turbo --omni --port 8091 --usp 4 --ulysses-mode advanced_uaa
-
-# Ring, or hybrid 2×2 = 4 GPUs
-vllm serve Qwen/Qwen-Image --omni --port 8091 --ring 2
-vllm serve Qwen/Qwen-Image --omni --port 8091 --usp 2 --ring 2
-```
-
-```python
-from vllm_omni import Omni
-from vllm_omni.diffusion.data import DiffusionParallelConfig
-
-omni = Omni(model="Qwen/Qwen-Image",
-            parallel_config=DiffusionParallelConfig(ulysses_degree=2, ring_degree=2))
-```
+{% include usage-cookbook.html modes=page.usage %}
 
 GPU budget: `ulysses × ring × cfg × tp`. SP composes with TeaCache/Cache-DiT,
 CFG-Parallel, TP and VAE patch-parallel; it does **not** compose with layerwise
 CPU offloading, and HSDP/Expert-Parallel combinations are unverified.
+
+## How to choose
+
+The cheat sheet above is the full reference; the short version:
+
+{% include decision-cards.html items=page.decisions %}
 
 ## Limitations & follow-ups
 

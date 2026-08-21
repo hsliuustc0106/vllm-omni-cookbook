@@ -1,0 +1,23 @@
+{%- comment -%}
+  Decision guide: "in situation X, pick Y" cards.
+  Driven by a `decisions:` front-matter array (see blog/TEMPLATE.md):
+
+    decisions:
+      - when: "host RAM tight"     # situation kicker (short, uppercase styling)
+        pick: "DP + no-AllGather"  # the recommendation
+        why: "workers share checkpoint pages (`--dlo-no-use-allgather`)"  # markdown
+
+  Render in the post body with:
+    {% include decision-cards.html items=page.decisions %}
+{%- endcomment -%}
+{%- if include.items and include.items.size > 0 -%}
+<div class="decision-cards">
+  {%- for d in include.items -%}
+  <article class="decision-card">
+    <b>{{ d.when | escape }}</b>
+    <h3>{{ d.pick | escape }}</h3>
+    <div class="decision-why">{{ d.why | markdownify | strip }}</div>
+  </article>
+  {%- endfor -%}
+</div>
+{%- endif -%}

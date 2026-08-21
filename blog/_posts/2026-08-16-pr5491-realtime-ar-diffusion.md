@@ -16,6 +16,45 @@ category: PR Analysis
 feature: realtime_ar_diffusion
 featured: true
 image: /assets/figures/pr5491/fig1.png
+usage:
+  - label: "Offline one-shot"
+    blurb: "full trajectory up front"
+    title: "lingbot_world_v2.py · offline"
+    code: |
+      python examples/offline_inference/diffusion/lingbot_world_v2.py \
+        --prompt "The camera moves slowly forward through the scene." \
+        --image /path/to/first_frame.png \
+        --action-dir /path/to/actions/forward \
+        --num-frames 81 --output lingbot.mp4
+    note: >-
+      Generate the whole trajectory in one request.
+  - label: "Realtime ticks"
+    blurb: "steer at chunk boundaries"
+    title: "lingbot_world_v2_realtime.py · interactive"
+    code: |
+      python examples/offline_inference/diffusion/lingbot_world_v2_realtime.py \
+        --prompt "A road through a forest" \
+        --image /path/to/first_frame.png \
+        --events /path/to/events.jsonl \
+        --output-dir /tmp/lingbot-realtime \
+        --gpu-memory-fraction 0.6
+    note: >-
+      One JSONL line per interaction event, at most 10 ticks per epoch —
+      e.g. {"event_id":1,"prompt":"…","frames":[["j"],[],[]]} turns the camera
+      at the next boundary.
+decisions:
+  - when: "Public HTTP/WebSocket API"
+    pick: "Not yet — examples + recipe"
+    why: "The path is exercised through the in-repo example and recipe (experimental); the structured-interaction proposal is draft [#5527](https://github.com/vllm-project/vllm-omni/pull/5527)."
+  - when: "Whole trajectory known up front"
+    pick: "Offline one-shot"
+    why: "One request, full trajectory — simplest path, no session lifecycle to manage."
+  - when: "Steering mid-generation"
+    pick: "Realtime JSONL events"
+    why: "Events apply only at chunk boundaries; an epoch is at most 10 ticks, then reset starts a new world."
+  - when: "Event schema or hardware notes"
+    pick: "Read the recipe first"
+    why: "Full event schema and hardware guidance live in the LingBot World 2.0 recipe."
 ---
 
 ## TL;DR
@@ -187,35 +226,24 @@ in the PR.
 
 ## How to use it
 
-Today the path is exercised through the in-repo example and recipe (experimental status; no
-public HTTP/WebSocket API — the structured-interaction proposal is draft
-[#5527](https://github.com/vllm-project/vllm-omni/pull/5527)):
+Today the path is exercised through the in-repo example and recipe (experimental
+status; no public HTTP/WebSocket API — the structured-interaction proposal is
+draft [#5527](https://github.com/vllm-project/vllm-omni/pull/5527)). Pick a
+mode:
 
-```bash
-# offline one-shot generation (full trajectory up front)
-python examples/offline_inference/diffusion/lingbot_world_v2.py \
-  --prompt "The camera moves slowly forward through the scene." \
-  --image /path/to/first_frame.png \
-  --action-dir /path/to/actions/forward \
-  --num-frames 81 --output lingbot.mp4
+{% include usage-cookbook.html modes=page.usage %}
 
-# realtime: one JSONL event per chunk boundary, at most 10 ticks per epoch
-python examples/offline_inference/diffusion/lingbot_world_v2_realtime.py \
-  --prompt "A road through a forest" \
-  --image /path/to/first_frame.png \
-  --events /path/to/events.jsonl \
-  --output-dir /tmp/lingbot-realtime \
-  --gpu-memory-fraction 0.6
-```
-
-Each JSONL line is an interaction event — `{"event_id":1,"prompt":"…","frames":[["j"],[],[]]}`
-turns the camera at the next boundary. Full details, hardware notes, and the event schema:
+Full details, hardware notes, and the event schema:
 [recipes/Robbyant/LingBot-World-2.0.md](https://github.com/vllm-project/vllm-omni/blob/main/recipes/Robbyant/LingBot-World-2.0.md).
 
 > [!NOTE]
 > The recipe's realtime command as merged is missing the required `--prompt` flag — the
-> command above is the corrected form. Follow-up comments on the PR track this and the other
+> commands above are the corrected form. Follow-up comments on the PR track this and the other
 > post-merge cleanups below.
+
+## How to choose
+
+{% include decision-cards.html items=page.decisions %}
 
 ## Limitations & follow-ups
 

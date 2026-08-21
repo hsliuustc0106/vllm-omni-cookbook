@@ -28,6 +28,9 @@ Rules:
   vLLM-Omni's `docs/design/feature/` page names (e.g. `quantization`,
   `offloader`, `async_chunk`, `disaggregated_inference`).
 - Figures go in `blog/assets/figures/<slug>/`.
+- The post layout is automatic: a left table of contents with scroll-spy,
+  numbered section kickers, a reading-progress bar, and Copy buttons on every
+  code block. Authors never hand-write a TOC or section numbers.
 
 ---
 
@@ -113,8 +116,48 @@ prefix:
 
 ## How to use it
 
-The flags or commands a user needs, minimal working example. Link the upstream
-recipe if one exists.
+The flags or commands a user needs, as a tabbed cookbook: one tab per mode
+(topology, stage, or interface), each with a copy-ready command and a one-line
+caveat. Define the modes in `usage:` front matter and render them with the
+include; link the upstream recipe if one exists. Two or more modes justify the
+tabs — a single command can stay a plain code block.
+
+```yaml
+usage:
+  - label: "Serve · DP2 no-AG"     # tab title (short)
+    blurb: "the measured config"   # optional tab subtitle
+    title: "MiniMax-H3 · DP2"      # optional panel heading (defaults to label)
+    code: |                        # multi-line command; YAML literal block
+      vllm serve /path/to/model --omni \
+        --data-parallel-size 2
+    note: >-                       # optional one-line caveat under the code
+      Loader falls back silently when the preflight fails.
+```
+
+```markdown
+## How to use it
+One sentence of setup, then:
+{% include usage-cookbook.html modes=page.usage %}
+```
+
+## How to choose
+
+"If you are in situation X, pick Y" cards — distilled from the post's own
+limitations and the upstream docs' guidance; never introduce claims the post
+doesn't already make. Define them in `decisions:` front matter and render them
+with the include. Three to seven cards works best.
+
+```yaml
+decisions:
+  - when: "host RAM tight"          # situation kicker
+    pick: "DP + no-AllGather"       # the recommendation
+    why: "Workers share checkpoint pages (`--dlo-no-use-allgather`)."  # markdown
+```
+
+```markdown
+## How to choose
+{% include decision-cards.html items=page.decisions %}
+```
 
 ## Limitations & follow-ups
 
