@@ -11,6 +11,40 @@ tags: [MiniMax-H3]
 category: PR Analysis
 feature: offloader
 math: true
+usage:
+  - label: "Serve · DP2 no-AG"
+    blurb: "the measured sharing config"
+    title: "MiniMax-H3 · DP2 + no AllGather"
+    code: |
+      vllm serve /path/to/MiniMax-H3/FL2VA --omni \
+        --enable-distributed-layerwise-offload \
+        --data-parallel-size 2 \
+        --dlo-no-use-allgather
+    note: >-
+      The loader picks direct mmap when the preflight proves the layout
+      compatible and silently falls back to the ordinary loader otherwise.
+  - label: "Offline · lifecycle"
+    blurb: "lifecycle-managed run"
+    title: "dlo_lifecycle.py · dlo-dp2-no-allgather"
+    code: |
+      python examples/offline_inference/minimax_h3/dlo_lifecycle.py \
+        --mode dlo-dp2-no-allgather
+    note: >-
+      The repo's lifecycle-managed offline entry point for the same
+      DP2 no-AllGather configuration.
+decisions:
+  - when: "TP=1 · several workers per node"
+    pick: "DP + no-AllGather"
+    why: "Workers keep file-backed checkpoint views and share pages through the OS page cache — the measured −47% node-PSS configuration."
+  - when: "TP>1 · HSDP · online quantization"
+    pick: "Ordinary-loader fallback"
+    why: "The preflight fails closed before any mutation; DLO still runs, workers just hold private runtime weights."
+  - when: "AllGather mode"
+    pick: "Nothing changes"
+    why: "The weight group already totals ≈ one persistent model copy in private shards; the source mapping is released after shard preparation."
+  - when: "Measuring node memory"
+    pick: "Sum PSS, not RSS"
+    why: "RSS counts a shared page in every worker; node-level comparisons should use summed PSS."
 ---
 
 ## TL;DR
@@ -122,22 +156,19 @@ device memory 13,226 MiB and clean shutdown.
 Nothing new to enable — correctness never depends on choosing a storage mode.
 The loader picks direct `mmap` when the preflight proves the layout compatible,
 and silently falls back to the ordinary loader (with an observable reason in the
-logs) otherwise. To run the sharing configuration from the measurement:
+logs) otherwise. Pick a mode; commands are copy-ready. For a lifecycle-managed
+offline run, the repo also ships
+[`dlo_lifecycle.py`](https://github.com/vllm-project/vllm-omni/blob/9d2bb23ff6/examples/offline_inference/minimax_h3/dlo_lifecycle.py).
 
-```bash
-vllm serve /path/to/MiniMax-H3/FL2VA --omni \
-  --enable-distributed-layerwise-offload \
-  --data-parallel-size 2 \
-  --dlo-no-use-allgather
-```
-
-For a lifecycle-managed offline run, the repo ships
-[`dlo_lifecycle.py`](https://github.com/vllm-project/vllm-omni/blob/9d2bb23ff6/examples/offline_inference/minimax_h3/dlo_lifecycle.py)
-with `--mode dlo-dp2-no-allgather`.
+{% include usage-cookbook.html modes=page.usage %}
 
 > [!NOTE]
 > An effective DLO group size of one performs no collective, even with
 > `dlo_use_allgather=True` — it automatically takes the rank-local path.
+
+## How to choose
+
+{% include decision-cards.html items=page.decisions %}
 
 ## Limitations & follow-ups
 

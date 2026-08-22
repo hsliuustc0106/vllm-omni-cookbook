@@ -11,6 +11,59 @@ tags: [Qwen-Image, LTX-2, H100, B200]
 category: Feature Deep Dive
 feature: quantization
 math: true
+usage:
+  - label: "Global · CLI"
+    blurb: "one flag, from the BF16 checkpoint"
+    title: "vllm serve · global FP8"
+    code: |
+      vllm serve Lightricks/LTX-2.5-Diffusers \
+        --omni \
+        --model-class-name LTX2DistilledOneStagePipeline \
+        --quantization fp8
+  - label: "Global · Python"
+    blurb: "Omni constructor"
+    title: "Omni · quantization kwarg"
+    code: |
+      from vllm_omni import Omni
+
+      omni = Omni(model="Qwen/Qwen-Image", quantization="fp8")
+      # or keep sensitive layers in BF16:
+      omni = Omni(model="Qwen/Qwen-Image",
+                  quantization_config={"method": "fp8",
+                                       "ignored_layers": ["img_mlp"]})
+    note: >-
+      ignored_layers is the per-model quality escape hatch — validated models
+      ship specific guidance.
+  - label: "Per-component"
+    blurb: "scope or mix methods"
+    title: "build_quant_config · per-stage routing"
+    code: |
+      from vllm_omni.quantization import build_quant_config
+
+      config = build_quant_config({
+          "transformer": {"method": "fp8"},
+          "text_encoder": {"method": "fp8"},
+          "vae": None,
+      })
+decisions:
+  - when: "Datacenter Blackwell feels slow"
+    pick: "pip install vllm-omni[quack]"
+    why: "The one-line speed recovery on Blackwell; nothing else changes."
+  - when: "Boot time or disk footprint matters"
+    pick: "Serialized / ModelOpt checkpoint"
+    why: "Online quantization re-quantizes the BF16 checkpoint on every boot; a serialized quantized checkpoint avoids that and `resolve_quant_config_from_disk` picks it up automatically."
+  - when: "Trusting a new model"
+    pick: "Compare against BF16 first"
+    why: "Same seed and generation parameters; document any required `ignored_layers` before shipping."
+  - when: "Wan2.2 · omni/TTS stages"
+    pick: "Not validated online"
+    why: "The validated omni path is the ModelOpt pre-quantized checkpoint; BAGEL and GLM-Image need explicit per-stage routing."
+  - when: "Layerwise offload"
+    pick: "Still works, ordinary loader"
+    why: "Online quantization skips the loader-owned host-weight-plan fast path; offload runs through the ordinary loader."
+  - when: "Want cache speedups too"
+    pick: "Compose with tea_cache"
+    why: "FP8 composes with cache acceleration (`cache_backend=\"tea_cache\"`)."
 ---
 
 ## TL;DR
@@ -217,42 +270,17 @@ entry.
 
 ## How to use it
 
-Global, from the BF16 checkpoint:
+Global, from the BF16 checkpoint — or scoped to one component. Pick a mode:
 
-```bash
-vllm serve Lightricks/LTX-2.5-Diffusers \
-  --omni \
-  --model-class-name LTX2DistilledOneStagePipeline \
-  --quantization fp8
-```
-
-```python
-from vllm_omni import Omni
-
-omni = Omni(model="Qwen/Qwen-Image", quantization="fp8")
-# or keep sensitive layers in BF16:
-omni = Omni(model="Qwen/Qwen-Image",
-            quantization_config={"method": "fp8",
-                                 "ignored_layers": ["img_mlp"]})
-```
-
-Scope to one component, or mix methods:
-
-```python
-from vllm_omni.quantization import build_quant_config
-
-config = build_quant_config({
-    "transformer": {"method": "fp8"},
-    "text_encoder": {"method": "fp8"},
-    "vae": None,
-})
-```
+{% include usage-cookbook.html modes=page.usage %}
 
 Quality workflow, per the guides: compare against a BF16 baseline with the same
 seed and generation parameters before trusting a new model; document any
-required `ignored_layers`. FP8 also composes with cache acceleration
-(`cache_backend="tea_cache"`). On datacenter Blackwell, `pip install
-vllm-omni[quack]` is the one-line speed recovery; nothing else changes.
+required `ignored_layers`.
+
+## How to choose
+
+{% include decision-cards.html items=page.decisions %}
 
 ## Limitations & follow-ups
 

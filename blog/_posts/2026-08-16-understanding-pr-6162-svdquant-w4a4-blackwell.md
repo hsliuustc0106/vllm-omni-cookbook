@@ -12,6 +12,40 @@ tags: [MiniMax-H3, Blackwell]
 category: PR Analysis
 feature: quantization
 math: true
+usage:
+  - label: "Convert"
+    blurb: "once, from the Nunchaku checkpoint"
+    title: "convert_nunchaku_to_svdquant · one-time"
+    code: |
+      python -m vllm_omni.quantization.tools.convert_nunchaku_to_svdquant \
+        --nunchaku-checkpoint ./svdq-fp4_r32-minimax-h3-fl2va.safetensors \
+        --base-pipeline MiniMaxAI/MiniMax-H3 \
+        --output-dir ./MiniMax-H3-SVDQuant-NVFP4-r32
+      # optional: --adaln-curve-checkpoint for the compact AdaLN variant
+    note: >-
+      Convert once; the converter embeds quant_method: svdquant in the
+      transformer config.
+  - label: "Serve"
+    blurb: "runtime auto-detection"
+    title: "vllm serve · converted checkpoint"
+    code: |
+      vllm serve ./MiniMax-H3-SVDQuant-NVFP4-r32/FL2VA --omni ...
+    note: >-
+      No --quantization flag needed (auto-detected); the text encoder is
+      automatically kept BF16.
+decisions:
+  - when: "Status check"
+    pick: "Draft PR, not merged"
+    why: "Open as of 2026-08-16; MiniMax-H3-only change set, Z-Image support remains in [#3830](https://github.com/vllm-project/vllm-omni/pull/3830)."
+  - when: "Hopper (SM90)"
+    pick: "Not supported"
+    why: "Intentionally out of scope for this PR."
+  - when: "Older FlashInfer stacks"
+    pick: "Compatible fallback"
+    why: "Native 208/208 fusion and fused SwiGLU need flashinfer#4537; older stacks fall back to a slower-but-correct path."
+  - when: "Reproducing the numbers"
+    pick: "Use the checked-in runner"
+    why: "`benchmarks/diffusion/minimax_h3_quantization.py` reproduces the PR's measurement protocol on any converted checkpoint."
 ---
 
 ## TL;DR
@@ -174,21 +208,14 @@ its output hash intentionally differs from the old overflowed path.
 
 If and when the PR lands, the workflow is convert-once, serve-anywhere:
 
-```bash
-python -m vllm_omni.quantization.tools.convert_nunchaku_to_svdquant \
-  --nunchaku-checkpoint ./svdq-fp4_r32-minimax-h3-fl2va.safetensors \
-  --base-pipeline MiniMaxAI/MiniMax-H3 \
-  --output-dir ./MiniMax-H3-SVDQuant-NVFP4-r32
-# optional: --adaln-curve-checkpoint for the compact AdaLN variant
+{% include usage-cookbook.html modes=page.usage %}
 
-vllm serve ./MiniMax-H3-SVDQuant-NVFP4-r32/FL2VA --omni ...
-```
+The checked-in runner (`benchmarks/diffusion/minimax_h3_quantization.py`)
+reproduces the PR's measurement protocol on any converted checkpoint.
 
-The converter embeds `quant_method: svdquant` in the transformer config, so
-runtime auto-detection needs no `--quantization` flag, and the text encoder is
-automatically kept BF16. The checked-in runner
-(`benchmarks/diffusion/minimax_h3_quantization.py`) reproduces the PR's
-measurement protocol on any converted checkpoint.
+## How to choose
+
+{% include decision-cards.html items=page.decisions %}
 
 ## Limitations & follow-ups
 
