@@ -22,22 +22,35 @@ post explains the *how* and *why* for users.
    cause) → What the PR does (design + diagram) → Key changes (file-by-file
    excerpts) → Measured impact → How to use it (tabbed cookbook) →
    How to choose (decision cards) → Limitations → References.**
-4. Metrics may **only** come from the cookbook (`{category}/{model}/index.md`,
+4. Write plain-first for three reader tiers (eli5-style calibration):
+
+   | Tier | Reader | They care about |
+   |------|--------|-----------------|
+   | Operator | runs serving / batch jobs | which flags, what it costs or saves, how to choose |
+   | Practitioner | wants the mechanism | how it works, trade-offs, failure modes |
+   | Expert | vLLM-Omni developer | kernel/collective detail, edge cases |
+
+   The first paragraph after every `##` heading is the plain-language version —
+   one sentence of what the section establishes + one everyday analogy, before
+   any jargon; expert detail follows later in the section. Define every term at
+   first use; the TL;DR must read clean with no post context; analogies state
+   where they break when it matters.
+5. Metrics may **only** come from the cookbook (`{category}/{model}/index.md`,
    `SUMMARY.md`) or upstream perf JSON. Never invent or estimate numbers.
-5. Link the cookbook with **absolute GitHub URLs** — the blog deploys standalone
+6. Link the cookbook with **absolute GitHub URLs** — the blog deploys standalone
    (`blog/` is its own Jekyll site), so relative cookbook paths 404.
-6. Figures → `blog/assets/figures/<slug>/`; embed with
+7. Figures → `blog/assets/figures/<slug>/`; embed with
    `{{ site.baseurl }}/assets/figures/<slug>/fig1.png`. Raw HTML (inline SVG,
    styled divs) passes through Markdown anywhere in the post.
-7. Front matter: `summary` ≤ 240 chars (SEO + index teaser), `category: PR
+8. Front matter: `summary` ≤ 240 chars (SEO + index teaser), `category: PR
    Analysis`, tags = model + technical area, `feature:` = one slug from
    `site.features` in `blog/_config.yml` (home sidebar filter; slugs match
    vLLM-Omni `docs/design/feature/` page names), `math: true` only if using
    `$…$`.
-8. Preview locally:
+9. Preview locally:
    `cd blog && bundle install && bundle exec jekyll serve`
    → http://127.0.0.1:4000/vllm-omni-cookbook/
-9. Delete every template admonition and placeholder before publishing.
+10. Delete every template admonition and placeholder before publishing.
 
 ## Starting from a PR or issue
 
