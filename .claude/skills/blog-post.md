@@ -46,6 +46,21 @@ front matter ≤ 240 chars. `feature:` = one slug from `site.features` in
 cookbook has no numbers for it, write the design story and say performance is
 not yet measured.
 
+Write for three reader tiers at once (plain-first, eli5-style):
+
+| Tier | Reader | They care about |
+|------|--------|-----------------|
+| Operator | runs serving / batch jobs | which flags, what it costs or saves, how to choose |
+| Practitioner | wants the mechanism | how it works, trade-offs, failure modes |
+| Expert | vLLM-Omni developer | kernel/collective detail, edge cases |
+
+- The first paragraph after every `##` heading is the plain-language version:
+  one sentence of what the section establishes + one everyday analogy, before
+  any jargon. Expert detail follows later in the section.
+- Define every technical term at first use; the TL;DR must read clean with no
+  post context.
+- Analogies must be honest — state where they break when it matters.
+
 ## Step 3 — Figures
 
 - If `docs/visualizations/pr-<N>-*` exists: copy the best assets into

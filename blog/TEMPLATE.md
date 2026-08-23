@@ -8,7 +8,27 @@ real post landed; copy this file and replace placeholders directly.
 Rules:
 
 - **Audience:** vLLM-Omni users — explain *how* it works and *why* it helps, not
-  just what changed.
+  just what changed. Every post serves three tiers at once; write so each can
+  read at their own depth:
+
+  | Tier | Reader | They care about | Calibrate with |
+  |------|--------|-----------------|----------------|
+  | Operator | runs serving / batch jobs | which flags, what it costs or saves, how to choose | outcomes, copy-ready commands, decision cards |
+  | Practitioner | wants the mechanism | how it works, trade-offs, failure modes | an analogy first, then the real data flow |
+  | Expert | vLLM-Omni developer | kernel/collective detail, edge cases | precise terminology, links to source |
+
+- **Plain-first sections.** The first paragraph after every `##` heading is the
+  plain-language version: one sentence saying what this section establishes,
+  plus one everyday analogy (kitchen counter vs warehouse, postal system,
+  assembly line) — *before* any jargon appears. Expert detail comes later in
+  the section, not instead of it.
+- **Define jargon at first use**, in the same sentence or the next ("AllGather
+  — every rank contributes its shard and every rank receives the full tensor").
+  The TL;DR must be readable by an operator with no post context: no undefined
+  terms, no unexplained abbreviations.
+- **Honest analogies.** Say where the analogy breaks when it matters ("the GPU
+  holds two layers at a time ≠ the host only needs two layers"). An analogy
+  that hides a real constraint is worse than no analogy.
 - **Numbers:** only metrics that exist in the cookbook
   (`{category}/{model}/index.md`, `SUMMARY.md`) or upstream perf JSON. Never
   invent or estimate metrics.
