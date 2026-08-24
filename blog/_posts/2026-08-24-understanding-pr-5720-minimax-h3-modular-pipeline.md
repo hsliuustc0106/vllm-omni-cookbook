@@ -4,10 +4,10 @@ title: "Understanding PR #5720 — MiniMax-H3's modular pipeline: two DiTs, one 
 date: 2026-08-24 18:00:00 +0800
 author: hsliuustc0106
 summary: >-
-  How MiniMax-H3 loads two task-specific DiTs around one shared tokenizer,
-  Qwen3-VL encoder, and video/audio VAE stack—and routes each request without
-  turning one timing trace into a universal claim.
-tags: [MiniMax-H3, Blackwell]
+  How MiniMax-H3 routes two task-specific DiTs around one shared component
+  stack, plus a profiled 4×H200 E2E decomposition: 85.85 s warm at 50 sigma
+  points, including 80.62 s of denoising.
+tags: [MiniMax-H3, H200]
 category: PR Analysis
 feature: pipeline
 lang: en
@@ -58,12 +58,15 @@ usage:
         --num-gpus 4 \
         --usp 4 \
         --ring 1 \
+        --text-encoder-tp-size 4 \
         --vae-patch-parallel-size 4 \
         --vae-parallel-mode tile \
-        --vae-use-tiling
+        --vae-use-tiling \
+        --diffusion-attention-backend CUDNN_ATTN
     note: >-
-      Downloads and loads only FL2VA. Requests may use task=t2va or
-      task=fl2va; task=ref2va is rejected because that DiT is absent.
+      This is the measured 4×H200 low-latency topology. It downloads and loads
+      only FL2VA; task=t2va and task=fl2va are accepted, while task=ref2va is
+      rejected because that DiT is absent.
   - label: "Ref2VA only"
     blurb: "reference-conditioned generation"
     title: "vllm serve · select the Ref2VA partition at startup"
@@ -121,11 +124,13 @@ RAM, and GPU HBM remain separate budgets.
 
 This post explains the shipped architecture at
 [`072bfc02`](https://github.com/vllm-project/vllm-omni/commit/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65).
-It deliberately publishes **no universal stage percentages**: the cookbook
-does not yet contain a canonical, reproducible end-to-end decomposition for
-this baseline. Instead, it shows exactly which work happens once, which work
-repeats for every denoiser evaluation, and the experiment contract a measured
-chart must satisfy.
+On 4×H200, a profiled FL2VA-only 1344×768 T2VA workload with 124 frames and
+50 sigma points / 49 denoiser evaluations measured **85.845 ± 0.161 s** warm
+client receipt time (mean ± sample SD, n=3): **80.616 s denoise**, 1.859 s VAE
+decode, and 3.370 s across prompt encoding, engine/IPC residual, CPU MP4
+encoding, and HTTP residual. These values describe that fully pinned profiled
+condition—not every H3 request. The unprofiled controls were nonstationary, so
+profiler overhead remains unresolved and is disclosed below.
 
 | Baseline fact | Shipped behavior |
 |---|---|
@@ -134,6 +139,7 @@ chart must satisfy.
 | Shared components | tokenizer, processor, retained Qwen3-VL encoder, video VAE, audio VAE |
 | Ordinary default schedule | 50 sigma points → 49 denoiser evaluations |
 | Checkpoint storage | about 135 GiB per partition; roughly 270 GiB for both, per the pinned recipe |
+| Profiled 4×H200 warm E2E | 85.845 ± 0.161 s; 80.616 s denoise (1344×768, 124 frames, 50 points / 49 evaluations) |
 
 ## Background {#background}
 
@@ -303,21 +309,46 @@ Resolution, frame count, references, sigma count, topology, backend, compile
 state, and warmup can all move the boundaries, so a percentage without that
 context is not a reusable fact.
 
-The cookbook has no canonical baseline E2E artifact for this post yet. Open
-[PR #5810](https://github.com/vllm-project/vllm-omni/pull/5810) contains an
-author-reported profile, but its continuous-batching implementation is open and
-its workload is not a shipped universal baseline. A local pilot trace is also
-not stable publication evidence. Following the repository evidence rule, this
-post does not copy either set of timing values.
+The experiment specified in
+[`cookbook#39`](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/39)
+was run through `gpu run` on four H200 GPUs (the cluster's raw `nvidia-smi`
+label is `NVIDIA L20X`). It used FL2VA-only T2VA, Ulysses 4 / Ring 1 / DiT
+TP1, text-encoder TP4, VAE patch-parallel 4/tile, BF16, CUDNN attention, and
+regional `torch.compile`. The request was 1344×768, requested 5.0 s, 24 FPS,
+124 aligned frames, seed 1101, and the ordinary 50 sigma points / 49 denoiser
+evaluations. One cold request was excluded; the table reports three warm
+profiled requests.
 
-![Non-quantitative MiniMax-H3 E2E timing accounting contract, separating startup from request receipt latency]({{ site.baseurl }}/assets/figures/minimax-h3-modular-pipeline/fig2-e2e-accounting.svg)
+![Measured MiniMax-H3 four-H200 startup and complete-response timing decomposition]({{ site.baseurl }}/assets/figures/minimax-h3-modular-pipeline/fig3-e2e-measured.svg)
 
-The required experiment is specified in
-[`cookbook#39`](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/39).
-It separates process-start→health from request latency, reports the first/cold
-request separately from at least three warm measurements, and checks profiler
-overhead against unprofiled controls. Its request stack must close to complete
-client receipt time:
+| Environment field | Pinned value |
+|---|---|
+| Source / model | vLLM-Omni `072bfc02`; MiniMax-H3 snapshot `42ed227e` |
+| Installed runtime | vLLM 0.27.0; vLLM-Omni package `0.27.0rc2.dev80+g20e3655f5`; PyTorch 2.13.0+cu129 |
+| Hardware | 4×H200, driver 570.133.20; raw cluster label `NVIDIA L20X`, 143,771 MiB/device |
+| Topology | U4/Ring1/DiT-TP1, text-encoder TP4, VAE-PP4 tile |
+| Precision / backend | BF16, no quantization; CUDNN attention; regional compile, not eager |
+| Workload | T2VA, 1344×768, 124 frames / 24 FPS, 5.0 s requested, 50 points / 49 evaluations |
+| Samples | one cold + three warm profiled; ambient/warm page cache; 1 Hz resource sampling |
+
+Profiled process-start→first-`/health` startup was **149.880 s** (one
+illustrative observation, not a repeated startup benchmark): 50.741 s imports/
+CLI/config, 37.000 s worker+NCCL setup, 60.000 s model initialization/load/
+placement, and 2.138 s orchestrator/API readiness. The cold/compile request was
+114.686 s. Warm complete-client receipt was **85.845 ± 0.161 s** (mean ±
+sample SD, n=3):
+
+| Warm receipt bucket | Mean ± sample SD | Share of warm mean | Boundary |
+|---|---:|---:|---|
+| Prompt / text encoder | 0.056 ± 0.000 s | 0.06% | direct synchronized span |
+| Denoise | 80.616 ± 0.074 s | 93.91% | direct synchronized span, 49 evaluations |
+| Video + audio VAE decode | 1.859 ± 0.004 s | 2.17% | direct synchronized span |
+| Engine / IPC / output | 1.956 ± 0.115 s | 2.28% | signed residual inside server inference |
+| CPU MP4 encode + mux | 1.326 ± 0.052 s | 1.54% | direct server span |
+| HTTP transport | 0.033 ± 0.017 s | 0.04% | client-total minus server inference |
+| **Complete client receipt** | **85.845 ± 0.161 s** | **100%** | request start → complete MP4 body |
+
+Every request stack closes to complete client receipt time:
 
 ```text
 T_client = T_prompt + T_denoise + T_decode
@@ -326,17 +357,40 @@ T_client = T_prompt + T_denoise + T_decode
 
 Prompt, denoise, decode, and CPU MP4 encoding are direct spans.
 `T_engine_residual` and `T_http_residual` are accounting buckets, not inferred
-kernels. A materially negative residual or a stack that does not close is a
-failed measurement, not a number to hide. The measured figure can replace the
-protocol diagram only after its manifest, raw logs/headers, results JSON,
-output validation, and plotting source have a stable reviewable URL.
+kernels. All 12 profiled/control requests returned HTTP 200 and passed H.264,
+1344×768, 124-frame/24-FPS, stereo 32 kHz AAC validation; all canonical warm
+containers were byte-identical, and peak sampled device memory was 100,872
+MiB.
+
+The four-point/three-evaluation diagnostic averaged **10.375 ± 0.057 s** warm:
+4.947 s denoise, 1.849 s VAE decode, 2.102 s engine residual, 1.390 s CPU MP4,
+0.051 s prompt, and 0.036 s HTTP. It exists only to demonstrate schedule
+sensitivity. It is not Turbo, has no quality comparison, and is not a speedup
+claim.
+
+> [!CAUTION]
+> The three unprofiled controls were nonstationary at 86.247–104.380 s
+> (sample SD 9.111 s). A median comparison yields an apparent −8.48% profiler
+> “overhead,” which has the wrong sign and exceeds the protocol's 5% disclosure
+> threshold. We therefore do **not** claim that profiling speeds the model or
+> that observer overhead is quantified. The decomposition and 85.845 s result
+> describe the profiled condition only.
+
+The complete reviewable
+[evidence bundle](https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/fe7ac7ab1aaca4192051acaacc399c93cdf14059/blog/assets/figures/minimax-h3-modular-pipeline/evidence/2026-08-24-h200-4gpu)
+contains the frozen manifest, exact commands/harness, raw logs and response
+headers, health polls, GPU/host samples, per-request signed residuals, output
+hashes/`ffprobe` results, and plotting SVG. Open
+[PR #5810](https://github.com/vllm-project/vllm-omni/pull/5810) remains open
+experimental context and is not the source of these measurements.
 
 ## Serving modes {#serving-modes}
 
 Choose the weights first, then choose the performance topology; it is like
 choosing which tools go in the truck before deciding how many drivers share
-the route. The commands below keep one current, recipe-backed high-memory
-four-GPU topology fixed so the startup selector is the only conceptual change.
+the route. The FL2VA tab is the measured four-H200 topology above; the combined
+and Ref2VA tabs preserve current recipe startup variants but are not benchmarked
+by this experiment.
 
 {% include usage-cookbook.html modes=page.usage %}
 
@@ -347,9 +401,9 @@ Three cautions travel with every tab:
 2. **Storage, host RAM, and HBM are different.** Selecting one partition saves
    the unused checkpoint download and task-specific weight load, but the exact
    host/HBM delta belongs to a measured topology.
-3. **Backend and compile flags are hardware evidence.** The pinned recipe owns
-   Blackwell attention defaults and other hardware profiles; do not transplant
-   their flags onto an unvalidated card.
+3. **Backend and compile flags are hardware evidence.** The measured FL2VA tab
+   pins CUDNN on H200; the pinned recipe owns Blackwell defaults and other
+   profiles. Do not transplant either flag set onto an unvalidated card.
 
 ## How to choose {#decision-cards}
 
@@ -370,14 +424,16 @@ the component they change instead of redrawing the machine.
   shipped.
 - H3 is classifier-free-guidance distilled, so `--cfg-parallel-size` must stay
   at 1; there is no negative branch to parallelize.
-- The commands above are the current recipe's high-memory four-GPU profile.
-  Consumer, ROCm, offload, quantization, caching, attention tuning, and Turbo
+- The FL2VA-only command is the measured four-H200 profile. Combined and
+  Ref2VA commands are current recipe startup variants, not measurements from
+  this run; combined serving requires capacity for both DiTs.
+- Consumer, ROCm, offload, quantization, caching, attention tuning, and Turbo
   paths have different evidence and belong to their own guides/posts.
 - Ref2VA reference combinations and upload limits evolve with the serving API;
   use the pinned/current recipe rather than copying an old PR body.
-- A canonical E2E decomposition is pending the experiment in #39. Until it
-  lands, this post makes architectural frequency claims—once per request,
-  N−1 per schedule, once per decode—not latency-share claims.
+- The E2E decomposition is a profiled-condition measurement. Nonstationary
+  unprofiled controls prevent an observer-overhead claim, and the four-point
+  diagnostic has no quality evidence.
 - This is Blog 1 in the proposed series tracked by
   [`cookbook#37`](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37).
   Series metadata/navigation is a separate site change and is not silently
@@ -396,4 +452,5 @@ visibly open.
 - [PR #5810 — MiniMax-H3 continuous batching](https://github.com/vllm-project/vllm-omni/pull/5810) (open; experimental context only)
 - [Pinned MiniMax-H3 recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md)
 - [Pinned pipeline implementation](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) · [sigma construction](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py) · [denoise loop](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py)
+- [Four-H200 E2E evidence bundle](https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/fe7ac7ab1aaca4192051acaacc399c93cdf14059/blog/assets/figures/minimax-h3-modular-pipeline/evidence/2026-08-24-h200-4gpu) — manifest, commands, harness, raw logs/headers/samples, results, hashes, and media validation
 - [Blog 1 plan and E2E experiment contract](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/39) · [series RFC](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)

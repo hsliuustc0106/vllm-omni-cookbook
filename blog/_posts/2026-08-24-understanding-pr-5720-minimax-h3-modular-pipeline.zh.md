@@ -4,9 +4,9 @@ title: "理解 PR #5720 — MiniMax-H3 模块化流水线：两套 DiT，一组�
 date: 2026-08-24 18:00:00 +0800
 author: hsliuustc0106
 summary: >-
-  MiniMax-H3 如何让两套任务专用 DiT 共享 tokenizer、Qwen3-VL encoder 与视频/音频
-  VAE，并按请求正确路由；以及为什么一张 timing 图不能代表所有工作负载。
-tags: [MiniMax-H3, Blackwell]
+  MiniMax-H3 如何让两套任务专用 DiT 共享一组组件，以及一份 4×H200 E2E 剖析：
+  50 个 sigma 点的 warm latency 为 85.85 s，其中 80.62 s 用于去噪。
+tags: [MiniMax-H3, H200]
 category: PR Analysis
 feature: pipeline
 lang: zh
@@ -57,12 +57,14 @@ usage:
         --num-gpus 4 \
         --usp 4 \
         --ring 1 \
+        --text-encoder-tp-size 4 \
         --vae-patch-parallel-size 4 \
         --vae-parallel-mode tile \
-        --vae-use-tiling
+        --vae-use-tiling \
+        --diffusion-attention-backend CUDNN_ATTN
     note: >-
-      只下载并加载 FL2VA。请求可以使用 task=t2va 或 task=fl2va；因为 Ref2VA DiT
-      不存在，task=ref2va 会被拒绝。
+      这是实测的 4×H200 low-latency topology。它只下载并加载 FL2VA；请求可以使用
+      task=t2va 或 task=fl2va，而 task=ref2va 会因缺少对应 DiT 被拒绝。
   - label: "仅 Ref2VA"
     blurb: "参考素材驱动生成"
     title: "vllm serve · 启动时只选 Ref2VA 分区"
@@ -118,10 +120,12 @@ storage、host RAM 与 GPU HBM 仍要分开预算。
 
 本文以
 [`072bfc02`](https://github.com/vllm-project/vllm-omni/commit/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65)
-为 shipped baseline。本文刻意**不给出通用阶段百分比**：cookbook 目前还没有这条
-baseline 的 canonical、可复核 E2E decomposition artifact。我们先说明哪些工作每请求
-做一次、哪些工作每次 denoiser evaluation 都重复，以及真正的测量图必须满足什么
-实验契约。
+为 shipped baseline。4×H200 上，一条 profiled FL2VA-only 1344×768 T2VA 工作负载
+（124 帧、50 个 sigma 点 / 49 次 denoiser evaluation）的 warm client receipt time 为
+**85.845 ± 0.161 s**（mean ± sample SD，n=3）：其中 **80.616 s denoise**、
+1.859 s VAE decode，剩余 3.370 s 分布在 prompt encoding、engine/IPC residual、
+CPU MP4 encoding 和 HTTP residual。它只描述这条 fully pinned profiled condition，
+不能推广到所有 H3 请求；unprofiled control 不稳定，因此 profiler overhead 仍未定量。
 
 | Baseline 事实 | Shipped 行为 |
 |---|---|
@@ -130,6 +134,7 @@ baseline 的 canonical、可复核 E2E decomposition artifact。我们先说明�
 | 共享组件 | tokenizer、processor、保留层 Qwen3-VL encoder、video VAE、audio VAE |
 | 普通默认调度 | 50 个 sigma 点 → 49 次 denoiser evaluation |
 | Checkpoint storage | pinned recipe 给出每个分区约 135 GiB；两者合计约 270 GiB |
+| Profiled 4×H200 warm E2E | 85.845 ± 0.161 s；80.616 s denoise（1344×768、124 帧、50 点 / 49 次 evaluation） |
 
 ## 背景 {#background}
 
@@ -277,19 +282,43 @@ sigma 点、执行 N−1 次 denoiser evaluation**。因此默认 `50` 是 49 �
 count、references、sigma count、topology、backend、compile 状态与 warmup 都会移动
 边界；缺少这些上下文的百分比无法复用。
 
-Cookbook 目前还没有本文 baseline 的 canonical E2E artifact。Open
-[PR #5810](https://github.com/vllm-project/vllm-omni/pull/5810) 包含作者报告的
-profile，但它的 continuous-batching 实现仍然 open，工作负载也不是 shipped universal
-baseline。本地 pilot trace 同样不是稳定的发布证据。按照 repository evidence rule，
-本文不复制这两组 timing 数值。
+[`cookbook#39`](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/39)
+规定的实验已经通过 `gpu run` 在四张 H200 上执行（cluster 的 raw `nvidia-smi` label
+为 `NVIDIA L20X`）。配置是 FL2VA-only T2VA、Ulysses 4 / Ring 1 / DiT TP1、
+text-encoder TP4、VAE patch-parallel 4/tile、BF16、CUDNN attention 与 regional
+`torch.compile`。请求为 1344×768、requested 5.0 s、24 FPS、124 aligned frames、
+seed 1101，以及普通路径 50 个 sigma 点 / 49 次 denoiser evaluation。第一条 cold
+request 被排除，表格统计三条 warm profiled request。
 
-![非定量 MiniMax-H3 E2E 计时契约：将 startup 与完整响应延迟分开]({{ site.baseurl }}/assets/figures/minimax-h3-modular-pipeline/fig2-e2e-accounting.svg)
+![MiniMax-H3 四张 H200 实测 startup 与完整响应时间分解]({{ site.baseurl }}/assets/figures/minimax-h3-modular-pipeline/fig3-e2e-measured.svg)
 
-所需实验已经完整写入
-[`cookbook#39`](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/39)：
-process-start→health 与 request latency 分开；first/cold request 与至少三次 warm measurement
-分开；profiled run 还要用 unprofiled control 检查 observer overhead。每个请求的 stack
-必须闭合到 client 收完 MP4 body 的时间：
+| Environment field | Pinned value |
+|---|---|
+| Source / model | vLLM-Omni `072bfc02`；MiniMax-H3 snapshot `42ed227e` |
+| Installed runtime | vLLM 0.27.0；vLLM-Omni package `0.27.0rc2.dev80+g20e3655f5`；PyTorch 2.13.0+cu129 |
+| Hardware | 4×H200，driver 570.133.20；raw cluster label `NVIDIA L20X`，143,771 MiB/device |
+| Topology | U4/Ring1/DiT-TP1，text-encoder TP4，VAE-PP4 tile |
+| Precision / backend | BF16、无 quantization；CUDNN attention；regional compile，非 eager |
+| Workload | T2VA、1344×768、124 帧 / 24 FPS、requested 5.0 s、50 点 / 49 次 evaluation |
+| Samples | 一次 cold + 三次 warm profiled；ambient/warm page cache；1 Hz resource sampling |
+
+Profiled process-start→first-`/health` startup 为 **149.880 s**（单次示意，不是重复
+startup benchmark）：imports/CLI/config 50.741 s、worker+NCCL setup 37.000 s、model
+initialization/load/placement 60.000 s、orchestrator/API readiness 2.138 s。Cold/compile
+request 为 114.686 s。Warm complete-client receipt 为 **85.845 ± 0.161 s**
+（mean ± sample SD，n=3）：
+
+| Warm receipt bucket | Mean ± sample SD | Warm mean 占比 | Boundary |
+|---|---:|---:|---|
+| Prompt / text encoder | 0.056 ± 0.000 s | 0.06% | direct synchronized span |
+| Denoise | 80.616 ± 0.074 s | 93.91% | direct synchronized span，49 次 evaluation |
+| Video + audio VAE decode | 1.859 ± 0.004 s | 2.17% | direct synchronized span |
+| Engine / IPC / output | 1.956 ± 0.115 s | 2.28% | server inference 内的 signed residual |
+| CPU MP4 encode + mux | 1.326 ± 0.052 s | 1.54% | direct server span |
+| HTTP transport | 0.033 ± 0.017 s | 0.04% | client-total 减 server inference |
+| **Complete client receipt** | **85.845 ± 0.161 s** | **100%** | request start → 完整 MP4 body |
+
+每条 request stack 都闭合到 client 收完 MP4 body 的时间：
 
 ```text
 T_client = T_prompt + T_denoise + T_decode
@@ -298,15 +327,33 @@ T_client = T_prompt + T_denoise + T_decode
 
 Prompt、denoise、decode 与 CPU MP4 encoding 是 direct span；
 `T_engine_residual` 和 `T_http_residual` 只是 accounting bucket，不是推断出来的 kernel。
-出现明显负 residual，或整条 stack 无法闭合，都代表 measurement failed，不能把差值藏掉。
-只有 frozen manifest、raw logs/headers、results JSON、output validation 和 plotting source
-都拥有稳定、可复核 URL 后，实测图才能替换这张 protocol diagram。
+12 条 profiled/control request 全部返回 HTTP 200，并通过 H.264、1344×768、124 帧/
+24 FPS、stereo 32 kHz AAC 校验；canonical warm container 字节一致，sampled device
+memory 峰值为 100,872 MiB。
+
+四点/三次 evaluation diagnostic 的 warm mean 为 **10.375 ± 0.057 s**：denoise
+4.947 s、VAE decode 1.849 s、engine residual 2.102 s、CPU MP4 1.390 s、prompt
+0.051 s、HTTP 0.036 s。它只用于展示 schedule sensitivity，不是 Turbo，没有 quality
+comparison，也不能称为 speedup。
+
+> [!CAUTION]
+> 三条 unprofiled control 不稳定，范围为 86.247–104.380 s（sample SD 9.111 s）。
+> 比较 median 会得到表面上的 −8.48% profiler “overhead”，但符号错误，并超过协议的
+> 5% disclosure threshold。因此本文**不**声称 profiling 加速模型，也不声称 observer
+> overhead 已被定量；decomposition 与 85.845 s 只描述 profiled condition。
+
+完整、可复核的
+[evidence bundle](https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/fe7ac7ab1aaca4192051acaacc399c93cdf14059/blog/assets/figures/minimax-h3-modular-pipeline/evidence/2026-08-24-h200-4gpu)
+保存 frozen manifest、exact commands/harness、raw logs 与 response headers、health polls、
+GPU/host samples、per-request signed residual、output hashes/`ffprobe` result 和 plotting
+SVG。Open [PR #5810](https://github.com/vllm-project/vllm-omni/pull/5810) 仍然只是
+open experimental context，不是本组 measurement 的来源。
 
 ## 服务模式 {#serving-modes}
 
 先决定装哪些权重，再决定 performance topology；就像先决定卡车要带哪些工具，再安排
-几位司机分工。下面三个 tab 固定使用同一套 current recipe 大显存四卡 topology，
-概念上只改变 startup selector。
+几位司机分工。FL2VA tab 是上面的四张 H200 实测 topology；combined 与 Ref2VA tab
+保留 current recipe startup variant，但没有被本实验 benchmark。
 
 {% include usage-cookbook.html modes=page.usage %}
 
@@ -316,8 +363,9 @@ Prompt、denoise、decode 与 CPU MP4 encoding 是 direct span；
    “四张 GPU”本身不能保证 HBM 足够。
 2. **Storage、host RAM 与 HBM 是三份预算。** 只选一个分区会少下载一份 checkpoint、
    少加载一套 task-specific weight，但 host/HBM 的精确差值属于某个 measured topology。
-3. **Backend 与 compile flag 需要硬件证据。** Pinned recipe 负责 Blackwell attention
-   default 和其它硬件 profile；不能把它们的 flag 移植到未经验证的卡上。
+3. **Backend 与 compile flag 需要硬件证据。** 实测 FL2VA tab 在 H200 上固定 CUDNN；
+   pinned recipe 负责 Blackwell default 和其它 profile。两套 flag 都不能移植到未经
+   验证的卡上。
 
 ## 怎么选 {#decision-cards}
 
@@ -335,12 +383,14 @@ capacity planning，合并菜单则避免维护两套 endpoint。
   的 step execution/continuous batching 不能描述成 shipped。
 - H3 是 classifier-free-guidance distilled model，因此 `--cfg-parallel-size` 必须保持 1；
   它没有 negative branch 可供并行。
-- 上述命令来自 current recipe 的大显存四卡 profile。Consumer、ROCm、offload、
-  quantization、caching、attention tuning 与 Turbo 都有不同证据，属于各自 guide/post。
+- FL2VA-only 命令是四张 H200 实测 profile。Combined 与 Ref2VA 命令是 current
+  recipe startup variant，不是本次 measurement；combined serving 需要容纳两套 DiT。
+- Consumer、ROCm、offload、quantization、caching、attention tuning 与 Turbo 都有
+  不同证据，属于各自 guide/post。
 - Ref2VA reference 组合与 upload limit 会随 serving API 演进；应使用 pinned/current recipe，
   不要复制旧 PR body。
-- Canonical E2E decomposition 仍等待 #39 的实验。在它落地前，本文只做架构频率陈述——
-  每请求一次、每调度 N−1 次、每输出 decode 一次——不做 latency-share claim。
+- E2E decomposition 是 profiled-condition measurement。Unprofiled control 不稳定，
+  因此不能给出 observer-overhead claim；四点 diagnostic 也没有 quality evidence。
 - 本文是
   [`cookbook#37`](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)
   规划系列的 Blog 1。Series metadata/navigation 是独立 site change，本文不会静默引入。
@@ -357,4 +407,5 @@ capacity planning，合并菜单则避免维护两套 endpoint。
 - [PR #5810 — MiniMax-H3 continuous batching](https://github.com/vllm-project/vllm-omni/pull/5810)（open；仅作为实验背景）
 - [Pinned MiniMax-H3 recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md)
 - [Pinned pipeline implementation](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) · [sigma construction](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py) · [denoise loop](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py)
+- [四张 H200 E2E evidence bundle](https://github.com/hsliuustc0106/vllm-omni-cookbook/tree/fe7ac7ab1aaca4192051acaacc399c93cdf14059/blog/assets/figures/minimax-h3-modular-pipeline/evidence/2026-08-24-h200-4gpu) — manifest、commands、harness、raw logs/headers/samples、results、hashes 与 media validation
 - [Blog 1 计划与 E2E 实验契约](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/39) · [系列 RFC](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)
