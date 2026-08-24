@@ -14,20 +14,20 @@ layout: base
     no sections.
   {%- endcomment -%}
   <nav class="post-toc" aria-label="Table of contents" hidden>
-    <p class="post-toc-label">Contents</p>
+    <p class="post-toc-label" data-i18n="post-contents" data-i18n-zh="目录">Contents</p>
     <ol class="post-toc-list"></ol>
   </nav>
 
   <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
     <header class="post-header">
-      <a class="back-link" href="{{ '/' | relative_url }}">← All posts</a>
+      <a class="back-link" href="{{ '/' | relative_url }}" data-i18n="back-posts" data-i18n-zh="← 全部文章">← All posts</a>
       <h1 class="post-title p-name" itemprop="name headline">{{ page.title | escape }}</h1>
       <p class="post-meta">
         <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
           {{- page.date | date: date_format -}}
         </time>
         <span aria-hidden="true">·</span>
-        <span>{{ minutes }} min read</span>
+        <span>{{ minutes }} <span data-i18n="min-read" data-i18n-zh="分钟读">min read</span></span>
         {%- if page.author -%}
         <span aria-hidden="true">·</span>
         <span itemprop="author">{{ page.author }}</span>
@@ -64,7 +64,7 @@ layout: base
     </div>
 
     <footer class="post-footer">
-      <a class="back-link" href="{{ '/' | relative_url }}">← All posts</a>
+      <a class="back-link" href="{{ '/' | relative_url }}" data-i18n="back-posts" data-i18n-zh="← 全部文章">← All posts</a>
       <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
     </footer>
   </article>

@@ -3,19 +3,19 @@
   <div class="wrapper header-inner">
     <a class="site-title" rel="author" href="{{ '/' | relative_url }}">
       <span class="wordmark">vLLM-Omni</span>
-      <span class="wordmark-sub">Blog</span>
+      <span class="wordmark-sub" data-i18n="wordmark-blog" data-i18n-zh="博客">Blog</span>
     </a>
 
     <nav class="site-nav" aria-label="Main navigation">
       <div class="trigger">
-        <a class="page-link{% if page.url == '/' %} active{% endif %}" href="{{ '/' | relative_url }}">Blog</a>
+        <a class="page-link{% if page.url == '/' %} active{% endif %}" href="{{ '/' | relative_url }}" data-i18n="nav-blog" data-i18n-zh="博客">Blog</a>
         {%- assign about_page = site.pages | where: "name", "about.md" | first -%}
         {%- if about_page -%}
-        <a class="page-link{% if page.url == about_page.url %} active{% endif %}" href="{{ about_page.url | relative_url }}">About</a>
+        <a class="page-link{% if page.url == about_page.url %} active{% endif %}" href="{{ about_page.url | relative_url }}" data-i18n="nav-about" data-i18n-zh="关于">About</a>
         {%- endif -%}
         {%- assign tags_page = site.pages | where: "name", "tags.md" | first -%}
         {%- if tags_page -%}
-        <a class="page-link{% if page.url == tags_page.url %} active{% endif %}" href="{{ tags_page.url | relative_url }}">Tags</a>
+        <a class="page-link{% if page.url == tags_page.url %} active{% endif %}" href="{{ tags_page.url | relative_url }}" data-i18n="nav-tags" data-i18n-zh="标签">Tags</a>
         {%- endif -%}
         <a class="page-link" href="https://docs.vllm.ai/projects/vllm-omni/en/latest/" rel="noopener">Docs</a>
         <a class="page-link" href="https://github.com/vllm-project/vllm-omni" rel="noopener">GitHub</a>
