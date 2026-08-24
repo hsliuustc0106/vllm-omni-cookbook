@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 'Understanding PR #5991 — MiniMax-H3 (2): why "four steps" has three contracts'
+title: 'Serving MiniMax-H3 in vLLM-Omni (2): why "four steps" has three contracts'
 date: 2026-08-24 19:00:00 +0800
 author: hsliuustc0106
 summary: >-
@@ -13,6 +13,68 @@ feature: lora
 math: true
 lang: en
 pair: /zh/2026-08-24-understanding-pr-5991-minimax-h3-few-step-schedules/
+redirect_from:
+  - /2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/
+usage:
+  - label: "Download"
+    blurb: "only the v1.0 artifact"
+    title: "hf download · Turbo v1.0 (the only supported file)"
+    code: |
+      export TURBO_DIR=/path/to/minimax-h3-turbo
+      export TURBO_FILE=minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors
+      hf download lightx2v/Minimax-h3-Turbo "${TURBO_FILE}" --local-dir "${TURBO_DIR}"
+      export TURBO_LORA="${TURBO_DIR}/${TURBO_FILE}"
+    note: >-
+      The 8-step, ComfyUI, Ref2VA, and v1.1 artifacts are not supported — only
+      the native Diffusers 4-NFE FL2VA/T2VA v1.0 file.
+  - label: "Serve"
+    blurb: "non-offloaded + two LoRA flags"
+    title: "vllm serve · 4x GPU, Turbo preloaded"
+    code: |
+      export MODEL=MiniMaxAI/MiniMax-H3
+      export PORT=8091
+
+      CUDA_VISIBLE_DEVICES=0,1,2,3 \
+      VLLM_WORKER_MULTIPROC_METHOD=spawn \
+      VLLM_OMNI_VIDEO_SYNC_TIMEOUT=1800 \
+      vllm serve "${MODEL}" \
+        --omni \
+        --host 0.0.0.0 \
+        --port "${PORT}" \
+        --trust-remote-code \
+        --num-gpus 4 \
+        --usp 4 \
+        --ring 1 \
+        --vae-patch-parallel-size 4 \
+        --vae-parallel-mode tile \
+        --vae-use-tiling \
+        --task-type fl2va \
+        --lora-backend peft \
+        --lora-path "${TURBO_LORA}"
+    note: >-
+      --lora-path preloads the adapter; each request still activates it
+      explicitly. Turbo rejects model-level CPU offload, layerwise offload,
+      and DLO, so start from a non-offloaded command.
+  - label: "Request"
+    blurb: "activate Turbo per request"
+    title: "curl · T2VA with the published Turbo sampling contract"
+    code: |
+      curl -sS -X POST "http://127.0.0.1:${PORT}/v1/videos/sync" \
+        -F 'prompt=In a snowy blue-purple forest, Ori carefully walks past a sleeping giant.' \
+        -F 'width=1344' \
+        -F 'height=768' \
+        -F 'aspect_ratio=16:9' \
+        -F 'fps=24' \
+        -F 'seed=1101' \
+        -F 'num_inference_steps=5' \
+        -F 'flow_shift=6' \
+        -F 'extra_params={"task":"t2va","duration":8.7,"audio_flow_shift":3.0}' \
+        -F "lora={\"name\":\"h3-turbo-v1.0\",\"path\":\"${TURBO_LORA}\",\"scale\":1.0}" \
+        -o t2va_turbo.mp4
+    note: >-
+      Five sigma points produce the four denoiser evaluations the artifact
+      expects; video flow shift 6, audio flow shift 3. For FL2VA change the
+      task and add input_reference. Invalid point/shift values fail closed.
 decisions:
   - when: "A distilled checkpoint publishes `base_schedule`"
     pick: "Let checkpoint metadata lead"
@@ -188,22 +250,35 @@ released base checkpoint, then a request chooses whether that driver is active.
 The base checkpoint metadata is not replaced, and the adapter's weight/layout
 translation is separate from #5991's checkpoint schedule class.
 
-The legacy LoRA manager maps the supported Diffusers artifact into native H3
-modules, including separate Q/K/V adapters binding to packed QKV and fused FFN
-row-order handling. The adapter is loaded at server startup but activated per
-request. This post keeps the reminder intentionally short; use the existing
-[English Turbo post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/)
-for the validated download, serve, request, and measurement details. The only
-supported file is
-`minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors`.
+The existing LoRA manager delegates H3-specific conversion to a model-owned
+loader. That boundary matters because the published adapter and native H3
+transformer describe the same targets in different layouts:
 
-```text
-serve: --task-type fl2va --lora-backend peft --lora-path <supported-v1.0-artifact>
-request: num_inference_steps=5, flow_shift=6, audio_flow_shift=3, active LoRA
-resulting trajectory: 5 sigma points, 4 denoiser evaluations
-```
+- Diffusers names are translated to native transformer and token-refiner
+  names, and fused FFN rows are restored to H3's `[gate; up]` order;
+- separate Q/K/V adapters bind to H3's packed QKV projection, while fused
+  LoRA-B tensors are sliced using global output rows so tensor-parallel ranks
+  receive the right weights;
+- the loader validates the full metadata, rank/alpha, target set, and global
+  A/B shapes before mutating wrappers. Activation is transactional, so a
+  binding or validator failure resets the adapter state rather than leaving a
+  partially active model.
 
-Keep these shipped restrictions beside that reminder:
+The adapter is preloaded at server startup but activated per request. The
+five-point request is deliberate: on the ordinary uniform path, five sigma
+points yield four NFE. Rewriting it as `num_inference_steps=4` would create only
+four uniform points and three NFE, so the Turbo runtime rejects it.
+
+## Run the shipped Turbo path {#turbo-usage}
+
+The combined workflow below uses the only supported artifact,
+`minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors`. Download it, preload
+it into a non-offloaded FL2VA server, then activate it on the T2VA request with
+five sigma points and shifts 6/3.
+
+{% include usage-cookbook.html modes=page.usage %}
+
+Keep these shipped restrictions beside the commands:
 
 - only the native Diffusers four-NFE FL2VA/T2VA v1.0 artifact is accepted;
   Ref2VA, the eight-NFE release, ComfyUI layout, and v1.1 are unsupported;
@@ -217,10 +292,6 @@ Keep these shipped restrictions beside that reminder:
 - the legacy request carries an adapter path. A public endpoint should expose
   an allowlisted name-to-path mapping rather than unrestricted client-supplied
   path or download resolution.
-
-The five-point request is deliberate. On the ordinary uniform path, five sigma
-points yield four NFE. Rewriting the request as `num_inference_steps=4` would
-create only four uniform points and three NFE, so the runtime rejects it.
 
 ## Same phrase, different ownership {#contract-ownership}
 
@@ -254,14 +325,29 @@ the cost of fewer denoiser calls. It is not an equivalent-quality baseline. The
 coherent video/audio restoration with it, but it does not establish universal
 quantitative parity for every prompt.
 
-This post intentionally adds no latency or quality headline. The existing
-Turbo article records the full #6476 provenance and measurements; #5991 explains
-a schedule contract and does not publish a cookbook-compatible benchmark
-artifact for a named public distilled checkpoint.
+The #6476 author measurement separates the large schedule effect from the
+smaller dynamic-adapter cost. It used 4×H200, USP4/Ring1, VAE patch-parallel 4,
+text-encoder TP1, regional compile and FlashAttention; 768×1344 T2VA at 107
+frames/24 FPS; the same prompt and seed; and the median of five runs after two
+full-shape warmups.
 
-The local validation below instead isolates one narrower question: once both
-requests already use five sigma points/four NFE, what work does activating the
-adapter add?
+| Path | LoRA execution | NFE | Stage-0 p50 |
+|---|---|---:|---:|
+| Base reference | None | 49 | 68.388 s |
+| Short diagnostic control | None | 4 | 8.967 s |
+| Turbo | Dynamic | 4 | 9.688 s |
+
+Turbo is **7.06× faster than the 49-NFE reference**, while its dynamic LoRA
+work makes it **8.05% slower than the same-schedule no-LoRA control**. That is
+the useful interpretation: most of the latency reduction comes from executing
+four rather than 49 denoiser evaluations, while the adapter pays extra work on
+each retained evaluation. The short control's visibly degraded output means it
+is a compute control, not an equal-quality alternative.
+
+The local validation below isolates that second effect on another topology:
+once both requests already use five sigma points/four NFE, what work does
+activating the adapter add? #5991 itself remains a schedule contract and does
+not publish a named public distilled checkpoint benchmark.
 
 ## Local validation: where Turbo overhead appears {#local-validation}
 
@@ -394,7 +480,7 @@ source links are pinned to the reviewed upstream snapshot where practical.
 | An explicit checkpoint-schedule mismatch fails | [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) | Shipped | [`test_minimax_h3_contract.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/tests/diffusion/models/minimax_h3/test_minimax_h3_contract.py) |
 | The supported Turbo artifact maps and binds to native H3 | [#6476](https://github.com/vllm-project/vllm-omni/pull/6476) + [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py) | Merged/shipped | CPU LoRA tests + PR full-model evidence |
 | Turbo requires five points/four NFE and shifts 6/3 | [current pipeline](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) + [pinned recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora) | Merged/shipped | CPU validation + #6476 end-to-end evidence |
-| Turbo local spot check and visible LoRA kernel signatures | [existing #6476 post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) + [local validation above](#local-validation) | Pinned local validation; not universal | Warmed n=3 A/B + four-device nsys, with CUDA-graph coverage caveat |
+| Turbo workflow, local spot check, and visible LoRA kernel signatures | [combined Turbo workflow above](#turbo-usage) + [local validation](#local-validation) | Shipped workflow plus pinned local validation; not universal | Warmed n=3 A/B + four-device nsys, with CUDA-graph coverage caveat |
 | Model-declared/generalized LoRA runtime | [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) / [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) | Draft/unshipped | Not described as available |
 
 ## References {#references}
@@ -404,7 +490,7 @@ turns the article's shorthand back into reviewable code and evidence.
 
 - [Blog 2 planning issue #40](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/40) · [MiniMax-H3 series RFC #37](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)
 - [PR #5991 — Add distilled four-NFE sigma schedule support for MiniMax-H3 T2VA](https://github.com/vllm-project/vllm-omni/pull/5991) (merged)
-- [PR #6476 — Support MiniMax-H3 Turbo LoRA with the legacy manager](https://github.com/vllm-project/vllm-omni/pull/6476) (merged) · [copy-ready English usage post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/)
+- [PR #6476 — Support MiniMax-H3 Turbo LoRA with the legacy manager](https://github.com/vllm-project/vllm-omni/pull/6476) (merged)
 - [Part 1 — MiniMax-H3 modular pipeline]({{ site.baseurl }}/2026-08-24-understanding-pr-5720-minimax-h3-modular-pipeline/)
 - Pinned source: [`sigma_schedule.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/sched/sigma_schedule.py) · [`time_request.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py) · [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) · [`denoise_loop.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py) · [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py)
 - [Pinned MiniMax-H3 recipe, Turbo LoRA section](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora)

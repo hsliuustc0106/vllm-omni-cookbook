@@ -1,6 +1,6 @@
 ---
 layout: post
-title: '理解 PR #5991 — MiniMax-H3（2）：“四步”为何有三种契约'
+title: '在 vLLM-Omni 中服务 MiniMax-H3（2）：“四步”背后的三种契约'
 date: 2026-08-24 19:00:00 +0800
 author: hsliuustc0106
 summary: >-
@@ -13,6 +13,68 @@ math: true
 lang: zh
 pair: /2026-08-24-understanding-pr-5991-minimax-h3-few-step-schedules/
 permalink: /zh/2026-08-24-understanding-pr-5991-minimax-h3-few-step-schedules/
+redirect_from:
+  - /zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/
+usage:
+  - label: "下载"
+    blurb: "只支持 v1.0 一个文件"
+    title: "hf download · Turbo v1.0（唯一受支持的 artifact）"
+    code: |
+      export TURBO_DIR=/path/to/minimax-h3-turbo
+      export TURBO_FILE=minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors
+      hf download lightx2v/Minimax-h3-Turbo "${TURBO_FILE}" --local-dir "${TURBO_DIR}"
+      export TURBO_LORA="${TURBO_DIR}/${TURBO_FILE}"
+    note: >-
+      8-step、ComfyUI、Ref2VA 和 v1.1 均不支持；唯一受支持的是原生
+      Diffusers 四 NFE FL2VA/T2VA v1.0 文件。
+  - label: "启动服务"
+    blurb: "非 offload 配置 + 两个 LoRA flag"
+    title: "vllm serve · 4 卡，预加载 Turbo"
+    code: |
+      export MODEL=MiniMaxAI/MiniMax-H3
+      export PORT=8091
+
+      CUDA_VISIBLE_DEVICES=0,1,2,3 \
+      VLLM_WORKER_MULTIPROC_METHOD=spawn \
+      VLLM_OMNI_VIDEO_SYNC_TIMEOUT=1800 \
+      vllm serve "${MODEL}" \
+        --omni \
+        --host 0.0.0.0 \
+        --port "${PORT}" \
+        --trust-remote-code \
+        --num-gpus 4 \
+        --usp 4 \
+        --ring 1 \
+        --vae-patch-parallel-size 4 \
+        --vae-parallel-mode tile \
+        --vae-use-tiling \
+        --task-type fl2va \
+        --lora-backend peft \
+        --lora-path "${TURBO_LORA}"
+    note: >-
+      --lora-path 只做预加载，每个请求仍要显式激活适配器。Turbo 拒绝
+      model-level CPU offload、layerwise offload 和 DLO，因此要从非
+      offload 的命令启动。
+  - label: "发请求"
+    blurb: "按请求激活 Turbo"
+    title: "curl · 按发布的 Turbo 采样契约发送 T2VA 请求"
+    code: |
+      curl -sS -X POST "http://127.0.0.1:${PORT}/v1/videos/sync" \
+        -F 'prompt=In a snowy blue-purple forest, Ori carefully walks past a sleeping giant.' \
+        -F 'width=1344' \
+        -F 'height=768' \
+        -F 'aspect_ratio=16:9' \
+        -F 'fps=24' \
+        -F 'seed=1101' \
+        -F 'num_inference_steps=5' \
+        -F 'flow_shift=6' \
+        -F 'extra_params={"task":"t2va","duration":8.7,"audio_flow_shift":3.0}' \
+        -F "lora={\"name\":\"h3-turbo-v1.0\",\"path\":\"${TURBO_LORA}\",\"scale\":1.0}" \
+        -o t2va_turbo.mp4
+    note: >-
+      5 个 sigma 点产生 artifact 需要的 4 次去噪器评估；视频 flow shift
+      为 6，音频 flow shift 为 3。FL2VA 要改 task 并添加 input_reference。
+      非法的点数或 shift 会直接失败。
 decisions:
   - when: "蒸馏 checkpoint 发布了 `base_schedule`"
     pick: "以 checkpoint 元数据为准"
@@ -164,21 +226,30 @@ Ref2VA partition 使用同一条四区间轨迹。这个边界来自 #5991 revie
 决定是否启用。基础 checkpoint 元数据没有被替换；适配器的权重/布局翻译也独立于
 #5991 的 checkpoint 调度类。
 
-legacy LoRA manager 把受支持的 Diffusers artifact 映射到原生 H3 模块，包括把
-分离的 Q/K/V 适配器绑定到 packed QKV，以及处理 fused FFN 行序。适配器在服务
-启动时加载，但按请求激活。这里有意只保留一段提醒；经过验证的下载、启动、请求
-和测量细节请直接使用已有的
-[中文 Turbo 文章]({{ site.baseurl }}/zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/)。
-唯一受支持的文件是
-`minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors`。
+现有 LoRA manager 把 H3 专属转换交给模型自己的 loader。这个边界很重要：发布的
+适配器与原生 H3 transformer 指向同一组目标，却使用不同的名字和布局：
 
-```text
-serve: --task-type fl2va --lora-backend peft --lora-path <supported-v1.0-artifact>
-request: num_inference_steps=5, flow_shift=6, audio_flow_shift=3, active LoRA
-resulting trajectory: 5 sigma points, 4 denoiser evaluations
-```
+- Diffusers 名字会转换成原生 transformer 与 token-refiner 名字，fused FFN 行
+  重新恢复为 H3 的 `[gate; up]` 顺序；
+- 分离的 Q/K/V 适配器绑定到 H3 的 packed QKV 投影；fused LoRA-B 张量按全局
+  输出行切分，让每个 tensor-parallel rank 得到正确权重；
+- loader 在修改 wrapper 前校验完整元数据、rank/alpha、目标集合和全局 A/B shape。
+  激活是事务性的：绑定或校验失败会清空适配器状态，不会留下半激活模型。
 
-上述提醒旁必须同时保留这些已发布限制：
+适配器在服务启动时预加载，但按请求激活。请求 5 个点是有意设计：在普通均匀路径
+上，5 个 sigma 点产生 4 NFE。若改写为 `num_inference_steps=4`，只会产生 4 个
+均匀点和 3 NFE，因此 Turbo 运行时会拒绝。
+
+## 运行已发布的 Turbo 路径 {#turbo-usage}
+
+下面合并后的工作流使用唯一受支持的 artifact：
+`minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors`。先下载它，在非
+offload 的 FL2VA 服务中预加载，再按 5 个 sigma 点和 shift 6/3 的契约，在
+T2VA 请求上激活。
+
+{% include usage-cookbook.html modes=page.usage %}
+
+命令旁必须同时保留这些已发布限制：
 
 - 只接受原生 Diffusers 四 NFE FL2VA/T2VA v1.0 artifact；Ref2VA、八 NFE
   版本、ComfyUI 布局和 v1.1 均不支持；
@@ -189,9 +260,6 @@ resulting trajectory: 5 sigma points, 4 denoiser evaluations
 - 文件名、元数据、rank/alpha 与目标 shape 都必须符合声明的 artifact 契约；
 - legacy 请求携带适配器路径。公开端点应提供白名单内的名字到路径映射，而不是
   允许客户端任意指定路径或触发下载解析。
-
-请求 5 个点是有意设计。在普通均匀路径上，5 个 sigma 点产生 4 NFE。若改写为
-`num_inference_steps=4`，只会产生 4 个均匀点和 3 NFE，因此运行时会拒绝。
 
 ## 同一句话，不同的所有权 {#contract-ownership}
 
@@ -218,12 +286,25 @@ prompt 与 workload 仍会共同决定质量。
 等质量基线。#6476 的证据显示，不加 Turbo 适配器时输出会明显退化，加适配器后
 视频/音频恢复连贯；但这并不构成对所有 prompt 的普遍量化等价保证。
 
-本文有意不新增延迟或质量 headline。已有 Turbo 文章记录了 #6476 的完整测量来源；
-#5991 说明的是调度契约，没有为某个命名公开蒸馏 checkpoint 发布符合 cookbook
-要求的 benchmark artifact。
+#6476 作者的测量把“大幅减少调用次数”和“动态适配器成本”这两个效应分开。环境为
+4×H200、USP4/Ring1、VAE patch-parallel 4、text-encoder TP1、regional compile
+与 FlashAttention；768×1344 T2VA、107 帧/24 FPS；prompt 与 seed 相同；两次
+完整 shape warmup 后测 5 次中位数。
 
-下面的本地验证只隔离一个更窄的问题：当两个请求已经同为 5 个 sigma 点/4 NFE
-时，激活适配器究竟增加了什么工作？
+| 路径 | LoRA 执行 | NFE | Stage-0 p50 |
+|---|---|---:|---:|
+| 基础参照 | 无 | 49 | 68.388 s |
+| 短路径诊断对照 | 无 | 4 | 8.967 s |
+| Turbo | 动态 | 4 | 9.688 s |
+
+Turbo 相对 49-NFE 参照**快 7.06 倍**，但动态 LoRA 工作使它比同调度无 LoRA
+对照**慢 8.05%**。正确解读是：延迟下降主要来自把去噪器评估从 49 次降到 4 次；
+适配器则在保留下来的每次评估上增加工作。短路径对照的输出明显退化，因此它只是
+计算量对照，不是等质量替代方案。
+
+下面的本地验证在另一种拓扑上隔离第二个效应：当两个请求已经同为 5 个 sigma 点/
+4 NFE 时，激活适配器究竟增加了什么工作？#5991 本身仍是调度契约，没有发布可
+命名的公开蒸馏 checkpoint benchmark。
 
 ## 本地验证：Turbo 开销落在哪里 {#local-validation}
 
@@ -338,7 +419,7 @@ checkpoint、checkpoint 原生蒸馏版本和运行时适配器是三种不同�
 | 显式 checkpoint 调度数量不匹配会失败 | [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) | 已发布 | [`test_minimax_h3_contract.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/tests/diffusion/models/minimax_h3/test_minimax_h3_contract.py) |
 | 受支持 Turbo artifact 会映射并绑定到原生 H3 | [#6476](https://github.com/vllm-project/vllm-omni/pull/6476) + [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py) | 已合并/已发布 | CPU LoRA 测试 + PR 全模型证据 |
 | Turbo 要求五点/四 NFE 与 shift 6/3 | [当前 pipeline](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) + [固定 recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora) | 已合并/已发布 | CPU 校验 + #6476 端到端证据 |
-| Turbo 本地抽测与可见 LoRA kernel 特征 | [已有 #6476 中文文章]({{ site.baseurl }}/zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) + [上面的本地验证](#local-validation) | 固定环境本地验证；不是普遍结论 | 充分预热的 n=3 A/B + 四设备 nsys，并保留 CUDA graph 覆盖 caveat |
+| Turbo 工作流、本地抽测与可见 LoRA kernel 特征 | [上面的合并 Turbo 工作流](#turbo-usage) + [本地验证](#local-validation) | 已发布工作流与固定环境本地验证；不是普遍结论 | 充分预热的 n=3 A/B + 四设备 nsys，并保留 CUDA graph 覆盖 caveat |
 | 模型声明/通用化 LoRA runtime | [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) / [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) | Draft/未发布 | 不描述为可用功能 |
 
 ## 参考 {#references}
@@ -348,7 +429,7 @@ checkpoint、checkpoint 原生蒸馏版本和运行时适配器是三种不同�
 
 - [Blog 2 规划 issue #40](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/40) · [MiniMax-H3 系列 RFC #37](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)
 - [PR #5991 — 为 MiniMax-H3 T2VA 增加蒸馏四 NFE sigma 调度支持](https://github.com/vllm-project/vllm-omni/pull/5991)（已合并）
-- [PR #6476 — 用 legacy manager 支持 MiniMax-H3 Turbo LoRA](https://github.com/vllm-project/vllm-omni/pull/6476)（已合并）· [copy-ready 中文用法文章]({{ site.baseurl }}/zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/)
+- [PR #6476 — 用 legacy manager 支持 MiniMax-H3 Turbo LoRA](https://github.com/vllm-project/vllm-omni/pull/6476)（已合并）
 - [第 1 篇 — MiniMax-H3 模块化 pipeline]({{ site.baseurl }}/zh/2026-08-24-understanding-pr-5720-minimax-h3-modular-pipeline/)
 - 固定源码：[`sigma_schedule.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/sched/sigma_schedule.py) · [`time_request.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py) · [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) · [`denoise_loop.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py) · [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py)
 - [固定 MiniMax-H3 recipe 的 Turbo LoRA 小节](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora)
