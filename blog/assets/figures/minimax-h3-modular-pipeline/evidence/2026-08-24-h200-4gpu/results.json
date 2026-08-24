@@ -1,0 +1,1960 @@
+{
+  "completed_wall_epoch": 1787561844.4359663,
+  "failure": null,
+  "manifest": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/manifest.json",
+  "profiled": {
+    "condition": "profiled",
+    "failure": null,
+    "gpu_cleanup": {
+      "cleared": true,
+      "samples": [
+        {
+          "driver_version": "570.133.20",
+          "index": 3,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-c2bead55-8621-7076-336f-43e4722b6a57"
+        },
+        {
+          "driver_version": "570.133.20",
+          "index": 4,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-3e893502-9769-d3ff-450d-2033b31bb63e"
+        },
+        {
+          "driver_version": "570.133.20",
+          "index": 5,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-74686e20-1b86-e2b5-32e3-cee14db6d96c"
+        },
+        {
+          "driver_version": "570.133.20",
+          "index": 6,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-46890c79-bf10-5b49-3d4a-a6b78f956122"
+        }
+      ],
+      "tolerance_mib": 100
+    },
+    "health": {
+      "elapsed_s": 149.87588127912022,
+      "observed_health_wall_epoch": 1787560829.1381545,
+      "startup_to_health_s": 149.8796375640668,
+      "status": 200,
+      "wall_epoch": 1787560829.1343994
+    },
+    "profiled": true,
+    "requests": [
+      {
+        "bytes": 1941503,
+        "client_total_s": 114.68567580194212,
+        "client_ttfb_s": 114.6668361898046,
+        "container_sha256": "55a7c6eb9064a946a9e6d99079842e8a1e9f0c68e7ea5beab35ce16ea53b3cd8",
+        "cpu_encode_mux_s": 1.33976,
+        "decomposition": {
+          "accounted_s": 114.68567580194212,
+          "buckets": {
+            "cpu_encode_mux_s": 1.33976,
+            "denoise_s": 99.66732536093332,
+            "engine_ipc_output_residual_s": 2.706099383106233,
+            "http_transport_residual_s": 0.0246758019421236,
+            "prompt_text_encoder_s": 7.727933003101498,
+            "video_audio_vae_decode_s": 3.2198822528589517
+          },
+          "client_total_s": 114.68567580194212,
+          "closure_error_s": 0.0,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 110.61514061689377,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 1.1468567580194213,
+          "valid": true
+        },
+        "denoiser_evaluations": 49,
+        "label": "canonical_cold",
+        "measured": false,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_cold.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=1f2482d79d7498a4ad781fb888720265238d9dec46b31ad679218d6d76f85c14\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_cold.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_cold.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_cold.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.018839612137526274,
+        "server_inference_s": 114.661,
+        "server_request_id": "video_sync-bacad117b5410e4c",
+        "sigma_points": 50,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 3.2198822528589517,
+          "MiniMaxH3Pipeline.diffuse": 99.66732536093332,
+          "MiniMaxH3Pipeline.encode_prompt": 7.727933003101498,
+          "queue_wait_ms": 0.26911706663668156,
+          "stage_0_gen_ms": 113249.65047836304
+        },
+        "started_wall_epoch": 1787560829.1398606,
+        "status": 200
+      },
+      {
+        "bytes": 1941448,
+        "client_total_s": 85.79458602285013,
+        "client_ttfb_s": 85.77777912281454,
+        "container_sha256": "14823ab276ed3f96e207de221c593069b946740c08ccfc3447df4250afd73ec6",
+        "cpu_encode_mux_s": 1.29253,
+        "decomposition": {
+          "accounted_s": 85.79458602285013,
+          "buckets": {
+            "cpu_encode_mux_s": 1.29253,
+            "denoise_s": 80.6889682430774,
+            "engine_ipc_output_residual_s": 1.8696640830294051,
+            "http_transport_residual_s": 0.023586022850125232,
+            "prompt_text_encoder_s": 0.05583273386582732,
+            "video_audio_vae_decode_s": 1.864004940027371
+          },
+          "client_total_s": 85.79458602285013,
+          "closure_error_s": 0.0,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 82.6088059169706,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.8579458602285013,
+          "valid": true
+        },
+        "denoiser_evaluations": 49,
+        "label": "canonical_warm_1",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_1.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=6f54c6f1ecdb6bfccf62989b6464c7797e61e11b7da808b5620e9af530e0a495\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_1.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_1.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_1.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.016806900035589933,
+        "server_inference_s": 85.771,
+        "server_request_id": "video_sync-bd3cc62a3ab2c13c",
+        "sigma_points": 50,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.864004940027371,
+          "MiniMaxH3Pipeline.diffuse": 80.6889682430774,
+          "MiniMaxH3Pipeline.encode_prompt": 0.05583273386582732,
+          "queue_wait_ms": 0.34599611535668373,
+          "stage_0_gen_ms": 84471.93574905396
+        },
+        "started_wall_epoch": 1787560946.7740853,
+        "status": 200
+      },
+      {
+        "bytes": 1941448,
+        "client_total_s": 85.71504446305335,
+        "client_ttfb_s": 85.66776965511963,
+        "container_sha256": "14823ab276ed3f96e207de221c593069b946740c08ccfc3447df4250afd73ec6",
+        "cpu_encode_mux_s": 1.2998399999999999,
+        "decomposition": {
+          "accounted_s": 85.71504446305335,
+          "buckets": {
+            "cpu_encode_mux_s": 1.2998399999999999,
+            "denoise_s": 80.54022909514606,
+            "engine_ipc_output_residual_s": 1.9103505057784138,
+            "http_transport_residual_s": 0.05204446305334898,
+            "prompt_text_encoder_s": 0.05543469195254147,
+            "video_audio_vae_decode_s": 1.8571457071229815
+          },
+          "client_total_s": 85.71504446305335,
+          "closure_error_s": 0.0,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 82.45280949422158,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.8571504446305335,
+          "valid": true
+        },
+        "denoiser_evaluations": 49,
+        "label": "canonical_warm_2",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_2.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=6f54c6f1ecdb6bfccf62989b6464c7797e61e11b7da808b5620e9af530e0a495\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_2.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_2.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_2.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.047274807933717966,
+        "server_inference_s": 85.663,
+        "server_request_id": "video_sync-a7c371b708fe5477",
+        "sigma_points": 50,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.8571457071229815,
+          "MiniMaxH3Pipeline.diffuse": 80.54022909514606,
+          "MiniMaxH3Pipeline.encode_prompt": 0.05543469195254147,
+          "queue_wait_ms": 0.2627978101372719,
+          "stage_0_gen_ms": 84358.0162525177
+        },
+        "started_wall_epoch": 1787561035.5309014,
+        "status": 200
+      },
+      {
+        "bytes": 1941448,
+        "client_total_s": 86.0258949259296,
+        "client_ttfb_s": 86.00804749294184,
+        "container_sha256": "14823ab276ed3f96e207de221c593069b946740c08ccfc3447df4250afd73ec6",
+        "cpu_encode_mux_s": 1.38592,
+        "decomposition": {
+          "accounted_s": 86.0258949259296,
+          "buckets": {
+            "cpu_encode_mux_s": 1.38592,
+            "denoise_s": 80.61802831315435,
+            "engine_ipc_output_residual_s": 2.0868622658345104,
+            "http_transport_residual_s": 0.022894925929605847,
+            "prompt_text_encoder_s": 0.055296919075772166,
+            "video_audio_vae_decode_s": 1.8568925019353628
+          },
+          "client_total_s": 86.0258949259296,
+          "closure_error_s": 0.0,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 82.53021773416549,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.860258949259296,
+          "valid": true
+        },
+        "denoiser_evaluations": 49,
+        "label": "canonical_warm_3",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_3.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=6f54c6f1ecdb6bfccf62989b6464c7797e61e11b7da808b5620e9af530e0a495\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_3.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_3.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/canonical_warm_3.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.017847432987764478,
+        "server_inference_s": 86.003,
+        "server_request_id": "video_sync-8e97ea45b4bb256b",
+        "sigma_points": 50,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.8568925019353628,
+          "MiniMaxH3Pipeline.diffuse": 80.61802831315435,
+          "MiniMaxH3Pipeline.encode_prompt": 0.055296919075772166,
+          "queue_wait_ms": 0.23497408255934715,
+          "stage_0_gen_ms": 84612.07723617554
+        },
+        "started_wall_epoch": 1787561124.2264035,
+        "status": 200
+      },
+      {
+        "bytes": 1685181,
+        "client_total_s": 10.388122735079378,
+        "client_ttfb_s": 10.37254066998139,
+        "container_sha256": "97a8a613e75f485814b5cffd1f27b236456425019db1db30f9671cf911da6e82",
+        "cpu_encode_mux_s": 1.4228299999999998,
+        "decomposition": {
+          "accounted_s": 10.388122735079378,
+          "buckets": {
+            "cpu_encode_mux_s": 1.4228299999999998,
+            "denoise_s": 4.9422695769462734,
+            "engine_ipc_output_residual_s": 2.085645912019611,
+            "http_transport_residual_s": 0.020122735079377563,
+            "prompt_text_encoder_s": 0.05016120313666761,
+            "video_audio_vae_decode_s": 1.8670933078974485
+          },
+          "client_total_s": 10.388122735079378,
+          "closure_error_s": 0.0,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 6.85952408798039,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.10388122735079378,
+          "valid": true
+        },
+        "denoiser_evaluations": 3,
+        "label": "diagnostic_warmup",
+        "measured": false,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warmup.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=44b8ec6879d8aea78adc10242885db79730fd76324cc883493086f58a04fadd9\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warmup.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=c51942f4151faaa0e7d6a80585110be0d74e94ebbea0dd9d318fee836322e568\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warmup.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warmup.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.015582065097987652,
+        "server_inference_s": 10.368,
+        "server_request_id": "video_sync-bca89ab721cc514d",
+        "sigma_points": 4,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.8670933078974485,
+          "MiniMaxH3Pipeline.diffuse": 4.9422695769462734,
+          "MiniMaxH3Pipeline.encode_prompt": 0.05016120313666761,
+          "queue_wait_ms": 0.26238802820444107,
+          "stage_0_gen_ms": 8941.227436065674
+        },
+        "started_wall_epoch": 1787561213.205797,
+        "status": 200
+      },
+      {
+        "bytes": 1685181,
+        "client_total_s": 10.41050881613046,
+        "client_ttfb_s": 10.389563646167517,
+        "container_sha256": "97a8a613e75f485814b5cffd1f27b236456425019db1db30f9671cf911da6e82",
+        "cpu_encode_mux_s": 1.47113,
+        "decomposition": {
+          "accounted_s": 10.41050881613046,
+          "buckets": {
+            "cpu_encode_mux_s": 1.47113,
+            "denoise_s": 4.9368300680071115,
+            "engine_ipc_output_residual_s": 2.0744538979594407,
+            "http_transport_residual_s": 0.025508816130459522,
+            "prompt_text_encoder_s": 0.05304620205424726,
+            "video_audio_vae_decode_s": 1.8495398319792002
+          },
+          "client_total_s": 10.41050881613046,
+          "closure_error_s": 0.0,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 6.839416102040559,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.1041050881613046,
+          "valid": true
+        },
+        "denoiser_evaluations": 3,
+        "label": "diagnostic_warm_1",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_1.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=44b8ec6879d8aea78adc10242885db79730fd76324cc883493086f58a04fadd9\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_1.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=c51942f4151faaa0e7d6a80585110be0d74e94ebbea0dd9d318fee836322e568\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_1.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_1.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.0209451699629426,
+        "server_inference_s": 10.385,
+        "server_request_id": "video_sync-af235042a52c62f6",
+        "sigma_points": 4,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.8495398319792002,
+          "MiniMaxH3Pipeline.diffuse": 4.9368300680071115,
+          "MiniMaxH3Pipeline.encode_prompt": 0.05304620205424726,
+          "queue_wait_ms": 0.16549089923501015,
+          "stage_0_gen_ms": 8910.199165344238
+        },
+        "started_wall_epoch": 1787561226.5451047,
+        "status": 200
+      },
+      {
+        "bytes": 1685181,
+        "client_total_s": 10.309265132062137,
+        "client_ttfb_s": 10.292682603932917,
+        "container_sha256": "97a8a613e75f485814b5cffd1f27b236456425019db1db30f9671cf911da6e82",
+        "cpu_encode_mux_s": 1.27803,
+        "decomposition": {
+          "accounted_s": 10.309265132062135,
+          "buckets": {
+            "cpu_encode_mux_s": 1.27803,
+            "denoise_s": 4.964987020008266,
+            "engine_ipc_output_residual_s": 2.144842379945591,
+            "http_transport_residual_s": 0.02126513206213687,
+            "prompt_text_encoder_s": 0.04946243204176426,
+            "video_audio_vae_decode_s": 1.8506781680043787
+          },
+          "client_total_s": 10.309265132062137,
+          "closure_error_s": -1.7763568394002505e-15,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 6.865127620054409,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.10309265132062137,
+          "valid": true
+        },
+        "denoiser_evaluations": 3,
+        "label": "diagnostic_warm_2",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_2.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=44b8ec6879d8aea78adc10242885db79730fd76324cc883493086f58a04fadd9\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_2.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=c51942f4151faaa0e7d6a80585110be0d74e94ebbea0dd9d318fee836322e568\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_2.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_2.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.01658252812922001,
+        "server_inference_s": 10.288,
+        "server_request_id": "video_sync-a88868ac39463ea9",
+        "sigma_points": 4,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.8506781680043787,
+          "MiniMaxH3Pipeline.diffuse": 4.964987020008266,
+          "MiniMaxH3Pipeline.encode_prompt": 0.04946243204176426,
+          "queue_wait_ms": 0.2579840365797281,
+          "stage_0_gen_ms": 9005.553483963013
+        },
+        "started_wall_epoch": 1787561239.8893127,
+        "status": 200
+      },
+      {
+        "bytes": 1685181,
+        "client_total_s": 10.406264276010916,
+        "client_ttfb_s": 10.349700051825494,
+        "container_sha256": "97a8a613e75f485814b5cffd1f27b236456425019db1db30f9671cf911da6e82",
+        "cpu_encode_mux_s": 1.42035,
+        "decomposition": {
+          "accounted_s": 10.406264276010914,
+          "buckets": {
+            "cpu_encode_mux_s": 1.42035,
+            "denoise_s": 4.938428985886276,
+            "engine_ipc_output_residual_s": 2.0877503080401576,
+            "http_transport_residual_s": 0.061264276010915,
+            "prompt_text_encoder_s": 0.05043505202047527,
+            "video_audio_vae_decode_s": 1.848035654053092
+          },
+          "client_total_s": 10.406264276010916,
+          "closure_error_s": -1.7763568394002505e-15,
+          "direct_buckets": [
+            "prompt_text_encoder_s",
+            "denoise_s",
+            "video_audio_vae_decode_s",
+            "cpu_encode_mux_s"
+          ],
+          "model_direct_s": 6.836899691959843,
+          "residual_buckets": [
+            "engine_ipc_output_residual_s",
+            "http_transport_residual_s"
+          ],
+          "tolerance_s": 0.10406264276010915,
+          "valid": true
+        },
+        "denoiser_evaluations": 3,
+        "label": "diagnostic_warm_3",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_3.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=44b8ec6879d8aea78adc10242885db79730fd76324cc883493086f58a04fadd9\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_3.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=c51942f4151faaa0e7d6a80585110be0d74e94ebbea0dd9d318fee836322e568\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_3.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/profiled/diagnostic_warm_3.mp4",
+        "peak_memory_mb": 95520.0,
+        "response_body_s": 0.05656422418542206,
+        "server_inference_s": 10.345,
+        "server_request_id": "video_sync-9a9653bf5ded1c14",
+        "sigma_points": 4,
+        "stage_durations": {
+          "MiniMaxH3Pipeline.decode": 1.848035654053092,
+          "MiniMaxH3Pipeline.diffuse": 4.938428985886276,
+          "MiniMaxH3Pipeline.encode_prompt": 0.05043505202047527,
+          "queue_wait_ms": 0.17573894001543522,
+          "stage_0_gen_ms": 8921.931982040405
+        },
+        "started_wall_epoch": 1787561253.1353106,
+        "status": 200
+      }
+    ],
+    "resolved_attention_backends": [
+      "CUDNN_ATTN"
+    ],
+    "resources": {
+      "gpu_peak_mib": {
+        "3": 100109,
+        "4": 100853,
+        "5": 100872,
+        "6": 100855
+      },
+      "gpu_utilization_mean_pct_by_phase": {
+        "between_requests": 0.0,
+        "canonical_cold": 71.65816326530613,
+        "canonical_warm_1": 94.08823529411765,
+        "canonical_warm_2": 96.59375,
+        "canonical_warm_3": 96.5859375,
+        "diagnostic_warm_1": 49.6875,
+        "diagnostic_warm_2": 50.375,
+        "diagnostic_warm_3": 74.1875,
+        "diagnostic_warmup": 50.125,
+        "shutdown": 0.125,
+        "startup": 0.737012987012987
+      },
+      "host_peak_kb": {
+        "locked_kb": 80,
+        "private_dirty_kb": 25856564,
+        "pss_kb": 26682133,
+        "rss_kb": 32004648,
+        "shared_clean_kb": 10449772
+      }
+    },
+    "sampler_error": null,
+    "server_returncode": 0,
+    "started_wall_epoch": 1787560679.258517,
+    "startup_breakdown": {
+      "closure_error_s": 0.0,
+      "definition": "log-derived, one-second log timestamp resolution; final boundary is first observed /health 200",
+      "events": {
+        "model_loaded": [
+          {
+            "line": "INFO 08-24 16:40:23 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 137,
+            "wall_epoch": 1787560823.0
+          },
+          {
+            "line": "INFO 08-24 16:40:23 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 142,
+            "wall_epoch": 1787560823.0
+          },
+          {
+            "line": "INFO 08-24 16:40:23 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 147,
+            "wall_epoch": 1787560823.0
+          },
+          {
+            "line": "INFO 08-24 16:40:27 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 167,
+            "wall_epoch": 1787560827.0
+          }
+        ],
+        "orchestrator_ready": [
+          {
+            "line": "(APIServer pid=1016319) INFO 08-24 16:40:27 [async_omni_engine.py:271] [AsyncOmniEngine] Orchestrator ready with 1 stages",
+            "line_number": 182,
+            "wall_epoch": 1787560827.0
+          }
+        ],
+        "server_start": [
+          {
+            "line": "(APIServer pid=1016319) INFO 08-24 16:38:50 [multiproc_executor.py:296] Starting server...",
+            "line_number": 17,
+            "wall_epoch": 1787560730.0
+          }
+        ],
+        "worker_initialized": [
+          {
+            "line": "INFO 08-24 16:39:27 [diffusion_worker.py:285] Worker 0: Initialized device and distributed environment.",
+            "line_number": 46,
+            "wall_epoch": 1787560767.0
+          },
+          {
+            "line": "INFO 08-24 16:39:27 [diffusion_worker.py:285] Worker 3: Initialized device and distributed environment.",
+            "line_number": 47,
+            "wall_epoch": 1787560767.0
+          },
+          {
+            "line": "INFO 08-24 16:39:27 [diffusion_worker.py:285] Worker 2: Initialized device and distributed environment.",
+            "line_number": 48,
+            "wall_epoch": 1787560767.0
+          },
+          {
+            "line": "INFO 08-24 16:39:27 [diffusion_worker.py:285] Worker 1: Initialized device and distributed environment.",
+            "line_number": 49,
+            "wall_epoch": 1787560767.0
+          }
+        ]
+      },
+      "phase_sum_s": 149.8796374797821,
+      "phases": {
+        "imports_cli_config_s": 50.741482973098755,
+        "model_init_load_placement_s": 60.0,
+        "orchestrator_api_health_s": 2.1381545066833496,
+        "workers_distributed_s": 37.0
+      },
+      "valid": true,
+      "wall_launch_to_health_s": 149.8796374797821
+    }
+  },
+  "summary": {
+    "canonical_profiled_buckets_s": {
+      "cpu_encode_mux_s": {
+        "count": 3,
+        "max": 1.38592,
+        "mean": 1.3260966666666667,
+        "median": 1.2998399999999999,
+        "min": 1.29253,
+        "sample_stdev": 0.051937293280776
+      },
+      "denoise_s": {
+        "count": 3,
+        "max": 80.6889682430774,
+        "mean": 80.61574188379261,
+        "median": 80.61802831315435,
+        "min": 80.54022909514606,
+        "sample_stdev": 0.0743959296685966
+      },
+      "engine_ipc_output_residual_s": {
+        "count": 3,
+        "max": 2.0868622658345104,
+        "mean": 1.9556256182141099,
+        "median": 1.9103505057784138,
+        "min": 1.8696640830294051,
+        "sample_stdev": 0.11546055390482356
+      },
+      "http_transport_residual_s": {
+        "count": 3,
+        "max": 0.05204446305334898,
+        "mean": 0.03284180394436002,
+        "median": 0.023586022850125232,
+        "min": 0.022894925929605847,
+        "sample_stdev": 0.016633580233383773
+      },
+      "prompt_text_encoder_s": {
+        "count": 3,
+        "max": 0.05583273386582732,
+        "mean": 0.055521448298046984,
+        "median": 0.05543469195254147,
+        "min": 0.055296919075772166,
+        "sample_stdev": 0.0002782433645652075
+      },
+      "video_audio_vae_decode_s": {
+        "count": 3,
+        "max": 1.864004940027371,
+        "mean": 1.8593477163619052,
+        "median": 1.8571457071229815,
+        "min": 1.8568925019353628,
+        "sample_stdev": 0.004035260514439069
+      }
+    },
+    "canonical_profiled_client_total_s": {
+      "count": 3,
+      "max": 86.0258949259296,
+      "mean": 85.84517513727769,
+      "median": 85.79458602285013,
+      "min": 85.71504446305335,
+      "sample_stdev": 0.16148203132708103
+    },
+    "canonical_profiled_server_inference_s": {
+      "count": 3,
+      "max": 86.003,
+      "mean": 85.81233333333334,
+      "median": 85.771,
+      "min": 85.663,
+      "sample_stdev": 0.1737277563699417
+    },
+    "canonical_unprofiled_client_total_s": {
+      "count": 3,
+      "max": 104.37987258285284,
+      "mean": 94.79175760759972,
+      "median": 93.74810026492923,
+      "min": 86.24729997501709,
+      "sample_stdev": 9.111227295556368
+    },
+    "checks": {
+      "all_http_200": true,
+      "all_media_valid": true,
+      "all_profiled_decompositions_valid": true,
+      "canonical_three_warm": true,
+      "control_three_warm": true,
+      "diagnostic_three_warm": true,
+      "gpu_cleanup": true,
+      "requested_backend_resolved": true,
+      "samplers_clean": true,
+      "startup_breakdowns_valid": true
+    },
+    "diagnostic_profiled_buckets_s": {
+      "cpu_encode_mux_s": {
+        "count": 3,
+        "max": 1.47113,
+        "mean": 1.3898366666666666,
+        "median": 1.42035,
+        "min": 1.27803,
+        "sample_stdev": 0.10010094971244447
+      },
+      "denoise_s": {
+        "count": 3,
+        "max": 4.964987020008266,
+        "mean": 4.946748691300551,
+        "median": 4.938428985886276,
+        "min": 4.9368300680071115,
+        "sample_stdev": 0.015815075407157254
+      },
+      "engine_ipc_output_residual_s": {
+        "count": 3,
+        "max": 2.144842379945591,
+        "mean": 2.1023488619817297,
+        "median": 2.0877503080401576,
+        "min": 2.0744538979594407,
+        "sample_stdev": 0.03739616199514866
+      },
+      "http_transport_residual_s": {
+        "count": 3,
+        "max": 0.061264276010915,
+        "mean": 0.036012741401170466,
+        "median": 0.025508816130459522,
+        "min": 0.02126513206213687,
+        "sample_stdev": 0.02197116778253442
+      },
+      "prompt_text_encoder_s": {
+        "count": 3,
+        "max": 0.05304620205424726,
+        "mean": 0.050981228705495596,
+        "median": 0.05043505202047527,
+        "min": 0.04946243204176426,
+        "sample_stdev": 0.0018532629613840414
+      },
+      "video_audio_vae_decode_s": {
+        "count": 3,
+        "max": 1.8506781680043787,
+        "mean": 1.8494178846788902,
+        "median": 1.8495398319792002,
+        "min": 1.848035654053092,
+        "sample_stdev": 0.0013254709931665191
+      }
+    },
+    "diagnostic_profiled_client_total_s": {
+      "count": 3,
+      "max": 10.41050881613046,
+      "mean": 10.375346074734503,
+      "median": 10.406264276010916,
+      "min": 10.309265132062137,
+      "sample_stdev": 0.057267113324822684
+    },
+    "passed": true,
+    "profiled_observer_effect_exceeds_5pct": true,
+    "profiled_observer_overhead_pct_at_client_median": -8.48392044169719
+  },
+  "unprofiled": {
+    "condition": "unprofiled",
+    "failure": null,
+    "gpu_cleanup": {
+      "cleared": true,
+      "samples": [
+        {
+          "driver_version": "570.133.20",
+          "index": 3,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-c2bead55-8621-7076-336f-43e4722b6a57"
+        },
+        {
+          "driver_version": "570.133.20",
+          "index": 4,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-3e893502-9769-d3ff-450d-2033b31bb63e"
+        },
+        {
+          "driver_version": "570.133.20",
+          "index": 5,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-74686e20-1b86-e2b5-32e3-cee14db6d96c"
+        },
+        {
+          "driver_version": "570.133.20",
+          "index": 6,
+          "memory_total_mib": 143771,
+          "memory_used_mib": 4,
+          "name": "NVIDIA L20X",
+          "utilization_pct": 0.0,
+          "uuid": "GPU-46890c79-bf10-5b49-3d4a-a6b78f956122"
+        }
+      ],
+      "tolerance_mib": 100
+    },
+    "health": {
+      "elapsed_s": 149.37142468080856,
+      "observed_health_wall_epoch": 1787561426.2175608,
+      "startup_to_health_s": 149.37481541582383,
+      "status": 200,
+      "wall_epoch": 1787561426.2141714
+    },
+    "profiled": false,
+    "requests": [
+      {
+        "bytes": 1941503,
+        "client_total_s": 112.70542800310068,
+        "client_ttfb_s": 112.68547631218098,
+        "container_sha256": "55a7c6eb9064a946a9e6d99079842e8a1e9f0c68e7ea5beab35ce16ea53b3cd8",
+        "cpu_encode_mux_s": 1.73609,
+        "decomposition": null,
+        "denoiser_evaluations": 49,
+        "label": "control_cold",
+        "measured": false,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_cold.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=1f2482d79d7498a4ad781fb888720265238d9dec46b31ad679218d6d76f85c14\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_cold.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_cold.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_cold.mp4",
+        "peak_memory_mb": 95460.0,
+        "response_body_s": 0.019951690919697285,
+        "server_inference_s": 112.681,
+        "server_request_id": "video_sync-9860959ad3355872",
+        "sigma_points": 50,
+        "stage_durations": {
+          "queue_wait_ms": 0.25462498888373375,
+          "stage_0_gen_ms": 110885.11633872986
+        },
+        "started_wall_epoch": 1787561426.2192721,
+        "status": 200
+      },
+      {
+        "bytes": 1941448,
+        "client_total_s": 93.74810026492923,
+        "client_ttfb_s": 93.72702481993474,
+        "container_sha256": "14823ab276ed3f96e207de221c593069b946740c08ccfc3447df4250afd73ec6",
+        "cpu_encode_mux_s": 1.56402,
+        "decomposition": null,
+        "denoiser_evaluations": 49,
+        "label": "control_warm_1",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_1.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=6f54c6f1ecdb6bfccf62989b6464c7797e61e11b7da808b5620e9af530e0a495\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_1.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_1.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_1.mp4",
+        "peak_memory_mb": 95460.0,
+        "response_body_s": 0.02107544499449432,
+        "server_inference_s": 93.722,
+        "server_request_id": "video_sync-8d1d2b8d92aa79e9",
+        "sigma_points": 50,
+        "stage_durations": {
+          "queue_wait_ms": 0.3744419664144516,
+          "stage_0_gen_ms": 92150.50935745239
+        },
+        "started_wall_epoch": 1787561541.8888376,
+        "status": 200
+      },
+      {
+        "bytes": 1941448,
+        "client_total_s": 104.37987258285284,
+        "client_ttfb_s": 104.3586481329985,
+        "container_sha256": "14823ab276ed3f96e207de221c593069b946740c08ccfc3447df4250afd73ec6",
+        "cpu_encode_mux_s": 1.4320899999999999,
+        "decomposition": null,
+        "denoiser_evaluations": 49,
+        "label": "control_warm_2",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_2.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=6f54c6f1ecdb6bfccf62989b6464c7797e61e11b7da808b5620e9af530e0a495\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_2.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_2.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_2.mp4",
+        "peak_memory_mb": 95460.0,
+        "response_body_s": 0.02122444985434413,
+        "server_inference_s": 104.354,
+        "server_request_id": "video_sync-b8666be523194d6f",
+        "sigma_points": 50,
+        "stage_durations": {
+          "queue_wait_ms": 0.23572496138513088,
+          "stage_0_gen_ms": 102916.6088104248
+        },
+        "started_wall_epoch": 1787561638.6031156,
+        "status": 200
+      },
+      {
+        "bytes": 1941448,
+        "client_total_s": 86.24729997501709,
+        "client_ttfb_s": 86.2290440199431,
+        "container_sha256": "14823ab276ed3f96e207de221c593069b946740c08ccfc3447df4250afd73ec6",
+        "cpu_encode_mux_s": 1.3958199999999998,
+        "decomposition": null,
+        "denoiser_evaluations": 49,
+        "label": "control_warm_3",
+        "measured": true,
+        "media": {
+          "decoded_stream_hashes": {
+            "audio": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_3.mp4",
+                "-map",
+                "0:a:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=6f54c6f1ecdb6bfccf62989b6464c7797e61e11b7da808b5620e9af530e0a495\n"
+            },
+            "video": {
+              "command": [
+                "ffmpeg",
+                "-v",
+                "error",
+                "-i",
+                "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_3.mp4",
+                "-map",
+                "0:v:0",
+                "-f",
+                "hash",
+                "-hash",
+                "sha256",
+                "-"
+              ],
+              "returncode": 0,
+              "stderr": "",
+              "stdout": "SHA256=a7a8349eb6cc6bfaf05cd56c0018202a9c610a748e3fd9ec0a9e0456ec70a60d\n"
+            }
+          },
+          "errors": [],
+          "ffprobe": {
+            "command": [
+              "ffprobe",
+              "-v",
+              "error",
+              "-count_frames",
+              "-show_entries",
+              "stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels,duration,nb_read_frames",
+              "-of",
+              "json",
+              "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_3.mp4"
+            ],
+            "returncode": 0,
+            "stderr": "",
+            "stdout": "{\n    \"programs\": [\n\n    ],\n    \"streams\": [\n        {\n            \"index\": 0,\n            \"codec_name\": \"h264\",\n            \"codec_type\": \"video\",\n            \"width\": 1344,\n            \"height\": 768,\n            \"r_frame_rate\": \"24/1\",\n            \"duration\": \"5.166667\",\n            \"nb_read_frames\": \"124\"\n        },\n        {\n            \"index\": 1,\n            \"codec_name\": \"aac\",\n            \"codec_type\": \"audio\",\n            \"sample_rate\": \"32000\",\n            \"channels\": 2,\n            \"r_frame_rate\": \"0/0\",\n            \"duration\": \"5.175000\",\n            \"nb_read_frames\": \"162\"\n        }\n    ]\n}\n"
+          },
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "duration": "5.166667",
+              "height": 768,
+              "index": 0,
+              "nb_read_frames": "124",
+              "r_frame_rate": "24/1",
+              "width": 1344
+            },
+            {
+              "channels": 2,
+              "codec_name": "aac",
+              "codec_type": "audio",
+              "duration": "5.175000",
+              "index": 1,
+              "nb_read_frames": "162",
+              "r_frame_rate": "0/0",
+              "sample_rate": "32000"
+            }
+          ],
+          "valid": true
+        },
+        "output": "/home/hsliu/tmp/minimax-h3-e2e-4gpu-20260824/artifacts/runs/unprofiled/control_warm_3.mp4",
+        "peak_memory_mb": 95460.0,
+        "response_body_s": 0.018255955073982477,
+        "server_inference_s": 86.224,
+        "server_request_id": "video_sync-a6f3a85c6c221489",
+        "sigma_points": 50,
+        "stage_durations": {
+          "queue_wait_ms": 0.25677005760371685,
+          "stage_0_gen_ms": 84822.74961471558
+        },
+        "started_wall_epoch": 1787561745.9367576,
+        "status": 200
+      }
+    ],
+    "resolved_attention_backends": [
+      "CUDNN_ATTN"
+    ],
+    "resources": {
+      "gpu_peak_mib": {
+        "3": 99519,
+        "4": 100793,
+        "5": 100793,
+        "6": 100793
+      },
+      "gpu_utilization_mean_pct_by_phase": {
+        "between_requests": 0.0,
+        "control_cold": 72.6436170212766,
+        "control_warm_1": 85.90714285714286,
+        "control_warm_2": 79.3076923076923,
+        "control_warm_3": 96.87121212121212,
+        "shutdown": 6.5,
+        "startup": 0.8993055555555556
+      },
+      "host_peak_kb": {
+        "locked_kb": 80,
+        "private_dirty_kb": 25845864,
+        "pss_kb": 26676726,
+        "rss_kb": 32471056,
+        "shared_clean_kb": 21445508
+      }
+    },
+    "sampler_error": null,
+    "server_returncode": 0,
+    "started_wall_epoch": 1787561276.8427455,
+    "startup_breakdown": {
+      "closure_error_s": 0.0,
+      "definition": "log-derived, one-second log timestamp resolution; final boundary is first observed /health 200",
+      "events": {
+        "model_loaded": [
+          {
+            "line": "INFO 08-24 16:50:21 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 137,
+            "wall_epoch": 1787561421.0
+          },
+          {
+            "line": "INFO 08-24 16:50:22 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 147,
+            "wall_epoch": 1787561422.0
+          },
+          {
+            "line": "INFO 08-24 16:50:23 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 157,
+            "wall_epoch": 1787561423.0
+          },
+          {
+            "line": "INFO 08-24 16:50:23 [diffusion_model_runner.py:296] Model runner: Model loaded successfully.",
+            "line_number": 159,
+            "wall_epoch": 1787561423.0
+          }
+        ],
+        "orchestrator_ready": [
+          {
+            "line": "(APIServer pid=1134991) INFO 08-24 16:50:24 [async_omni_engine.py:271] [AsyncOmniEngine] Orchestrator ready with 1 stages",
+            "line_number": 182,
+            "wall_epoch": 1787561424.0
+          }
+        ],
+        "server_start": [
+          {
+            "line": "(APIServer pid=1134991) INFO 08-24 16:48:45 [multiproc_executor.py:296] Starting server...",
+            "line_number": 17,
+            "wall_epoch": 1787561325.0
+          }
+        ],
+        "worker_initialized": [
+          {
+            "line": "INFO 08-24 16:49:22 [diffusion_worker.py:285] Worker 1: Initialized device and distributed environment.",
+            "line_number": 46,
+            "wall_epoch": 1787561362.0
+          },
+          {
+            "line": "INFO 08-24 16:49:22 [diffusion_worker.py:285] Worker 3: Initialized device and distributed environment.",
+            "line_number": 47,
+            "wall_epoch": 1787561362.0
+          },
+          {
+            "line": "INFO 08-24 16:49:22 [diffusion_worker.py:285] Worker 0: Initialized device and distributed environment.",
+            "line_number": 48,
+            "wall_epoch": 1787561362.0
+          },
+          {
+            "line": "INFO 08-24 16:49:22 [diffusion_worker.py:285] Worker 2: Initialized device and distributed environment.",
+            "line_number": 49,
+            "wall_epoch": 1787561362.0
+          }
+        ]
+      },
+      "phase_sum_s": 149.3748152256012,
+      "phases": {
+        "imports_cli_config_s": 48.157254457473755,
+        "model_init_load_placement_s": 61.0,
+        "orchestrator_api_health_s": 3.2175607681274414,
+        "workers_distributed_s": 37.0
+      },
+      "valid": true,
+      "wall_launch_to_health_s": 149.3748152256012
+    }
+  }
+}
