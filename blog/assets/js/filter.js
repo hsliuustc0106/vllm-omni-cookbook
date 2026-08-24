@@ -1,28 +1,36 @@
-/* Home feature-sidebar filter: shows only cards whose data-feature matches,
-   syncs the choice to the URL hash (#feature-<slug>) so filters are shareable. */
+/* Home sidebar filters: feature (data-feature) and language (data-lang).
+   A card is visible when it matches BOTH selections; the feature choice
+   syncs to the URL hash (#feature-<slug>) so links are shareable. */
 (function () {
   "use strict";
 
-  function apply(slug) {
+  var feature = "all";
+  var lang = "all";
+
+  function apply() {
     var any = false;
     document.querySelectorAll(".post-card").forEach(function (card) {
-      var match = slug === "all" || card.getAttribute("data-feature") === slug;
+      var match = (feature === "all" || card.getAttribute("data-feature") === feature) &&
+                  (lang === "all" || card.getAttribute("data-lang") === lang);
       card.hidden = !match;
       if (match) any = true;
     });
     document.querySelectorAll("[data-feature-filter]").forEach(function (btn) {
-      btn.classList.toggle("active", btn.getAttribute("data-feature-filter") === slug);
+      btn.classList.toggle("active", btn.getAttribute("data-feature-filter") === feature);
+    });
+    document.querySelectorAll("[data-lang-filter]").forEach(function (btn) {
+      btn.classList.toggle("active", btn.getAttribute("data-lang-filter") === lang);
     });
     var list = document.getElementById("post-list");
     var empty = document.getElementById("filter-empty");
-    if (!any && slug !== "all") {
+    if (!any && (feature !== "all" || lang !== "all")) {
       if (!empty && list) {
         empty = document.createElement("p");
         empty.id = "filter-empty";
         empty.className = "filter-empty";
         list.after(empty);
       }
-      if (empty) empty.textContent = "No posts under this feature yet.";
+      if (empty) empty.textContent = "No posts match this filter yet.";
     } else if (empty) {
       empty.remove();
     }
@@ -34,19 +42,30 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var buttons = document.querySelectorAll("[data-feature-filter]");
-    if (!buttons.length) return;
+    var fButtons = document.querySelectorAll("[data-feature-filter]");
+    var lButtons = document.querySelectorAll("[data-lang-filter]");
+    if (!fButtons.length && !lButtons.length) return;
 
-    buttons.forEach(function (btn) {
+    fButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var slug = btn.getAttribute("data-feature-filter");
-        history.replaceState(null, "", slug === "all" ? "#": "#feature-" + slug);
-        apply(slug);
+        feature = btn.getAttribute("data-feature-filter");
+        history.replaceState(null, "", feature === "all" ? "#" : "#feature-" + feature);
+        apply();
+      });
+    });
+    lButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        lang = btn.getAttribute("data-lang-filter");
+        apply();
       });
     });
 
-    apply(slugFromHash());
+    feature = slugFromHash();
+    apply();
   });
 
-  window.addEventListener("hashchange", function () { apply(slugFromHash()); });
+  window.addEventListener("hashchange", function () {
+    feature = slugFromHash();
+    apply();
+  });
 })();

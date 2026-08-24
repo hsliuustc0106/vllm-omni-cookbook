@@ -110,7 +110,8 @@
       var tags = p.tags.map(function (t) { return "#" + t; }).join(" ");
       return '<li role="option" id="search-result-' + i + '">' +
         '  <a href="' + p.url + '">' +
-        '    <span class="search-result-title">' + escapeHtml(p.title) + "</span>" +
+        '    <span class="search-result-title">' + escapeHtml(p.title) +
+        (p.lang === "zh" ? ' <span class="lang-badge" lang="zh">中文</span>' : "") + "</span>" +
         '    <span class="search-result-meta">' + escapeHtml(p.date) + (tags ? " · " + escapeHtml(tags) : "") + "</span>" +
         "  </a></li>";
     }).join("");

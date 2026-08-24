@@ -8,6 +8,7 @@
     "summary": {{ post.summary | default: "" | strip_html | jsonify }},
     "tags": {{ post.tags | jsonify }},
     "feature": {{ post.feature | default: "" | jsonify }},
+    "lang": {{ post.lang | default: "en" | jsonify }},
     "category": {{ post.category | default: "" | strip_html | jsonify }},
     "date": {{ post.date | date: "%b %-d, %Y" | jsonify }}
   }{% unless forloop.last %},{% endunless %}

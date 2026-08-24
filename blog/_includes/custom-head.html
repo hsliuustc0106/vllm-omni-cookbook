@@ -3,7 +3,18 @@
   1. Apply the saved theme before first paint (no flash of wrong theme).
   2. Expose baseurl-aware asset URLs to the static JS files.
   3. MathJax is pulled in only on pages that set `math: true` in front matter.
+  4. Bilingual posts: set <html lang> and declare hreflang alternates for the
+     en/zh pair (page.lang + page.pair front matter, see blog/TEMPLATE.md).
 {%- endcomment -%}
+{%- if page.lang -%}
+<script>document.documentElement.lang = {{ page.lang | jsonify }};</script>
+{%- endif -%}
+{%- if page.pair -%}
+{%- assign other_lang = 'zh' -%}
+{%- if page.lang == 'zh' -%}{%- assign other_lang = 'en' -%}{%- endif -%}
+<link rel="alternate" hreflang="{{ page.lang | default: 'en' }}" href="{{ page.url | absolute_url }}">
+<link rel="alternate" hreflang="{{ other_lang }}" href="{{ page.pair | absolute_url }}">
+{%- endif -%}
 <script>
   (function () {
     try {

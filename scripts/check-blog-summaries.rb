@@ -22,7 +22,16 @@ config = YAML.safe_load(File.read(File.join(__dir__, "..", "blog", "_config.yml"
 feature_slugs = (config["features"] || []).map { |f| f["slug"].to_s.downcase }
 
 bad = []
-all_tags = Hash.new { |h, k| h[k] = [] } # downcased tag -> [original, file]
+all_tags = Hash.new { |h, k| [] } # downcased tag -> [original, file]
+meta_by_path = {}                # normalized URL -> [meta, filename] (for pair checks)
+
+def normalize_url(u)
+  u = u.to_s.strip
+  u = u.sub(%r{/+\z}, "")
+  u = File.join("", u) unless u.start_with?("/")
+  u
+end
+
 posts.each do |path|
   begin
     front = File.read(path).split(/^---\s*$/)[1]
@@ -45,6 +54,43 @@ posts.each do |path|
     if feature_slugs.include?(tag.downcase)
       bad << "#{File.basename(path)}: tag `#{tag}` duplicates a site.features slug — classify via `feature:` front matter instead"
     end
+  end
+
+  # URL for pairing checks: explicit permalink, else the default
+  # /:year-:month-:day-:title/ derived from the filename.
+  own = meta["permalink"] ||
+        "/" + File.basename(path).sub(/\.zh\.md\z/, "").sub(/\.md\z/, "")
+  meta_by_path[normalize_url(own)] = [meta, File.basename(path)] if meta.is_a?(Hash)
+end
+
+# Bilingual pairing: a post declaring a language must point at an existing
+# companion whose `pair` points back, and a zh edition must live under /zh/
+# mirroring its English canonical URL.
+meta_by_path.each_value do |meta, name|
+  lang = meta["lang"]
+  pair = meta["pair"]
+  next if lang.nil? && pair.nil?
+
+  own_url = normalize_url(meta["permalink"] ||
+                          "/" + name.sub(/\.zh\.md\z/, "").sub(/\.md\z/, ""))
+  if lang == "zh"
+    unless own_url.start_with?("/zh/")
+      bad << "#{name}: zh edition must use a /zh/... permalink, got #{own_url}"
+    end
+  end
+  if pair.nil?
+    bad << "#{name}: `lang` declared without a `pair` companion URL"
+    next
+  end
+  pair_url = normalize_url(pair)
+  companion = meta_by_path[pair_url]
+  if companion.nil?
+    bad << "#{name}: `pair` #{pair} does not resolve to any post"
+  elsif normalize_url(companion[0]["pair"]) != own_url
+    bad << "#{name}: `pair` is not mutual — #{companion[1]} points at #{companion[0]["pair"].inspect}"
+  elsif lang == "zh" && own_url != "/zh" + normalize_url(companion[0]["permalink"] ||
+          "/" + companion[1].sub(/\.zh\.md\z/, "").sub(/\.md\z/, ""))
+    bad << "#{name}: zh permalink must mirror the English URL under /zh/"
   end
 end
 

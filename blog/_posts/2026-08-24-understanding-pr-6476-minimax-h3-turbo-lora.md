@@ -10,6 +10,8 @@ summary: >-
 tags: [MiniMax-H3, H200]
 category: PR Analysis
 feature: lora
+lang: en
+pair: /zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/
 usage:
   - label: "Download"
     blurb: "only the v1.0 artifact"

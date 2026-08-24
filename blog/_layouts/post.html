@@ -32,6 +32,14 @@ layout: base
         <span aria-hidden="true">·</span>
         <span itemprop="author">{{ page.author }}</span>
         {%- endif -%}
+        {%- if page.pair -%}
+        <span aria-hidden="true">·</span>
+        {%- if page.lang == 'zh' -%}
+        <a class="lang-switch" href="{{ page.pair | relative_url }}">English</a>
+        {%- else -%}
+        <a class="lang-switch" href="{{ page.pair | relative_url }}">简体中文</a>
+        {%- endif -%}
+        {%- endif -%}
       </p>
       {%- if page.feature -%}
       <div class="post-card-tags">

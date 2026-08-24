@@ -4,12 +4,30 @@ layout: base
 
 {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
 
-{%- comment -%} Featured post: first post flagged `featured: true`, else the newest. {%- endcomment -%}
-{%- assign featured = site.posts | where: "featured", true | first | default: site.posts.first -%}
+{%- comment -%} Featured post: first EN post flagged `featured: true`, else the
+newest EN post (zh editions are companions, never featured). {%- endcomment -%}
+{%- assign en_posts = site.posts | where_exp: "p", "p.lang != 'zh'" -%}
+{%- assign featured = en_posts | where: "featured", true | first | default: en_posts.first -%}
 
 <div class="home-layout">
 
   <aside class="feature-sidebar" aria-label="Filter posts by feature">
+    <h2 class="sidebar-heading">Language</h2>
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" type="button" data-lang-filter="all">
+        <span class="sidebar-label">All languages</span>
+        <span class="sidebar-count">{{ site.posts.size }}</span>
+      </button>
+      <button class="sidebar-item" type="button" data-lang-filter="en">
+        <span class="sidebar-label">English</span>
+        <span class="sidebar-count">{{ en_posts.size }}</span>
+      </button>
+      {%- assign zh_posts = site.posts | where: "lang", "zh" -%}
+      <button class="sidebar-item" type="button" data-lang-filter="zh">
+        <span class="sidebar-label">中文</span>
+        <span class="sidebar-count">{{ zh_posts.size }}</span>
+      </button>
+    </nav>
     <h2 class="sidebar-heading">Features</h2>
     <nav class="sidebar-nav">
       <button class="sidebar-item active" type="button" data-feature-filter="all">

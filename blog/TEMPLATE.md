@@ -51,6 +51,25 @@ Rules:
 - The post layout is automatic: a left table of contents with scroll-spy,
   numbered section kickers, a reading-progress bar, and Copy buttons on every
   code block. Authors never hand-write a TOC or section numbers.
+- **Every post ships in both English and Chinese.** The English file is the
+  canonical `YYYY-MM-DD-<slug>.md` (default URL); the Chinese companion is
+  `YYYY-MM-DD-<slug>.zh.md` in the same `_posts/` directory with:
+
+  ```yaml
+  lang: zh
+  pair: /<en-post-url>/          # mutual; the EN file gets lang: en + the /zh/ URL
+  permalink: /zh/<en-post-url>/  # hardcoded — must mirror the EN URL under /zh/
+  ```
+
+  Give the Chinese h2 headings explicit ids matching the English anchors
+  (`## 背景 {#background}`) so TOC links line up across editions. The Chinese
+  edition is a **plain-first rewrite, not a literal translation**: Chinese
+  body, Chinese `summary`/title (keep the `PR #NNNN` marker); tables,
+  commands, numbers, and references stay verbatim from the English edition;
+  technical terms keep the English word in parentheses at first use
+  (LoRA、AllGather、denoiser stay inline); tags reuse the canonical English
+  tags so the tags page doesn't split. `scripts/check-blog-summaries.rb`
+  enforces the pairing (mutual `pair`, `/zh/` URL mirror) in CI.
 
 ---
 
