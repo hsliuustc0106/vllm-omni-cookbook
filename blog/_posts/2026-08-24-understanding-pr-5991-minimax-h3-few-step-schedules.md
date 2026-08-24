@@ -259,6 +259,79 @@ Turbo article records the full #6476 provenance and measurements; #5991 explains
 a schedule contract and does not publish a cookbook-compatible benchmark
 artifact for a named public distilled checkpoint.
 
+The local validation below instead isolates one narrower question: once both
+requests already use five sigma points/four NFE, what work does activating the
+adapter add?
+
+## Local validation: where Turbo overhead appears {#local-validation}
+
+A fair LoRA comparison keeps the road fixed and changes only the passenger,
+like timing the same car and route with one extra load. Here Base and Turbo use
+the same sigma points, NFE, prompt, seed, shape, server, and warm cache; only
+request-time adapter activation changes. These are pinned local spot checks,
+not a promise for every deployment.
+
+### Same-schedule A/B
+
+The final-path run used vLLM-Omni
+`0.27.0rc2.dev159+g072bfc02d` at upstream SHA `072bfc02`, with its venv and
+runtime caches on node-local storage. It ran on 2×L20X bound to NUMA 0: eager
+TP2, text-encoder TP2, VAE patch-parallel 2/tile, CUDNN attention, 1344×768
+T2VA, requested 4.0 s/107 frames, seed 1101, five sigma points/four NFE, and
+video/audio shifts 6/3. One Base and one Turbo warmup preceded the measured
+`A B B A A B` order, n=3 per condition. Preparation (8.621 s) and
+process-to-readiness (88.286 s) were recorded separately.
+
+| Condition | Stage-0 mean ± sample SD | Stage-0 median | Diffuse mean ± sample SD | Diffuse median | Client median | Stage-0 CV |
+|---|---:|---:|---:|---:|---:|---:|
+| Base control | 15.108 ± 0.024 s | 15.099 s | 10.211 ± 0.009 s | 10.206 s | 16.246 s | 0.16% |
+| Turbo LoRA | 16.398 ± 0.072 s | 16.434 s | 11.435 ± 0.015 s | 11.444 s | 17.548 s | 0.44% |
+
+Median Turbo overhead was **+8.85% stage-0**, **+12.13% diffuse**, and
+**+8.01% client wall**. Both conditions reported the same 76,754 MiB request
+peak because LoRA buffers were preallocated. All requests returned HTTP 200 and
+fully decoded; outputs were byte-deterministic within each condition, while
+Base and Turbo outputs differed.
+
+### What nsys shows
+
+The kernel trace aligned the non-schedule controls with Blog 1: FL2VA T2VA,
+Ulysses4/Ring1/DiT-TP1, text-encoder TP4, VAE patch-parallel 4/tile, BF16,
+CUDNN, regional compile, 1344×768, requested 5.0 s/124 frames, and seed 1101.
+Both sides still used five sigma points/four NFE. GPUs 4–7 were kept on NUMA 1
+rather than repeat Blog 1's cross-NUMA physical placement. One compile/warmup
+request preceded one Nsight Systems 2026.1.3 trace per condition, so these
+observer-affected spans explain mechanism rather than establish another latency
+headline.
+
+| Direct synchronized span | Base | Turbo | Delta |
+|---|---:|---:|---:|
+| Stage-0 | 10.332 s | 11.200 s | +8.39% |
+| Pipeline diffuse | 6.569 s | 7.331 s | +11.61% |
+| Pipeline decode | 1.907 s | 1.920 s | +0.69% |
+
+The visible kernel evidence points to additive low-rank and layout work, not a
+different denoiser-call count:
+
+| Turbo-only visible signature, per device | Unique kernels | Launches | Visible time | Examples |
+|---|---:|---:|---:|---|
+| Rank-128 / `badd` GEMMs | 4 | 439 | 38.122 ms | `nvjet_tst_128x288...badd`, `nvjet_tst_256x160...badd` |
+| Fused copy/slice | 3 | 157 | 45.220 ms | `triton_poi_fused_copy_slice_{0,1,4}` |
+
+Meanwhile, matched core kernels kept equal launch counts and near-identical
+visible time: the two main GEMM families ran 5,292 and 1,764 times/device in
+both conditions, the short-SDPA kernel ran 1,764 times/device, and LayerNorm ran
+7,056 times/device. That is the architectural signature of dynamic LoRA: the
+base route remains, and low-rank projections plus packed-layout handling are
+added around it.
+
+> [!CAUTION]
+> On this Hopper platform, nsys node mode covers host-launched CUDA graph nodes,
+> not every device-launched graph node. Base and Turbo have different graph
+> coverage, so aggregate kernel/category totals are not complete workload
+> totals. The trustworthy comparisons are the synchronized spans, equal-count
+> matched kernels, and conservative Turbo-only signatures above.
+
 ## How to choose {#how-to-choose}
 
 Choose the path whose learned artifact owns the route, just as you use the key
@@ -297,9 +370,9 @@ it. The omissions are intentional and keep examples deployable.
 - Upstream does not document a named, stable, publicly accessible
   checkpoint-native DMD2 FL2VA artifact at the pinned snapshot. The #5991 half
   therefore shows metadata only, not a copy-ready serve command.
-- The article does not add a new speed or quality comparison and does not repeat
-  the #6476 metric table while the cookbook evidence policy and older PR-sourced
-  post evidence differ.
+- The local A/B isolates same-schedule adapter overhead; it is not the #6476
+  49-NFE speedup comparison, not a quality comparison, and not a universal
+  latency claim.
 - [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) and
   [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) are draft,
   unshipped LoRA-runtime directions. Their proposed behavior is not described
@@ -321,7 +394,7 @@ source links are pinned to the reviewed upstream snapshot where practical.
 | An explicit checkpoint-schedule mismatch fails | [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) | Shipped | [`test_minimax_h3_contract.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/tests/diffusion/models/minimax_h3/test_minimax_h3_contract.py) |
 | The supported Turbo artifact maps and binds to native H3 | [#6476](https://github.com/vllm-project/vllm-omni/pull/6476) + [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py) | Merged/shipped | CPU LoRA tests + PR full-model evidence |
 | Turbo requires five points/four NFE and shifts 6/3 | [current pipeline](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) + [pinned recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora) | Merged/shipped | CPU validation + #6476 end-to-end evidence |
-| Turbo performance spot check | [existing #6476 post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) | Merged PR; not repeated here | Author/reviewer evidence, not independently reproduced for this post |
+| Turbo local spot check and visible LoRA kernel signatures | [existing #6476 post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) + [local validation above](#local-validation) | Pinned local validation; not universal | Warmed n=3 A/B + four-device nsys, with CUDA-graph coverage caveat |
 | Model-declared/generalized LoRA runtime | [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) / [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) | Draft/unshipped | Not described as available |
 
 ## References {#references}

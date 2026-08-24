@@ -222,6 +222,69 @@ prompt 与 workload 仍会共同决定质量。
 #5991 说明的是调度契约，没有为某个命名公开蒸馏 checkpoint 发布符合 cookbook
 要求的 benchmark artifact。
 
+下面的本地验证只隔离一个更窄的问题：当两个请求已经同为 5 个 sigma 点/4 NFE
+时，激活适配器究竟增加了什么工作？
+
+## 本地验证：Turbo 开销落在哪里 {#local-validation}
+
+公平的 LoRA 对比要把道路固定，只改变车上多出来的负载。这里 Base 与 Turbo 使用
+相同的 sigma 点、NFE、prompt、seed、shape、server 和热 cache；唯一变量是请求时
+是否激活适配器。下面是固定环境的本地抽测，不是对所有部署的承诺。
+
+### 同调度 A/B
+
+Final-path 运行使用上游 SHA `072bfc02` 对应的 vLLM-Omni
+`0.27.0rc2.dev159+g072bfc02d`，venv 与运行时 cache 均在 node-local 存储。
+硬件是绑定 NUMA 0 的 2×L20X：eager TP2、text-encoder TP2、VAE
+patch-parallel 2/tile、CUDNN attention；workload 为 1344×768 T2VA、请求
+4.0 s/107 帧、seed 1101、5 个 sigma 点/4 NFE、视频/音频 shift 6/3。
+一次 Base 与一次 Turbo warmup 后，按 `A B B A A B` 顺序测量，每种条件 n=3。
+准备时间 8.621 s、进程到 ready 88.286 s，均单独记录。
+
+| 条件 | Stage-0 mean ± sample SD | Stage-0 median | Diffuse mean ± sample SD | Diffuse median | Client median | Stage-0 CV |
+|---|---:|---:|---:|---:|---:|---:|
+| Base 对照 | 15.108 ± 0.024 s | 15.099 s | 10.211 ± 0.009 s | 10.206 s | 16.246 s | 0.16% |
+| Turbo LoRA | 16.398 ± 0.072 s | 16.434 s | 11.435 ± 0.015 s | 11.444 s | 17.548 s | 0.44% |
+
+Turbo median 开销为 **stage-0 +8.85%**、**diffuse +12.13%**、**client wall
++8.01%**。两种条件的请求峰值同为 76,754 MiB，因为 LoRA buffer 已预分配。
+所有请求均返回 HTTP 200 并完整解码；同一条件内输出逐字节确定性一致，Base 与
+Turbo 输出则不同。
+
+### nsys 看到了什么
+
+Kernel trace 的非调度条件与第 1 篇对齐：FL2VA T2VA、
+Ulysses4/Ring1/DiT-TP1、text-encoder TP4、VAE patch-parallel 4/tile、
+BF16、CUDNN、regional compile、1344×768、请求 5.0 s/124 帧、seed 1101。
+两侧仍保持 5 个 sigma 点/4 NFE。GPU 4–7 固定在 NUMA 1，而不复用第 1 篇跨
+NUMA 的物理卡位。每种条件先完成一次 compile/warmup，再由 Nsight Systems
+2026.1.3 捕获一个请求；因此这些受 observer 影响的 span 用于解释机制，不构成
+另一条延迟 headline。
+
+| 直接同步 span | Base | Turbo | Delta |
+|---|---:|---:|---:|
+| Stage-0 | 10.332 s | 11.200 s | +8.39% |
+| Pipeline diffuse | 6.569 s | 7.331 s | +11.61% |
+| Pipeline decode | 1.907 s | 1.920 s | +0.69% |
+
+可见 kernel 证据指向新增的低秩投影与 layout 工作，而不是不同的去噪器调用数：
+
+| 每设备 Turbo-only 可见特征 | Unique kernels | Launches | Visible time | 示例 |
+|---|---:|---:|---:|---|
+| Rank-128 / `badd` GEMM | 4 | 439 | 38.122 ms | `nvjet_tst_128x288...badd`、`nvjet_tst_256x160...badd` |
+| Fused copy/slice | 3 | 157 | 45.220 ms | `triton_poi_fused_copy_slice_{0,1,4}` |
+
+与此同时，匹配到的 core kernel 保持相同 launch 数和近乎相同的可见时间：两组
+主 GEMM 在两种条件下均为每设备 5,292 与 1,764 次，short-SDPA 为 1,764 次，
+LayerNorm 为 7,056 次。这正是 dynamic LoRA 的架构特征：基础路径保留，再在其
+周围增加低秩投影和 packed-layout 处理。
+
+> [!CAUTION]
+> 在这台 Hopper 机器上，nsys node mode 覆盖 host-launched CUDA graph node，
+> 但不覆盖所有 device-launched graph node。Base 与 Turbo 的 graph 覆盖不同，
+> 因而 aggregate kernel/category total 不是完整 workload total。可信对比是上面的
+> 直接同步 span、launch 数相同的匹配 kernel，以及保守筛选出的 Turbo-only 特征。
+
 ## 怎么选 {#how-to-choose}
 
 选择与学习 artifact 所拥有轨迹相匹配的路径，就像一把锁要用对应钥匙。基础
@@ -254,8 +317,8 @@ checkpoint、checkpoint 原生蒸馏版本和运行时适配器是三种不同�
 
 - 在固定快照中，上游没有记录一个命名、稳定、公开可访问的 checkpoint 原生 DMD2
   FL2VA artifact。因此 #5991 部分只展示元数据，不给出 copy-ready 启动命令。
-- 本文不增加新的速度/质量对比；在 cookbook 证据规则与较早文章引用 PR 证据的做法
-  尚不完全一致时，也不重复 #6476 指标表。
+- 上面的本地 A/B 只隔离同调度下的适配器开销；它不是 #6476 的 49-NFE 加速对比，
+  不是质量对比，也不是普遍延迟结论。
 - [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) 与
   [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) 是 draft、
   未发布的 LoRA runtime 方向，本文不把其提议行为写成可用功能。
@@ -275,7 +338,7 @@ checkpoint、checkpoint 原生蒸馏版本和运行时适配器是三种不同�
 | 显式 checkpoint 调度数量不匹配会失败 | [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) | 已发布 | [`test_minimax_h3_contract.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/tests/diffusion/models/minimax_h3/test_minimax_h3_contract.py) |
 | 受支持 Turbo artifact 会映射并绑定到原生 H3 | [#6476](https://github.com/vllm-project/vllm-omni/pull/6476) + [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py) | 已合并/已发布 | CPU LoRA 测试 + PR 全模型证据 |
 | Turbo 要求五点/四 NFE 与 shift 6/3 | [当前 pipeline](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) + [固定 recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora) | 已合并/已发布 | CPU 校验 + #6476 端到端证据 |
-| Turbo 性能抽测 | [已有 #6476 中文文章]({{ site.baseurl }}/zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) | PR 已合并；本文不重复 | 作者/reviewer 证据；本文未独立复现 |
+| Turbo 本地抽测与可见 LoRA kernel 特征 | [已有 #6476 中文文章]({{ site.baseurl }}/zh/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) + [上面的本地验证](#local-validation) | 固定环境本地验证；不是普遍结论 | 充分预热的 n=3 A/B + 四设备 nsys，并保留 CUDA graph 覆盖 caveat |
 | 模型声明/通用化 LoRA runtime | [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) / [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) | Draft/未发布 | 不描述为可用功能 |
 
 ## 参考 {#references}
