@@ -22,6 +22,12 @@
   <circle cx="52" cy="352" r="150" style="fill: color-mix(in srgb, {{ f_color }} 8%, transparent);"></circle>
   <g stroke="{{ f_color }}" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92">
     {%- case f_slug -%}
+    {%- when "pipeline" -%}
+    <rect x="230" y="116" width="76" height="64" rx="12"></rect>
+    <rect x="334" y="86" width="76" height="46" rx="12" fill="{{ f_color }}"></rect>
+    <rect x="334" y="164" width="76" height="46" rx="12"></rect>
+    <line x1="306" y1="148" x2="326" y2="148"></line>
+    <polyline points="318,138 328,148 318,158"></polyline>
     {%- when "quantization" -%}
     <rect x="272" y="86" width="34" height="34" rx="7" fill="{{ f_color }}"></rect>
     <rect x="334" y="86" width="34" height="34" rx="7"></rect>
