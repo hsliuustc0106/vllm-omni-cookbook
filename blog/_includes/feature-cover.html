@@ -68,6 +68,12 @@
     <rect x="284" y="150" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
     <rect x="308" y="150" width="24" height="24" rx="5"></rect>
     <rect x="332" y="150" width="24" height="24" rx="5" fill="{{ f_color }}"></rect>
+    {%- when "lora" -%}
+    <line x1="238" y1="154" x2="402" y2="154"></line>
+    <line x1="286" y1="154" x2="286" y2="112"></line>
+    <line x1="286" y1="112" x2="322" y2="112"></line>
+    <line x1="354" y1="154" x2="354" y2="196"></line>
+    <line x1="354" y1="196" x2="318" y2="196"></line>
     {%- else -%}
     <circle cx="320" cy="146" r="46"></circle>
     <circle cx="320" cy="146" r="14" fill="{{ f_color }}"></circle>
