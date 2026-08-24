@@ -60,6 +60,7 @@ usage:
         -F 'prompt=In a snowy blue-purple forest, Ori carefully walks past a sleeping giant.' \
         -F 'width=1344' \
         -F 'height=768' \
+        -F 'aspect_ratio=16:9' \
         -F 'fps=24' \
         -F 'seed=1101' \
         -F 'num_inference_steps=5' \
