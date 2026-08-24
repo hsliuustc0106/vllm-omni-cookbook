@@ -184,6 +184,9 @@ html:has(.post-toc) { scroll-behavior: smooth; }
   letter-spacing: 0.05em;
   color: $muted;
   margin: 0 0 0.6rem 0.5rem;
+
+  /* second heading group (Language above Features) */
+  .sidebar-nav + & { margin-top: 1.4rem; }
 }
 
 .sidebar-nav {
@@ -245,6 +248,29 @@ html:has(.post-toc) { scroll-behavior: smooth; }
   border-color: var(--minima-link-base-color);
 
   &:hover { color: var(--minima-text-color); }
+}
+
+/* --- bilingual ---------------------------------------------------------------- */
+
+/* Post-header link to the companion edition. */
+.lang-switch {
+  color: $accent;
+  border: 1px solid var(--minima-border-color-01);
+  border-radius: 999px;
+  padding: 0.05rem 0.6rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+
+  &:hover { border-color: $accent; color: var(--minima-text-color); }
+}
+
+/* Home/search badge marking the Chinese edition of a post. */
+.lang-badge {
+  color: $accent;
+  border: 1px solid var(--minima-border-color-01);
+  border-radius: 999px;
+  padding: 0.05rem 0.55rem;
+  font-size: 0.75rem;
 }
 
 /* --- hero ----------------------------------------------------------------- */

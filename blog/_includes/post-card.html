@@ -2,7 +2,7 @@
 {%- assign words = include.post.content | strip_html | split: " " | size -%}
 {%- assign minutes = words | divided_by: 200 | at_least: 1 -%}
 
-<article class="post-card{% if include.featured %} post-card-featured{% endif %}" data-feature="{{ include.post.feature | default: 'other' }}">
+<article class="post-card{% if include.featured %} post-card-featured{% endif %}" data-feature="{{ include.post.feature | default: 'other' }}" data-lang="{{ include.post.lang | default: 'en' }}">
   {%- if include.post.image -%}
   <div class="post-card-media">
     <img src="{{ include.post.image | relative_url }}" alt="" loading="lazy" decoding="async">
@@ -19,6 +19,9 @@
       <span>{{ minutes }} min read</span>
       {%- if include.featured -%}
       <span class="featured-badge">Featured</span>
+      {%- endif -%}
+      {%- if include.post.lang == 'zh' -%}
+      <span class="lang-badge" lang="zh">中文</span>
       {%- endif -%}
     </div>
     <h2 class="post-card-title">

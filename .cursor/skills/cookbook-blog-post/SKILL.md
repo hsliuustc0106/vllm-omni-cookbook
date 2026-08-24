@@ -35,22 +35,30 @@ post explains the *how* and *why* for users.
    any jargon; expert detail follows later in the section. Define every term at
    first use; the TL;DR must read clean with no post context; analogies state
    where they break when it matters.
-5. Metrics may **only** come from the cookbook (`{category}/{model}/index.md`,
+5. Every post ships in **both English and Chinese**: canonical
+   `YYYY-MM-DD-<slug>.md` + `YYYY-MM-DD-<slug>.zh.md` (same `_posts/` dir)
+   with `lang: zh`, mutual `pair` URLs, hardcoded `permalink: /zh/<en-url>/`.
+   The Chinese edition is a plain-first *rewrite* — Chinese body; tables,
+   commands, numbers verbatim; English terms in parentheses at first use;
+   same English tags; h2 ids matching the English anchors
+   (`## 背景 {#background}`). The summary lint enforces the pairing in CI.
+   Full schema: `blog/TEMPLATE.md`.
+6. Metrics may **only** come from the cookbook (`{category}/{model}/index.md`,
    `SUMMARY.md`) or upstream perf JSON. Never invent or estimate numbers.
-6. Link the cookbook with **absolute GitHub URLs** — the blog deploys standalone
+7. Link the cookbook with **absolute GitHub URLs** — the blog deploys standalone
    (`blog/` is its own Jekyll site), so relative cookbook paths 404.
-7. Figures → `blog/assets/figures/<slug>/`; embed with
+8. Figures → `blog/assets/figures/<slug>/`; embed with
    `{{ site.baseurl }}/assets/figures/<slug>/fig1.png`. Raw HTML (inline SVG,
    styled divs) passes through Markdown anywhere in the post.
-8. Front matter: `summary` ≤ 240 chars (SEO + index teaser), `category: PR
+9. Front matter: `summary` ≤ 240 chars (SEO + index teaser), `category: PR
    Analysis`, tags = model + technical area, `feature:` = one slug from
    `site.features` in `blog/_config.yml` (home sidebar filter; slugs match
    vLLM-Omni `docs/design/feature/` page names), `math: true` only if using
    `$…$`.
-9. Preview locally:
+10. Preview locally:
    `cd blog && bundle install && bundle exec jekyll serve`
    → http://127.0.0.1:4000/vllm-omni-cookbook/
-10. Delete every template admonition and placeholder before publishing.
+11. Delete every template admonition and placeholder before publishing.
 
 ## Starting from a PR or issue
 

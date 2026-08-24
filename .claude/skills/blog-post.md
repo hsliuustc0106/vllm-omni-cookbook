@@ -61,6 +61,15 @@ Write for three reader tiers at once (plain-first, eli5-style):
   post context.
 - Analogies must be honest — state where they break when it matters.
 
+Every post ships in **both English and Chinese**: the canonical
+`YYYY-MM-DD-<slug>.md` plus `YYYY-MM-DD-<slug>.zh.md` (same `_posts/` dir)
+with `lang: zh`, mutual `pair` URLs, and a hardcoded
+`permalink: /zh/<en-url>/`. The Chinese edition is a plain-first *rewrite*
+(Chinese body; tables, commands, numbers verbatim; English terms in
+parentheses at first use; same English tags; h2 ids matching the English
+anchors, e.g. `## 背景 {#background}`). The summary lint enforces the pairing
+in CI. Full schema: `blog/TEMPLATE.md`.
+
 ## Step 3 — Figures
 
 - If `docs/visualizations/pr-<N>-*` exists: copy the best assets into
