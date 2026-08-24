@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "理解 PR #5720 — MiniMax-H3 模块化流水线：两套 DiT，一组共享组件"
+title: "在 vLLM-Omni 中服务 MiniMax-H3（1）：模块化流水线——两套 DiT，一组共享组件"
 date: 2026-08-24 18:00:00 +0800
 author: hsliuustc0106
 summary: >-
@@ -12,7 +12,6 @@ feature: pipeline
 lang: zh
 pair: /2026-08-24-understanding-pr-5720-minimax-h3-modular-pipeline/
 permalink: /zh/2026-08-24-understanding-pr-5720-minimax-h3-modular-pipeline/
-image: /assets/figures/minimax-h3-modular-pipeline/fig1-architecture.svg
 usage:
   - label: "合并服务"
     blurb: "覆盖三种请求任务"
@@ -156,6 +155,30 @@ FL2VA/Ref2VA 输入矩阵与校验规则；
 Qwen3-VL encoder loader 在参数或 fused source shard 缺失时 fail closed。也就是说，
 这不只是一张架构图：不完整 checkpoint 会在 startup 失败，超出已加载分区能力的
 请求也会被明确拒绝。
+
+## PR #5720 到底改了什么 {#key-changes}
+
+在这组四 PR baseline 中，#5720 是“配电与共享”那一笔改动：#5691 先建好原始车间，
+#5720 让公共工具只装一套并加入 task switch，#5752 随后补齐输入规则，#5824 再给
+encoder 库存加上 fail-closed 封条。Series title 聚焦 modular pipeline，而本文解释
+它周围的 shipped system，所以必须把四者职责拆开。
+
+| Anchor | 在这条 baseline 中的独立贡献 |
+|---|---|
+| [#5691](https://github.com/vllm-project/vllm-omni/pull/5691) | 加入原始 MiniMax-H3 diffusion model、联合 video/audio packed denoising、encoder、VAEs、registry 与 serving integration。 |
+| **[#5720](https://github.com/vllm-project/vllm-omni/pull/5720)** | 将 model-defined `task_type` 传进 diffusion stage；加入 combined 与 task-selected 下载/构造；让两套 task-specific DiT 围绕一组共享组件加载；按请求路由 active DiT。 |
+| [#5752](https://github.com/vllm-project/vllm-omni/pull/5752) | 在 modular topology 落地后，对齐官方 FL2VA/Ref2VA 输入与校验矩阵。 |
+| [#5824](https://github.com/vllm-project/vllm-omni/pull/5824) | 让当前 encoder weight loading 在 parameter 或 fused source shard 缺失时 fail closed。 |
+
+在 pinned source 中，#5720 的职责现在落在三处：
+
+- [`MINIMAX_H3_DOWNLOAD_PATTERNS` 与 `_minimax_h3_partition_for_task`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py#L145-L177)
+  决定 snapshot download 要两套分区还是一套。
+- [Pipeline construction](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py#L660-L825)
+  注册一或两套 transformer weight source，同时让 tokenizer、processor、encoder 与
+  VAEs 只构造一次。
+- [`_transformer_for_task` 与 `_resolve_task`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py#L856-L891)
+  强制 request 只能路由到 startup 已加载的 partition。
 
 ## 心智模型：一间车间，两台引擎 {#mental-model}
 

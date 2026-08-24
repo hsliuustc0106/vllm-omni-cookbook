@@ -33,7 +33,6 @@ author:
 features:
   - slug: pipeline
     label: Pipeline architecture
-    docs: ../module/diffusion/diffusion_model_integration.md
     color: "#0f766e"
   - slug: quantization
     label: Quantization

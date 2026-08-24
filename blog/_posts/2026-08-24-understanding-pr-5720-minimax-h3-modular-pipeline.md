@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Understanding PR #5720 — MiniMax-H3's modular pipeline: two DiTs, one shared stack"
+title: "Serving MiniMax-H3 in vLLM-Omni (1): modular pipeline — two DiTs, one shared stack"
 date: 2026-08-24 18:00:00 +0800
 author: hsliuustc0106
 summary: >-
@@ -12,7 +12,6 @@ category: PR Analysis
 feature: pipeline
 lang: en
 pair: /zh/2026-08-24-understanding-pr-5720-minimax-h3-modular-pipeline/
-image: /assets/figures/minimax-h3-modular-pipeline/fig1-architecture.svg
 usage:
   - label: "Combined"
     blurb: "all three request tasks"
@@ -166,6 +165,32 @@ Qwen3-VL encoder loader fail closed when a parameter or fused source shard is
 missing. The result is not just a diagram: startup rejects an incomplete
 checkpoint, and requests reject task/input combinations that the loaded
 partition cannot serve.
+
+## What PR #5720 changed {#key-changes}
+
+PR #5720 is the switchboard change in this four-PR baseline: #5691 built the
+original workshop, #5720 made its common tools shareable and installed the
+task switch, #5752 tightened the input rulebook, and #5824 later sealed the
+encoder inventory. That division matters because the series title centers the
+modular pipeline while this post describes the shipped system around it.
+
+| Anchor | Its distinct contribution to this baseline |
+|---|---|
+| [#5691](https://github.com/vllm-project/vllm-omni/pull/5691) | Added the original MiniMax-H3 diffusion model, packed joint video/audio denoising, encoder, VAEs, registry, and serving integration. |
+| **[#5720](https://github.com/vllm-project/vllm-omni/pull/5720)** | Propagated model-defined `task_type` into the diffusion stage; added combined versus task-selected download/construction; loaded two task-specific DiTs around shared components; routed each request to the active DiT. |
+| [#5752](https://github.com/vllm-project/vllm-omni/pull/5752) | Aligned the official FL2VA/Ref2VA input and validation matrix after the modular topology existed. |
+| [#5824](https://github.com/vllm-project/vllm-omni/pull/5824) | Made current encoder weight loading fail closed for missing parameters or fused source shards. |
+
+At the pinned source level, #5720's responsibilities now appear in three
+places:
+
+- [`MINIMAX_H3_DOWNLOAD_PATTERNS` and `_minimax_h3_partition_for_task`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py#L145-L177)
+  decide whether snapshot download needs both partitions or one.
+- [Pipeline construction](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py#L660-L825)
+  registers one or two transformer weight sources while constructing the
+  tokenizer, processor, encoder, and VAEs once.
+- [`_transformer_for_task` and `_resolve_task`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py#L856-L891)
+  enforce request-to-loaded-partition routing.
 
 ## Mental model: one workshop, two engines {#mental-model}
 
