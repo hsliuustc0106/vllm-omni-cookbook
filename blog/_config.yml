@@ -71,6 +71,10 @@ features:
     label: Kernels & attention
     docs: attention_backend_selection.md
     color: "#4f46e5"
+  - slug: lora
+    label: LoRA adapters
+    docs: diffusion/lora.md   # user_guide path — no design doc yet
+    color: "#c026d3"
 
 header_pages:
   - about.md
