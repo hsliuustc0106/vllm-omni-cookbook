@@ -16,9 +16,9 @@
     <div class="post-card-meta">
       <time datetime="{{ include.post.date | date_to_xmlschema }}">{{ include.post.date | date: date_format }}</time>
       <span aria-hidden="true">·</span>
-      <span>{{ minutes }} min read</span>
+      <span>{{ minutes }} <span data-i18n="min-read" data-i18n-zh="分钟读">min read</span></span>
       {%- if include.featured -%}
-      <span class="featured-badge">Featured</span>
+      <span class="featured-badge" data-i18n="featured" data-i18n-zh="精选">Featured</span>
       {%- endif -%}
       {%- if include.post.lang == 'zh' -%}
       <span class="lang-badge" lang="zh">中文</span>

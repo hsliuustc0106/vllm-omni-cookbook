@@ -12,26 +12,26 @@ newest EN post (zh editions are companions, never featured). {%- endcomment -%}
 <div class="home-layout">
 
   <aside class="feature-sidebar" aria-label="Filter posts by feature">
-    <h2 class="sidebar-heading">Language</h2>
+    <h2 class="sidebar-heading" data-i18n="lang-heading" data-i18n-zh="语言">Language</h2>
     <nav class="sidebar-nav">
-      <button class="sidebar-item active" type="button" data-lang-filter="all">
-        <span class="sidebar-label">All languages</span>
+      <button class="sidebar-item" type="button" data-lang-filter="all">
+        <span class="sidebar-label" data-i18n="filter-all-lang" data-i18n-zh="全部语言">All languages</span>
         <span class="sidebar-count">{{ site.posts.size }}</span>
       </button>
-      <button class="sidebar-item" type="button" data-lang-filter="en">
-        <span class="sidebar-label">English</span>
+      <button class="sidebar-item active" type="button" data-lang-filter="en">
+        <span class="sidebar-label" data-i18n="filter-en" data-i18n-zh="英文">English</span>
         <span class="sidebar-count">{{ en_posts.size }}</span>
       </button>
       {%- assign zh_posts = site.posts | where: "lang", "zh" -%}
       <button class="sidebar-item" type="button" data-lang-filter="zh">
-        <span class="sidebar-label">中文</span>
+        <span class="sidebar-label" data-i18n="filter-zh" data-i18n-zh="中文">中文</span>
         <span class="sidebar-count">{{ zh_posts.size }}</span>
       </button>
     </nav>
-    <h2 class="sidebar-heading">Features</h2>
+    <h2 class="sidebar-heading" data-i18n="feat-heading" data-i18n-zh="功能">Features</h2>
     <nav class="sidebar-nav">
       <button class="sidebar-item active" type="button" data-feature-filter="all">
-        <span class="sidebar-label">All posts</span>
+        <span class="sidebar-label" data-i18n="filter-all-posts" data-i18n-zh="全部文章">All posts</span>
         <span class="sidebar-count">{{ site.posts.size }}</span>
       </button>
       {%- for f in site.features -%}
@@ -40,12 +40,12 @@ newest EN post (zh editions are companions, never featured). {%- endcomment -%}
         {%- if p.feature == f.slug -%}{%- assign n = n | plus: 1 -%}{%- endif -%}
       {%- endfor -%}
       <button class="sidebar-item" type="button" data-feature-filter="{{ f.slug }}">
-        <span class="sidebar-label">{{ f.label }}</span>
+        <span class="sidebar-label" data-i18n="feature-{{ f.slug }}" data-i18n-zh="{{ f.label_zh | default: f.label }}">{{ f.label }}</span>
         <span class="sidebar-count">{{ n }}</span>
       </button>
       {%- endfor -%}
     </nav>
-    <p class="sidebar-note">Aligned with the
+    <p class="sidebar-note" data-i18n="sidebar-note" data-i18n-zh="与 <a href='https://github.com/vllm-project/vllm-omni/tree/main/docs/design/feature' rel='noopener'>vLLM-Omni 特性设计文档</a> 对齐。">Aligned with the
       <a href="https://github.com/vllm-project/vllm-omni/tree/main/docs/design/feature" rel="noopener">vLLM-Omni feature design docs</a>.
     </p>
   </aside>
@@ -66,6 +66,6 @@ newest EN post (zh editions are companions, never featured). {%- endcomment -%}
       {%- endfor -%}
     </div>
 
-    <p class="rss-subscribe">subscribe <a href="{{ 'feed.xml' | relative_url }}">via RSS</a></p>
+    <p class="rss-subscribe" data-i18n="subscribe" data-i18n-zh="通过 <a href='{{ 'feed.xml' | relative_url }}'>RSS</a> 订阅">subscribe <a href="{{ 'feed.xml' | relative_url }}">via RSS</a></p>
   </div>
 </div>

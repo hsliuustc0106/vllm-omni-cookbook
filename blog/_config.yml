@@ -33,49 +33,61 @@ author:
 features:
   - slug: pipeline
     label: Pipeline architecture
+    label_zh: 流水线架构
     color: "#0f766e"
   - slug: quantization
     label: Quantization
+    label_zh: 量化
     docs: quantization.md
     color: "#7c3aed"
   - slug: offloader
     label: Offloading
+    label_zh: 卸载
     docs: offloader/
     color: "#0891b2"
   - slug: async_chunk
     label: Async chunking
+    label_zh: 异步分块
     docs: async_chunk.md
     color: "#16a34a"
   - slug: disaggregated_inference
     label: Disaggregation
+    label_zh: 分离推理
     docs: disaggregated_inference.md
     color: "#ea580c"
   - slug: realtime_ar_diffusion
     label: Realtime AR diffusion
+    label_zh: 实时 AR 扩散
     docs: realtime_ar_diffusion.md
     color: "#db2777"
   - slug: parallelism
     label: Parallelism
+    label_zh: 并行
     docs: tensor_parallel.md
     color: "#2563eb"
   - slug: continuous_batching
     label: Continuous batching
+    label_zh: 连续批处理
     docs: diffusion_continuous_batching.md
     color: "#ca8a04"
   - slug: caching
     label: Caching & speedups
+    label_zh: 缓存与加速
     docs: cache_dit.md
     color: "#dc2626"
   - slug: connectors
     label: Omni connectors
+    label_zh: Omni 连接器
     docs: omni_connectors/
     color: "#0d9488"
   - slug: kernels
     label: Kernels & attention
+    label_zh: 内核与注意力
     docs: attention_backend_selection.md
     color: "#4f46e5"
   - slug: lora
     label: LoRA adapters
+    label_zh: LoRA 适配器
     docs: diffusion/lora.md   # user_guide path — no design doc yet
     color: "#c026d3"
 

@@ -37,6 +37,12 @@ main .wrapper > div.page {
 /* TOC links glide; users who ask for less motion get instant jumps. */
 html:has(.post-toc) { scroll-behavior: smooth; }
 
+/* The `hidden` attribute must win over any author `display` rule. Without
+   this, the JS filter (card.hidden = !match) is a no-op on elements that set
+   their own display — e.g. .post-card and .search-overlay are `display:flex`,
+   which otherwise beats the UA's `[hidden] { display: none }`. */
+[hidden] { display: none !important; }
+
 /* --- header --------------------------------------------------------------- */
 
 .site-header {
