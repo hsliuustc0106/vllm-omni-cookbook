@@ -31,6 +31,9 @@ author:
 # Keep slugs identical to the docs file names where one exists. `color` drives
 # the generated per-feature cover art (blog/_includes/feature-cover.html).
 features:
+  - slug: pipeline
+    label: Pipeline architecture
+    color: "#0f766e"
   - slug: quantization
     label: Quantization
     docs: quantization.md

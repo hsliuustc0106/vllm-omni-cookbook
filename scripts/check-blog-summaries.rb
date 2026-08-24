@@ -8,6 +8,7 @@
 # Usage: ruby scripts/check-blog-summaries.rb [posts_dir]
 
 require "yaml"
+require "date"
 
 posts_dir = ARGV[0] || File.join(__dir__, "..", "blog", "_posts")
 posts = Dir.glob(File.join(posts_dir, "*.md")).sort

@@ -1,0 +1,11 @@
+{
+  "content-length": "1685181",
+  "content-type": "video/mp4",
+  "date": "Mon, 24 Aug 2026 08:47:05 GMT",
+  "server": "uvicorn",
+  "x-inference-time-s": "10.385",
+  "x-model": "/data/models/hub/models--MiniMaxAI--MiniMax-H3/snapshots/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA",
+  "x-peak-memory-mb": "95520.000",
+  "x-request-id": "video_sync-af235042a52c62f6",
+  "x-stage-durations": "{\"MiniMaxH3Pipeline.encode_prompt\":0.05304620205424726,\"MiniMaxH3Pipeline.diffuse\":4.9368300680071115,\"MiniMaxH3Pipeline.decode\":1.8495398319792002,\"queue_wait_ms\":0.16549089923501015,\"stage_0_gen_ms\":8910.199165344238}"
+}

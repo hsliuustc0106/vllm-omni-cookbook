@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1080" viewBox="0 0 1280 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Measured MiniMax-H3 four-GPU startup and end-to-end timing decomposition</title>
+  <desc id="desc">On four H200 GPUs, profiled startup took 149.88 seconds. A cold 50-sigma-point request took 114.69 seconds. Three warm requests averaged 85.85 seconds, including 80.62 seconds of denoising. A four-point diagnostic averaged 10.38 seconds but is not Turbo or a quality comparison. Unprofiled controls were nonstationary.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.card{fill:#f1f5f9;stroke:#cbd5e1;stroke-width:2}.grid{stroke:#e2e8f0;stroke-width:1}.axis{stroke:#64748b;stroke-width:2}.prompt{fill:#60a5fa}.denoise{fill:#fb923c}.decode{fill:#4ade80}.engine{fill:#f472b6}.mp4{fill:#a78bfa}.http{fill:#2dd4bf}.startup1{fill:#60a5fa}.startup2{fill:#fb923c}.startup3{fill:#4ade80}.startup4{fill:#f472b6}.warn{fill:#fff7ed;stroke:#fb923c;stroke-width:2}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.stat{font:700 34px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.tiny{font:13px system-ui,sans-serif;fill:#64748b}.mono{font:15px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.white{font:700 16px system-ui,sans-serif;fill:#fff}.dark{font:700 16px system-ui,sans-serif;fill:#0f172a}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel,.card{fill:#111827;stroke:#475569}.grid{stroke:#334155}.axis{stroke:#94a3b8}.warn{fill:#431407;stroke:#fb923c}.title,.head,.stat,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}.tiny{fill:#94a3b8}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="1080" rx="24"/>
+  <text class="title" x="640" y="48" text-anchor="middle">MiniMax-H3 four-GPU startup and E2E decomposition</text>
+  <text class="small" x="640" y="74" text-anchor="middle">4×H200 (cluster telemetry: L20X) · FL2VA T2VA · 1344×768 · 124 frames / 5.0 s requested · BF16 · U4 · TE-TP4 · VAE-PP4 tile · CUDNN · regional compile</text>
+
+  <rect class="card" x="70" y="100" width="350" height="100" rx="18"/>
+  <text class="stat" x="95" y="143">149.88 s</text>
+  <text class="small" x="95" y="174">process start → first /health 200</text>
+  <rect class="card" x="465" y="100" width="350" height="100" rx="18"/>
+  <text class="stat" x="490" y="143">114.69 s</text>
+  <text class="small" x="490" y="174">first 50-point cold / compile request</text>
+  <rect class="card" x="860" y="100" width="350" height="100" rx="18"/>
+  <text class="stat" x="885" y="143">85.85 ± 0.16 s</text>
+  <text class="small" x="885" y="174">three profiled warm requests · mean ± SD</text>
+
+  <rect class="panel" x="55" y="225" width="1170" height="235" rx="20"/>
+  <text class="head" x="80" y="261">Server startup critical path</text>
+  <text class="small" x="80" y="286">Profiled server · log-derived boundaries have one-second resolution</text>
+  <line class="grid" x1="250" y1="314" x2="250" y2="395"/><line class="grid" x1="475" y1="314" x2="475" y2="395"/><line class="grid" x1="700" y1="314" x2="700" y2="395"/><line class="grid" x1="925" y1="314" x2="925" y2="395"/><line class="grid" x1="1150" y1="314" x2="1150" y2="395"/>
+  <text class="tiny" x="250" y="414" text-anchor="middle">0</text><text class="tiny" x="475" y="414" text-anchor="middle">40</text><text class="tiny" x="700" y="414" text-anchor="middle">80</text><text class="tiny" x="925" y="414" text-anchor="middle">120</text><text class="tiny" x="1150" y="414" text-anchor="middle">160 s</text>
+  <text class="text" x="230" y="355" text-anchor="end">server</text>
+  <rect class="startup1" x="250" y="327" width="285.4" height="54" rx="8"/>
+  <rect class="startup2" x="535.4" y="327" width="208.1" height="54"/>
+  <rect class="startup3" x="743.5" y="327" width="337.5" height="54"/>
+  <rect class="startup4" x="1081" y="327" width="12" height="54" rx="3"/>
+  <text class="dark" x="392.7" y="360" text-anchor="middle">imports + config 50.7 s</text>
+  <text class="dark" x="639.5" y="360" text-anchor="middle">workers + NCCL 37.0 s</text>
+  <text class="dark" x="912.3" y="360" text-anchor="middle">model init + load 60.0 s</text>
+  <text class="tiny" x="1095" y="316">API 2.1 s</text>
+  <text class="tiny" x="80" y="442">Exact log anchors and raw health polls are preserved in the evidence bundle.</text>
+
+  <rect class="panel" x="55" y="485" width="1170" height="365" rx="20"/>
+  <text class="head" x="80" y="521">Client receipt latency allocation</text>
+  <text class="small" x="80" y="547">Profiled condition · request start → complete MP4 body · 50 sigma points / 49 denoiser evaluations</text>
+  <rect class="prompt" x="80" y="570" width="14" height="14" rx="2"/><text class="small" x="101" y="582">prompt / encoder</text>
+  <rect class="denoise" x="255" y="570" width="14" height="14" rx="2"/><text class="small" x="276" y="582">denoise</text>
+  <rect class="decode" x="365" y="570" width="14" height="14" rx="2"/><text class="small" x="386" y="582">video + audio VAE</text>
+  <rect class="engine" x="550" y="570" width="14" height="14" rx="2"/><text class="small" x="571" y="582">engine / IPC residual</text>
+  <rect class="mp4" x="770" y="570" width="14" height="14" rx="2"/><text class="small" x="791" y="582">CPU encode + mux</text>
+  <rect class="http" x="975" y="570" width="14" height="14" rx="2"/><text class="small" x="996" y="582">HTTP residual</text>
+  <line class="grid" x1="250" y1="600" x2="250" y2="790"/><line class="grid" x1="550" y1="600" x2="550" y2="790"/><line class="grid" x1="850" y1="600" x2="850" y2="790"/><line class="grid" x1="1150" y1="600" x2="1150" y2="790"/>
+  <text class="tiny" x="250" y="810" text-anchor="middle">0</text><text class="tiny" x="550" y="810" text-anchor="middle">40</text><text class="tiny" x="850" y="810" text-anchor="middle">80</text><text class="tiny" x="1150" y="810" text-anchor="middle">120 s</text>
+
+  <text class="text" x="230" y="627" text-anchor="end">Cold</text>
+  <rect class="prompt" x="250" y="606" width="58.0" height="36" rx="4"/><rect class="denoise" x="308" y="606" width="747.5" height="36"/><rect class="decode" x="1055.5" y="606" width="24.1" height="36"/><rect class="engine" x="1079.6" y="606" width="20.3" height="36"/><rect class="mp4" x="1099.9" y="606" width="10.0" height="36"/><rect class="http" x="1109.9" y="606" width="0.3" height="36"/>
+  <text class="white" x="681.8" y="630" text-anchor="middle">denoise 99.7 s</text><text class="text" x="1118" y="630">114.69 s</text>
+
+  <text class="text" x="230" y="681" text-anchor="end">Warm 1</text>
+  <rect class="prompt" x="250" y="660" width="0.5" height="36"/><rect class="denoise" x="250.5" y="660" width="605.2" height="36" rx="4"/><rect class="decode" x="855.7" y="660" width="14.0" height="36"/><rect class="engine" x="869.7" y="660" width="14.0" height="36"/><rect class="mp4" x="883.7" y="660" width="9.7" height="36"/><rect class="http" x="893.4" y="660" width="0.2" height="36"/>
+  <text class="white" x="553" y="684" text-anchor="middle">denoise 80.7 s</text><text class="text" x="902" y="684">85.79 s</text>
+
+  <text class="text" x="230" y="735" text-anchor="end">Warm 2</text>
+  <rect class="prompt" x="250" y="714" width="0.5" height="36"/><rect class="denoise" x="250.5" y="714" width="604.1" height="36" rx="4"/><rect class="decode" x="854.6" y="714" width="13.9" height="36"/><rect class="engine" x="868.5" y="714" width="14.3" height="36"/><rect class="mp4" x="882.8" y="714" width="9.7" height="36"/><rect class="http" x="892.5" y="714" width="0.4" height="36"/>
+  <text class="white" x="552.5" y="738" text-anchor="middle">denoise 80.5 s</text><text class="text" x="901" y="738">85.72 s</text>
+
+  <text class="text" x="230" y="789" text-anchor="end">Warm 3</text>
+  <rect class="prompt" x="250" y="768" width="0.5" height="36"/><rect class="denoise" x="250.5" y="768" width="604.6" height="36" rx="4"/><rect class="decode" x="855.1" y="768" width="13.9" height="36"/><rect class="engine" x="869" y="768" width="15.7" height="36"/><rect class="mp4" x="884.7" y="768" width="10.4" height="36"/><rect class="http" x="895.1" y="768" width="0.2" height="36"/>
+  <text class="white" x="552.8" y="792" text-anchor="middle">denoise 80.6 s</text><text class="text" x="903" y="792">86.03 s</text>
+  <text class="tiny" x="80" y="835">Warm mean: 85.845 ± 0.161 s (sample SD, n=3) · denoise 80.616 s · VAE decode 1.859 s · peak sampled memory 100,872 MiB/device</text>
+
+  <rect class="panel" x="55" y="875" width="760" height="150" rx="20"/>
+  <text class="head" x="80" y="910">Schedule-sensitivity control</text>
+  <text class="small" x="80" y="938">Same hardware and shape; profiled warm mean ± SD</text>
+  <text class="text" x="80" y="972">50 points / 49 eval</text><rect class="denoise" x="260" y="950" width="515" height="28" rx="5"/><text class="white" x="517" y="970" text-anchor="middle">85.845 ± 0.161 s</text>
+  <text class="text" x="80" y="1012">4 points / 3 eval</text><rect class="denoise" x="260" y="990" width="62" height="28" rx="5"/><text class="text" x="332" y="1012">10.375 ± 0.057 s</text>
+  <text class="tiny" x="80" y="1044">Diagnostic only — not Turbo, not a quality comparison, and not a speedup claim.</text>
+
+  <rect class="warn" x="840" y="875" width="385" height="150" rx="20"/>
+  <text class="head" x="865" y="910">Observer-effect caveat</text>
+  <text class="small" x="865" y="940">Unprofiled controls: 86.247–104.380 s</text>
+  <text class="small" x="865" y="968">The run was nonstationary, so profiler</text>
+  <text class="small" x="865" y="992">overhead is unresolved. Absolute values here</text>
+  <text class="small" x="865" y="1016">describe the profiled condition only.</text>
+  <text class="tiny" x="640" y="1065" text-anchor="middle">Source: vLLM-Omni 072bfc02 · one cold + three warm profiled requests · direct spans plus signed residuals close to complete client receipt</text>
+</svg>

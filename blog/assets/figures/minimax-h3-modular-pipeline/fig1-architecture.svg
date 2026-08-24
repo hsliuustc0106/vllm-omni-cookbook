@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">MiniMax-H3 modular pipeline architecture</title>
+  <desc id="desc">A request is validated and routed through shared encoding, one selected FL2VA or Ref2VA diffusion transformer, shared video and audio VAE decoding, and MP4 output. Combined startup loads both transformers; task-selected startup loads one.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.shared{fill:#ecfeff;stroke:#0891b2;stroke-width:2}.fl{fill:#ecfdf5;stroke:#059669;stroke-width:2}.ref{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.router{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.out{fill:#fefce8;stroke:#ca8a04;stroke-width:2}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}.dash{stroke:#94a3b8;stroke-width:2;stroke-dasharray:8 7;fill:none}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.mono{font:16px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.shared{fill:#083344}.fl{fill:#052e2b}.ref{fill:#2e1065}.router{fill:#431407}.out{fill:#422006}.title,.head,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}.dash{stroke:#64748b}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="760" rx="24"/>
+  <text class="title" x="640" y="52" text-anchor="middle">MiniMax-H3: shared machinery, task-specific DiTs</text>
+
+  <rect class="panel" x="55" y="92" width="1170" height="168" rx="20"/>
+  <text class="head" x="85" y="128">Startup selection</text>
+  <rect class="fl" x="88" y="154" width="315" height="76" rx="14"/>
+  <text class="head" x="245" y="185" text-anchor="middle">FL2VA partition</text>
+  <text class="small" x="245" y="213" text-anchor="middle">T2VA + first/last-frame FL2VA DiT</text>
+  <rect class="ref" x="438" y="154" width="315" height="76" rx="14"/>
+  <text class="head" x="595" y="185" text-anchor="middle">Ref2VA partition</text>
+  <text class="small" x="595" y="213" text-anchor="middle">image / video / audio reference DiT</text>
+  <rect class="shared" x="788" y="142" width="400" height="100" rx="14"/>
+  <text class="head" x="988" y="174" text-anchor="middle">Shared components — loaded once</text>
+  <text class="small" x="988" y="202" text-anchor="middle">tokenizer · processor · Qwen3-VL encoder</text>
+  <text class="small" x="988" y="224" text-anchor="middle">video VAE · audio VAE</text>
+  <path class="dash" d="M403 192 H438"/>
+  <text class="small" x="420" y="150" text-anchor="middle">combined = both</text>
+
+  <rect class="router" x="65" y="332" width="190" height="92" rx="16"/>
+  <text class="head" x="160" y="370" text-anchor="middle">HTTP request</text>
+  <text class="small" x="160" y="398" text-anchor="middle">task + references</text>
+  <rect class="router" x="305" y="320" width="220" height="116" rx="16"/>
+  <text class="head" x="415" y="356" text-anchor="middle">Validate + route</text>
+  <text class="mono" x="415" y="386" text-anchor="middle">extra_params.task</text>
+  <text class="small" x="415" y="412" text-anchor="middle">shape · duration · inputs</text>
+  <rect class="shared" x="575" y="320" width="220" height="116" rx="16"/>
+  <text class="head" x="685" y="356" text-anchor="middle">Shared encode</text>
+  <text class="small" x="685" y="385" text-anchor="middle">text / vision context</text>
+  <text class="small" x="685" y="410" text-anchor="middle">reference latents if needed</text>
+  <path class="line" d="M255 378 H296"/>
+  <path class="line" d="M525 378 H566"/>
+
+  <rect class="fl" x="855" y="290" width="285" height="90" rx="16"/>
+  <text class="head" x="998" y="326" text-anchor="middle">FL2VA DiT</text>
+  <text class="small" x="998" y="354" text-anchor="middle">task = t2va or fl2va</text>
+  <rect class="ref" x="855" y="410" width="285" height="90" rx="16"/>
+  <text class="head" x="998" y="446" text-anchor="middle">Ref2VA DiT</text>
+  <text class="small" x="998" y="474" text-anchor="middle">task = ref2va</text>
+  <path class="line" d="M795 360 C820 360 822 335 846 335"/>
+  <path class="line" d="M795 396 C820 396 822 455 846 455"/>
+
+  <rect class="shared" x="760" y="570" width="250" height="104" rx="16"/>
+  <text class="head" x="885" y="608" text-anchor="middle">Shared VAE decode</text>
+  <text class="small" x="885" y="637" text-anchor="middle">video + synchronized audio</text>
+  <rect class="out" x="1060" y="570" width="160" height="104" rx="16"/>
+  <text class="head" x="1140" y="608" text-anchor="middle">MP4</text>
+  <text class="small" x="1140" y="637" text-anchor="middle">H.264 + AAC</text>
+  <path class="line" d="M998 380 V548 H885 V561"/>
+  <path class="line" d="M998 500 V548"/>
+  <path class="line" d="M1010 622 H1051"/>
+
+  <text class="small" x="70" y="714">Combined startup keeps both DiTs available. Task-selected startup downloads and loads only one partition.</text>
+  <text class="small" x="70" y="738">The tokenizer, processor, encoder, and VAEs are shared; the selected DiT performs the repeated denoiser evaluations.</text>
+</svg>

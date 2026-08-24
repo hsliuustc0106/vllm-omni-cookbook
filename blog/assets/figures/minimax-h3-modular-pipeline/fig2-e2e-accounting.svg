@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="680" viewBox="0 0 1280 680" role="img" aria-labelledby="title desc">
+  <title id="title">End-to-end timing decomposition contract for MiniMax-H3</title>
+  <desc id="desc">A non-quantitative diagram separates server startup phases from client receipt latency buckets. It identifies direct stage timers and residual engine and HTTP buckets, with cold and warm requests reported separately.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.a{fill:#dbeafe;stroke:#2563eb}.b{fill:#ffedd5;stroke:#ea580c}.c{fill:#dcfce7;stroke:#16a34a}.d{fill:#fce7f3;stroke:#db2777}.e{fill:#ede9fe;stroke:#7c3aed}.f{fill:#ccfbf1;stroke:#0d9488}.seg{stroke-width:2}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.mono{font:16px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.a{fill:#172554}.b{fill:#431407}.c{fill:#052e16}.d{fill:#500724}.e{fill:#2e1065}.f{fill:#042f2e}.title,.head,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="680" rx="24"/>
+  <text class="title" x="640" y="50" text-anchor="middle">E2E decomposition: two clocks, two separate stories</text>
+  <text class="small" x="640" y="76" text-anchor="middle">Protocol diagram — segment widths are not to scale and contain no benchmark result</text>
+
+  <rect class="panel" x="55" y="108" width="1170" height="190" rx="20"/>
+  <text class="head" x="82" y="143">Server startup critical path</text>
+  <text class="small" x="82" y="169">process launch → first /health 200 · one monotonic client clock</text>
+  <rect class="a seg" x="82" y="198" width="270" height="58" rx="10"/>
+  <rect class="b seg" x="352" y="198" width="270" height="58" rx="10"/>
+  <rect class="c seg" x="622" y="198" width="330" height="58" rx="10"/>
+  <rect class="d seg" x="952" y="198" width="240" height="58" rx="10"/>
+  <text class="text" x="217" y="233" text-anchor="middle">imports + config</text>
+  <text class="text" x="487" y="233" text-anchor="middle">workers + NCCL</text>
+  <text class="text" x="787" y="233" text-anchor="middle">load + place weights</text>
+  <text class="text" x="1072" y="233" text-anchor="middle">API ready</text>
+  <text class="small" x="82" y="280">Each boundary names its exact server-log anchor; the sum closes within the health-poll interval.</text>
+
+  <rect class="panel" x="55" y="330" width="1170" height="260" rx="20"/>
+  <text class="head" x="82" y="365">Complete client receipt latency</text>
+  <text class="small" x="82" y="391">request start → full MP4 body · first/cold request shown separately from ≥3 warm measurements</text>
+  <rect class="a seg" x="82" y="420" width="175" height="58" rx="10"/>
+  <rect class="b seg" x="257" y="420" width="260" height="58" rx="10"/>
+  <rect class="c seg" x="517" y="420" width="175" height="58" rx="10"/>
+  <rect class="d seg" x="692" y="420" width="185" height="58" rx="10"/>
+  <rect class="e seg" x="877" y="420" width="170" height="58" rx="10"/>
+  <rect class="f seg" x="1047" y="420" width="145" height="58" rx="10"/>
+  <text class="small" x="169" y="455" text-anchor="middle">prompt</text>
+  <text class="text" x="387" y="455" text-anchor="middle">denoise</text>
+  <text class="small" x="604" y="455" text-anchor="middle">VAE decode</text>
+  <text class="small" x="784" y="445" text-anchor="middle">engine / IPC</text>
+  <text class="small" x="784" y="465" text-anchor="middle">residual</text>
+  <text class="small" x="962" y="445" text-anchor="middle">CPU encode</text>
+  <text class="small" x="962" y="465" text-anchor="middle">+ mux</text>
+  <text class="small" x="1119" y="445" text-anchor="middle">HTTP</text>
+  <text class="small" x="1119" y="465" text-anchor="middle">residual</text>
+  <text class="mono" x="82" y="518">T_client = T_prompt + T_denoise + T_decode + T_engine_residual + T_mp4 + T_http_residual</text>
+  <text class="small" x="82" y="548">Direct spans: prompt, denoise, decode, CPU encode. Residuals are accounting buckets—not inferred kernels.</text>
+  <text class="small" x="82" y="572">Reject materially negative residuals or a stack that fails to close; retain raw signed values in the artifact.</text>
+
+  <text class="small" x="70" y="630">Publish the frozen manifest, raw logs/headers, results JSON, output hashes, ffprobe validation, and plotting source.</text>
+  <text class="small" x="70" y="654">A measured chart replaces this protocol diagram only after the evidence is stable and reviewable.</text>
+</svg>
