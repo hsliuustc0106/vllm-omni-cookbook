@@ -1,0 +1,338 @@
+---
+layout: post
+title: 'Understanding PR #5991 — MiniMax-H3 (2): why "four steps" has three contracts'
+date: 2026-08-24 19:00:00 +0800
+author: hsliuustc0106
+summary: >-
+  Why MiniMax-H3's short uniform request, checkpoint-pinned DMD2 schedule, and
+  Turbo LoRA use different sigma-point and denoiser-evaluation contracts—even
+  when each is called “four steps.”
+tags: [MiniMax-H3, DMD2]
+category: PR Analysis
+feature: lora
+math: true
+lang: en
+pair: /zh/2026-08-24-understanding-pr-5991-minimax-h3-few-step-schedules/
+decisions:
+  - when: "A distilled checkpoint publishes `base_schedule`"
+    pick: "Let checkpoint metadata lead"
+    why: "Normally omit `num_inference_steps`; if supplied, it must equal the number of intervals, not boundaries."
+  - when: "The released base checkpoint needs lower latency"
+    pick: "Use the supported Turbo LoRA contract"
+    why: "Activate the exact v1.0 FL2VA/T2VA adapter and request five sigma points with video/audio shifts 6/3."
+  - when: "Quality or reproducibility needs the base reference"
+    pick: "Use the ordinary 50-point path"
+    why: "The released base checkpoint's default is 50 sigma points and 49 denoiser evaluations."
+  - when: "You only want a diagnostic control"
+    pick: "Short uniform request without distillation"
+    why: "`num_inference_steps=4` means four uniform sigma points and three denoiser evaluations; do not present it as a quality-preserving fast path."
+---
+
+## TL;DR {#tldr}
+
+**MiniMax-H3 currently has three different contracts that people may call
+“four steps”: four uniformly generated sigma points, four intervals pinned by
+a distilled checkpoint, or four denoiser evaluations required by Turbo
+LoRA.** Think of a route with five stations and four journeys between them:
+counting stations and counting journeys produces different numbers even
+though both describe the same route. Here a **sigma boundary** is one scheduled
+noise level, while **NFE** (number of function evaluations) is the number of
+denoiser model calls between adjacent boundaries.
+
+[PR #5991](https://github.com/vllm-project/vllm-omni/pull/5991) added the
+checkpoint-native path: a DMD2-distilled FL2VA checkpoint can publish the exact
+continuous noise positions used during training. [PR #6476](https://github.com/vllm-project/vllm-omni/pull/6476)
+later added a separate runtime path: the released base checkpoint stays intact,
+and a request activates one supported Turbo LoRA plus its required sampling
+contract. **#5991 did not implement Turbo LoRA, and neither path is equivalent
+to arbitrarily dropping calls from the base trajectory.**
+
+| Path | User/checkpoint input | Sigma points or boundaries used | Denoiser evaluations (NFE) | What the number means |
+|---|---|---:|---:|---|
+| Ordinary uniform base path | request omitted or `num_inference_steps=50` | 50 uniformly generated points after the modality shift | 49 | On this path the request field controls **sigma-point count**. |
+| Ordinary uniform short request | request `num_inference_steps=4` | 4 uniformly generated points | 3 | This is **not** a four-NFE request. |
+| Checkpoint-pinned DMD2 path from #5991 | metadata `base_schedule: [1.0, 0.7, 0.4, 0.15, 0.0]`; request omitted or explicitly `4` | 5 exact trained boundaries | 4 | `DMD2SigmaSchedule.num_inference_steps` counts the four intervals. |
+| Shipped Turbo LoRA path from #6476 | request `num_inference_steps=5`; supported adapter active | 5 uniform-path points with Turbo-required shifts | 4 | The legacy Turbo integration validates five points because they produce four NFE. |
+
+> [!IMPORTANT]
+> This post always distinguishes **sigma points/boundaries** from **denoiser
+> evaluations (NFE)**. The API field name alone does not tell you which quantity
+> it controls; the active checkpoint and adapter path do.
+
+## Why a distilled model cannot use an arbitrary short uniform schedule {#why-not-uniform}
+
+A distilled checkpoint learns a particular express route, not every possible
+way of removing stops from the local route. The analogy breaks at training:
+noise positions are continuous numerical inputs to the model, so changing a
+boundary changes the state the denoiser must handle rather than merely changing
+a timetable.
+
+The released base model is trained to follow its ordinary trajectory. Asking
+that model for fewer uniformly spaced sigma points reduces denoiser calls, but
+does not provide weights trained to bridge those larger gaps. A distilled
+checkpoint or a few-NFE adapter supplies that missing learned behavior for a
+specific trajectory.
+
+“Turbo skips 45 of 49 denoiser evaluations” is useful shorthand for the
+operator-visible result, but it is not the mechanism. Turbo does not select
+four arbitrary entries from the base model's 49-evaluation trajectory; its
+adapter was trained for a different four-evaluation route.
+
+## The baseline: 50 sigma points, 49 denoiser evaluations {#baseline-path}
+
+The ordinary H3 path draws evenly spaced marks on a ruler, then bends that
+ruler separately for video and audio. The marks start uniform, but the
+modality-specific time shift moves their interior values while preserving the
+same number of points and the endpoints.
+
+At the pinned upstream snapshot
+[`072bfc02`](https://github.com/vllm-project/vllm-omni/commit/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65),
+[`time_request.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py)
+constructs the ordinary base positions with a uniform `linspace(1.0, 0.0,
+num_steps)`. For a base position $u$ and a positive shift scale $k$, H3 maps it
+to:
+
+$$
+s_k(u) = \frac{k u}{1 + (k - 1)u}
+$$
+
+[`denoise_loop.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py)
+then makes one joint video/audio denoiser call per adjacent pair:
+
+$$
+\mathrm{NFE} = \lvert\mathrm{sigma\ boundaries}\rvert - 1
+$$
+
+That is why the default 50 sigma points produce 49 NFE—and why an ordinary
+request with `num_inference_steps=4` produces four points but only three NFE.
+The field name is historical; on this uniform path its value controls point
+count.
+
+## What PR #5991 added: checkpoint ownership of the route {#checkpoint-dmd2}
+
+#5991 lets a distilled checkpoint put its route card inside the package, so the
+server reads the trained boundaries instead of inventing a new uniform route.
+In H3, “DMD2” operationally means that the checkpoint is trained for a small,
+fixed sequence of continuous noise positions and publishes that sequence as
+metadata.
+
+The contract lives under `_minimax_h3` in the active partition's
+`model_index.json`. This is an illustrative metadata excerpt from the merged
+PR—not a claim that a downloadable checkpoint exists at a particular path:
+
+```json
+{
+  "_minimax_h3": {
+    "partition": "fl2va",
+    "tasks": ["t2va", "fl2va"],
+    "sigma_shift_scales": {"video": 12.0, "audio": 3.0},
+    "base_schedule": [1.0, 0.7, 0.4, 0.15, 0.0]
+  }
+}
+```
+
+The shared
+[`DMD2SigmaSchedule`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/sched/sigma_schedule.py)
+fails closed unless the schedule:
+
+- contains at least two finite positions;
+- starts exactly at `1.0` and ends exactly at `0.0`;
+- is strictly decreasing.
+
+This class is deliberately separate from
+`DMD2Config.denoising_timesteps`: H3 stores continuous rectified-flow positions
+in `[0, 1]`, not the integer scheduler timesteps used by scheduler-backed
+pipelines.
+
+An absent `base_schedule` means “use the ordinary uniform path.” An explicitly
+empty list is malformed and raises an error rather than silently falling back.
+Five boundaries describe four intervals, so the schedule reports
+`num_inference_steps == 4` for the example above.
+
+The
+[`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py)
+request contract follows that interval count. Users should normally omit
+`num_inference_steps`; if they explicitly send `4`, it agrees with the four
+intervals, while `5` or `50` is rejected. The full five-boundary sequence still
+goes to the denoise loop. #5991 changes where those positions come from and how
+they are validated; it does not replace H3's DiT weight loader or denoising
+solver.
+
+## One base schedule, two modality trajectories {#modality-shifts}
+
+Video and audio share one list of waypoints but take differently curved lanes,
+like two vehicles following the same exits with different acceleration maps.
+The shared ownership matters: the modalities stay aligned by base position,
+while separate shift scales adapt those positions to each modality.
+
+For the illustrative five-boundary schedule, the formula above produces:
+
+| Boundary index | Base position $u$ | Video sigma, $k=12$ | Audio sigma, $k=3$ |
+|---:|---:|---:|---:|
+| 0 | 1.0 | 1.0 | 1.0 |
+| 1 | 0.7 | 0.9655172 | 0.875 |
+| 2 | 0.4 | 0.8888889 | 0.6666667 |
+| 3 | 0.15 | 0.6792453 | 0.3461539 |
+| 4 | 0.0 | 0.0 | 0.0 |
+
+Schedule ownership is also partition-local. A combined server retains separate
+metadata for FL2VA and Ref2VA, then selects the schedule for the active task.
+A distilled FL2VA partition therefore cannot silently force a regular Ref2VA
+partition onto the same four-interval route. This boundary was added during
+#5991 review and is covered by the pinned CPU contract tests.
+
+## What PR #6476 added: runtime Turbo LoRA {#runtime-turbo}
+
+#6476 takes a different route: it preloads a specialized driver beside the
+released base checkpoint, then a request chooses whether that driver is active.
+The base checkpoint metadata is not replaced, and the adapter's weight/layout
+translation is separate from #5991's checkpoint schedule class.
+
+The legacy LoRA manager maps the supported Diffusers artifact into native H3
+modules, including separate Q/K/V adapters binding to packed QKV and fused FFN
+row-order handling. The adapter is loaded at server startup but activated per
+request. This post keeps the reminder intentionally short; use the existing
+[English Turbo post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/)
+for the validated download, serve, request, and measurement details. The only
+supported file is
+`minimax_h3_fl2v_turbo_4step_v1.0_768p_bf16.safetensors`.
+
+```text
+serve: --task-type fl2va --lora-backend peft --lora-path <supported-v1.0-artifact>
+request: num_inference_steps=5, flow_shift=6, audio_flow_shift=3, active LoRA
+resulting trajectory: 5 sigma points, 4 denoiser evaluations
+```
+
+Keep these shipped restrictions beside that reminder:
+
+- only the native Diffusers four-NFE FL2VA/T2VA v1.0 artifact is accepted;
+  Ref2VA, the eight-NFE release, ComfyUI layout, and v1.1 are unsupported;
+- execution is dynamic only—no prefusion;
+- model-level CPU offload, layerwise offload, and distributed layerwise offload
+  (DLO) are rejected;
+- only one LoRA can be active, so Turbo cannot be composed with a second style
+  or identity adapter;
+- filename, metadata, rank/alpha, and target shapes must match the declared
+  artifact contract;
+- the legacy request carries an adapter path. A public endpoint should expose
+  an allowlisted name-to-path mapping rather than unrestricted client-supplied
+  path or download resolution.
+
+The five-point request is deliberate. On the ordinary uniform path, five sigma
+points yield four NFE. Rewriting the request as `num_inference_steps=4` would
+create only four uniform points and three NFE, so the runtime rejects it.
+
+## Same phrase, different ownership {#contract-ownership}
+
+The easiest way to avoid configuration mistakes is to ask who owns the route,
+like checking whether directions came from the vehicle, the road authority, or
+the driver. In H3, ownership determines both the positions and how the request
+field is interpreted.
+
+| Path | Who owns the positions? | What the request may control | Failure mode |
+|---|---|---|---|
+| Ordinary base | Request/pipeline | Number of generated sigma points | A low point count runs, but the base weights were not made quality-preserving for that shortcut. |
+| Checkpoint-pinned DMD2 | Active partition metadata | Nothing normally; an explicit interval count may confirm the metadata | A mismatched explicit count is rejected. |
+| Runtime Turbo LoRA | Supported adapter contract plus request | Adapter activation and the exact five-point, shift-6/3 contract | Wrong task, points, shifts, artifact, offload, or composition is rejected. |
+
+Checkpoint-pinned DMD2 support and runtime Turbo support are not interchangeable
+packaging formats. No concrete artifact has been validated through both paths,
+and their request contracts can conflict: the illustrated checkpoint expects an
+explicit interval count of `4`, while the shipped Turbo path requires a point
+count of `5`.
+
+## Why four denoiser evaluations are not free {#not-free}
+
+Fewer denoiser calls are like crossing a river in four long jumps instead of 49
+short ones: the route is shorter, but only a jumper trained for those exact
+landings can do it reliably. The analogy does not promise equal output—the
+training method, artifact, prompt, and workload still determine quality.
+
+A plain short uniform request is a useful diagnostic control because it isolates
+the cost of fewer denoiser calls. It is not an equivalent-quality baseline. The
+#6476 evidence reports visibly degraded output without the Turbo adapter and
+coherent video/audio restoration with it, but it does not establish universal
+quantitative parity for every prompt.
+
+This post intentionally adds no latency or quality headline. The existing
+Turbo article records the full #6476 provenance and measurements; #5991 explains
+a schedule contract and does not publish a cookbook-compatible benchmark
+artifact for a named public distilled checkpoint.
+
+## How to choose {#how-to-choose}
+
+Choose the path whose learned artifact owns the route, just as you use the key
+made for a particular lock. A base checkpoint, checkpoint-native distilled
+release, and runtime adapter are different operational products even when their
+operator-facing NFE count matches.
+
+{% include decision-cards.html items=page.decisions %}
+
+## Compatibility and deployment safety {#compatibility-safety}
+
+Treat each fast path as a narrow operating envelope, like a bridge with posted
+vehicle and weight limits. Passing validation says the request matches the
+implemented contract; it does not broaden the contract to nearby artifacts or
+features.
+
+- A checkpoint-native distilled release should carry its exact trained
+  `base_schedule`; do not add a newly generated uniform replacement.
+- A runtime Turbo request needs both adapter activation and the exact five-point
+  sampling settings. Preloading alone does not activate the adapter.
+- Do not combine the shipped Turbo path with Ref2VA, prefusion, any supported
+  offload mode, or a second LoRA.
+- Do not assume an arbitrary LightX2V artifact is compatible because its name
+  contains “Turbo” or “four-step.”
+- Do not expose request-supplied filesystem or download paths to untrusted
+  clients; map approved public names to server-owned paths.
+- Do not claim that a DMD2 checkpoint and Turbo LoRA can be converted into each
+  other without validating the concrete weights, metadata, and trajectory.
+
+## Limitations and follow-ups {#limitations}
+
+This post draws the shipped boundary rather than filling in missing products,
+like a map that labels an unopened road instead of inventing a route through
+it. The omissions are intentional and keep examples deployable.
+
+- Upstream does not document a named, stable, publicly accessible
+  checkpoint-native DMD2 FL2VA artifact at the pinned snapshot. The #5991 half
+  therefore shows metadata only, not a copy-ready serve command.
+- The article does not add a new speed or quality comparison and does not repeat
+  the #6476 metric table while the cookbook evidence policy and older PR-sourced
+  post evidence differ.
+- [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) and
+  [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) are draft,
+  unshipped LoRA-runtime directions. Their proposed behavior is not described
+  as available.
+- Ref2VA Turbo, arbitrary LightX2V artifacts, prefusion, adapter composition,
+  quantization, TeaCache, Cache-DiT, continuous batching, VAE optimization, and
+  Super Acceleration are outside this post.
+
+## Evidence ledger {#evidence-ledger}
+
+The claims below carry receipts rather than relying on the word “merged,” like
+an audit trail that records both the rule and the check that exercises it. All
+source links are pinned to the reviewed upstream snapshot where practical.
+
+| Claim | Source | Shipped status | Independent evidence |
+|---|---|---|---|
+| A distilled checkpoint can pin exact continuous schedule positions | [#5991](https://github.com/vllm-project/vllm-omni/pull/5991) + [`sigma_schedule.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/sched/sigma_schedule.py) | Merged/shipped | [`test_dmd2_sigma_schedule.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/tests/diffusion/sched/test_dmd2_sigma_schedule.py) |
+| Video/audio use separately shifted versions of one base schedule | [#5991](https://github.com/vllm-project/vllm-omni/pull/5991) + [`time_request.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py) | Merged/shipped | CPU schedule reference-value tests |
+| An explicit checkpoint-schedule mismatch fails | [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) | Shipped | [`test_minimax_h3_contract.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/tests/diffusion/models/minimax_h3/test_minimax_h3_contract.py) |
+| The supported Turbo artifact maps and binds to native H3 | [#6476](https://github.com/vllm-project/vllm-omni/pull/6476) + [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py) | Merged/shipped | CPU LoRA tests + PR full-model evidence |
+| Turbo requires five points/four NFE and shifts 6/3 | [current pipeline](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) + [pinned recipe](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora) | Merged/shipped | CPU validation + #6476 end-to-end evidence |
+| Turbo performance spot check | [existing #6476 post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/) | Merged PR; not repeated here | Author/reviewer evidence, not independently reproduced for this post |
+| Model-declared/generalized LoRA runtime | [#6473](https://github.com/vllm-project/vllm-omni/pull/6473) / [#6017](https://github.com/vllm-project/vllm-omni/pull/6017) | Draft/unshipped | Not described as available |
+
+## References {#references}
+
+These links are the source map for the two shipped routes, like the legend that
+turns the article's shorthand back into reviewable code and evidence.
+
+- [Blog 2 planning issue #40](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/40) · [MiniMax-H3 series RFC #37](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)
+- [PR #5991 — Add distilled four-NFE sigma schedule support for MiniMax-H3 T2VA](https://github.com/vllm-project/vllm-omni/pull/5991) (merged)
+- [PR #6476 — Support MiniMax-H3 Turbo LoRA with the legacy manager](https://github.com/vllm-project/vllm-omni/pull/6476) (merged) · [copy-ready English usage post]({{ site.baseurl }}/2026-08-24-understanding-pr-6476-minimax-h3-turbo-lora/)
+- [Part 1 — MiniMax-H3 modular pipeline]({{ site.baseurl }}/2026-08-24-understanding-pr-5720-minimax-h3-modular-pipeline/)
+- Pinned source: [`sigma_schedule.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/sched/sigma_schedule.py) · [`time_request.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/time_request.py) · [`pipeline_minimax_h3.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/pipeline_minimax_h3.py) · [`denoise_loop.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/denoise_loop.py) · [`lora.py`](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/vllm_omni/diffusion/models/minimax_h3/lora.py)
+- [Pinned MiniMax-H3 recipe, Turbo LoRA section](https://github.com/vllm-project/vllm-omni/blob/072bfc02dd74cb0eb5c2f2a914e5dbbddba43b65/recipes/MiniMaxAI/MiniMax-H3.md#turbo-lora)
+- [Draft #6473 — model-declared LoRA runtime](https://github.com/vllm-project/vllm-omni/pull/6473) · [draft #6017 — generalized LoRA loading/composition](https://github.com/vllm-project/vllm-omni/pull/6017)
