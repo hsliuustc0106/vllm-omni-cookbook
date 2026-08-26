@@ -1,0 +1,545 @@
+{
+  "active_children_after_close": [],
+  "case_id": "tp2-registered-a",
+  "configuration": {
+    "data_parallel_size": 1,
+    "diffusion_attention_backend": "CUDNN_ATTN",
+    "dlo_host_registration_limit_gib": 80.0,
+    "dlo_resident_layers": 20,
+    "dlo_use_allgather": false,
+    "enable_distributed_layerwise_offload": true,
+    "enforce_eager": true,
+    "host_weight_runtime_mode": "required",
+    "host_weight_runtime_root": "/tmp/hwr-tp-validation-497c537c/store-tp2",
+    "init_timeout": 3600.0,
+    "model": "/workspace/model/hub/models--MiniMaxAI--MiniMax-H3/snapshots/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA",
+    "num_gpus": 2,
+    "profiler_config": {
+      "profiler": "torch",
+      "torch_profiler_dir": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-a/profiles",
+      "torch_profiler_dump_cuda_time_total": true,
+      "torch_profiler_record_shapes": false,
+      "torch_profiler_use_gzip": false,
+      "torch_profiler_with_flops": false,
+      "torch_profiler_with_memory": false,
+      "torch_profiler_with_stack": false
+    },
+    "request_batch_max_wait_ms": 0.0,
+    "ring": 1,
+    "stage_init_timeout": 3600.0,
+    "tensor_parallel_size": 2,
+    "text_encoder_tp_size": 2,
+    "trust_remote_code": true,
+    "usp": 1,
+    "vae_parallel_mode": "tile",
+    "vae_patch_parallel_size": 2,
+    "vae_use_tiling": true
+  },
+  "head_sha": "497c537c6f70e44f376b491bf7b50395cf2cba5d",
+  "latency": {
+    "engine_init_s": 141.76552184671164,
+    "measured_request_s": {
+      "count": 3,
+      "max": 25.79946368187666,
+      "mean": 25.780969640860956,
+      "median": 25.792144406586885,
+      "min": 25.75130083411932,
+      "p95": 25.798731754347685
+    },
+    "measured_throughput_req_s": {
+      "count": 3,
+      "max": 0.03469987602671279,
+      "mean": 0.03465080378532299,
+      "median": 0.03463682050490221,
+      "min": 0.03461571482435397,
+      "p95": 0.03469357047453173
+    },
+    "measured_wave_s": {
+      "count": 3,
+      "max": 28.888613309711218,
+      "mean": 28.85939010977745,
+      "median": 28.87101025506854,
+      "min": 28.818546764552593,
+      "p95": 28.88685300424695
+    },
+    "profile_wave_s": 28.904940083622932
+  },
+  "memory": {
+    "all_request_waves": {
+      "gpu_util_percent_by_gpu": [
+        {
+          "count": 10,
+          "max": 100.0,
+          "mean": 43.4,
+          "median": 17.0,
+          "min": 0.0,
+          "p95": 100.0
+        },
+        {
+          "count": 10,
+          "max": 100.0,
+          "mean": 40.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 100.0
+        },
+        {
+          "count": 10,
+          "max": 100.0,
+          "mean": 40.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 100.0
+        },
+        {
+          "count": 10,
+          "max": 100.0,
+          "mean": 40.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 100.0
+        }
+      ],
+      "hbm_peak_mib": 33043.0,
+      "hbm_peak_mib_by_gpu": [
+        33043.0,
+        33035.0,
+        33043.0,
+        33035.0
+      ],
+      "host_private_dirty_gib": {
+        "count": 10,
+        "max": 188.0719451904297,
+        "mean": 169.33962593078613,
+        "median": 164.59930801391602,
+        "min": 159.90961074829102,
+        "p95": 185.90210590362548
+      },
+      "host_pss_gib": {
+        "count": 10,
+        "max": 250.79707050323486,
+        "mean": 232.00724258422852,
+        "median": 227.26406621932983,
+        "min": 222.45829582214355,
+        "p95": 248.62722220420835
+      },
+      "sample_count": 10
+    },
+    "engine_init": {
+      "gpu_util_percent_by_gpu": [
+        {
+          "count": 73,
+          "max": 1.0,
+          "mean": 0.0547945205479452,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.3999999999999915
+        },
+        {
+          "count": 73,
+          "max": 1.0,
+          "mean": 0.0273972602739726,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 73,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 73,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        }
+      ],
+      "hbm_peak_mib": 899.0,
+      "hbm_peak_mib_by_gpu": [
+        899.0,
+        899.0,
+        0.0,
+        0.0
+      ],
+      "host_private_dirty_gib": {
+        "count": 73,
+        "max": 81.27454376220703,
+        "mean": 32.01284115935025,
+        "median": 27.917144775390625,
+        "min": 0.8083305358886719,
+        "p95": 79.44238357543944
+      },
+      "host_pss_gib": {
+        "count": 73,
+        "max": 143.68554973602295,
+        "mean": 55.18310062199423,
+        "median": 30.359992027282715,
+        "min": 1.3243780136108398,
+        "p95": 141.853409576416
+      },
+      "sample_count": 73
+    },
+    "full_run": {
+      "gpu_util_percent_by_gpu": [
+        {
+          "count": 132,
+          "max": 100.0,
+          "mean": 3.3181818181818183,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 1.0
+        },
+        {
+          "count": 132,
+          "max": 100.0,
+          "mean": 3.0454545454545454,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 132,
+          "max": 100.0,
+          "mean": 3.0454545454545454,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 132,
+          "max": 100.0,
+          "mean": 3.053030303030303,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.44999999999998863
+        }
+      ],
+      "hbm_peak_mib": 33043.0,
+      "hbm_peak_mib_by_gpu": [
+        33043.0,
+        33035.0,
+        33043.0,
+        33035.0
+      ],
+      "host_private_dirty_gib": {
+        "count": 132,
+        "max": 188.0719451904297,
+        "mean": 63.918081774856105,
+        "median": 72.3919563293457,
+        "min": 0.002811431884765625,
+        "p95": 164.34488677978516
+      },
+      "host_pss_gib": {
+        "count": 132,
+        "max": 250.79707050323486,
+        "mean": 100.46262853073351,
+        "median": 137.18574810028076,
+        "min": 0.002960205078125,
+        "p95": 226.9968050956726
+      },
+      "sample_count": 132
+    },
+    "measured_waves": {
+      "gpu_util_percent_by_gpu": [
+        {
+          "count": 1,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 1,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 1,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        },
+        {
+          "count": 1,
+          "max": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "p95": 0.0
+        }
+      ],
+      "hbm_peak_mib": 33043.0,
+      "hbm_peak_mib_by_gpu": [
+        33043.0,
+        33035.0,
+        33043.0,
+        33035.0
+      ],
+      "host_private_dirty_gib": {
+        "count": 1,
+        "max": 183.25008010864258,
+        "mean": 183.25008010864258,
+        "median": 183.25008010864258,
+        "min": 183.25008010864258,
+        "p95": 183.25008010864258
+      },
+      "host_pss_gib": {
+        "count": 1,
+        "max": 245.9751853942871,
+        "mean": 245.9751853942871,
+        "median": 245.9751853942871,
+        "min": 245.9751853942871,
+        "p95": 245.9751853942871
+      },
+      "sample_count": 1
+    }
+  },
+  "nvlink": {
+    "measurements": [
+      {
+        "bidirectional_counter_gib": 526.1161584854126,
+        "by_gpu_kib": {
+          "0": {
+            "rx": 137917895,
+            "tx": 137918495
+          },
+          "1": {
+            "rx": 137918494,
+            "tx": 137917893
+          }
+        },
+        "rx_gib": 263.05807971954346,
+        "tx_gib": 263.05807876586914
+      },
+      {
+        "bidirectional_counter_gib": 526.1161594390869,
+        "by_gpu_kib": {
+          "0": {
+            "rx": 137917893,
+            "tx": 137918493
+          },
+          "1": {
+            "rx": 137918494,
+            "tx": 137917898
+          }
+        },
+        "rx_gib": 263.0580778121948,
+        "tx_gib": 263.0580816268921
+      },
+      {
+        "bidirectional_counter_gib": 526.1161556243896,
+        "by_gpu_kib": {
+          "0": {
+            "rx": 137917891,
+            "tx": 137918498
+          },
+          "1": {
+            "rx": 137918495,
+            "tx": 137917890
+          }
+        },
+        "rx_gib": 263.0580768585205,
+        "tx_gib": 263.05807876586914
+      }
+    ],
+    "note": "Physical per-link counters summed over all GPUs; Tx and Rx represent both endpoints, so their sum double-counts fabric payload.",
+    "profile": {
+      "bidirectional_counter_gib": 526.1161594390869,
+      "by_gpu_kib": {
+        "0": {
+          "rx": 137917895,
+          "tx": 137918492
+        },
+        "1": {
+          "rx": 137918495,
+          "tx": 137917896
+        }
+      },
+      "rx_gib": 263.0580806732178,
+      "tx_gib": 263.05807876586914
+    }
+  },
+  "outputs": [
+    {
+      "audio_sha256": "ea315bd658a5a613361e7bf51f77fd21e128f967531c28a5b534bc599359882d",
+      "audio_shape": [
+        1,
+        2,
+        278400
+      ],
+      "peak_memory_mb": 30286.0,
+      "replica_id": 0,
+      "seed": 1101,
+      "video_sha256": "24cf233b8ab7e2060ddf50e9b971362129b2e4e35099fce99743c27dc1c35ee2",
+      "video_shape": [
+        209,
+        768,
+        1344,
+        3
+      ]
+    },
+    {
+      "audio_sha256": "ea315bd658a5a613361e7bf51f77fd21e128f967531c28a5b534bc599359882d",
+      "audio_shape": [
+        1,
+        2,
+        278400
+      ],
+      "peak_memory_mb": 30286.0,
+      "replica_id": 0,
+      "seed": 1101,
+      "video_sha256": "24cf233b8ab7e2060ddf50e9b971362129b2e4e35099fce99743c27dc1c35ee2",
+      "video_shape": [
+        209,
+        768,
+        1344,
+        3
+      ]
+    },
+    {
+      "audio_sha256": "ea315bd658a5a613361e7bf51f77fd21e128f967531c28a5b534bc599359882d",
+      "audio_shape": [
+        1,
+        2,
+        278400
+      ],
+      "peak_memory_mb": 30286.0,
+      "replica_id": 0,
+      "seed": 1101,
+      "video_sha256": "24cf233b8ab7e2060ddf50e9b971362129b2e4e35099fce99743c27dc1c35ee2",
+      "video_shape": [
+        209,
+        768,
+        1344,
+        3
+      ]
+    }
+  ],
+  "profiler": {
+    "aggregate_copy_gib": {
+      "d2d_copy": 30.585285685956478,
+      "d2h_copy": 2.41359980776906,
+      "h2d_copy": 171.9431506730616
+    },
+    "aggregate_device_duration_ms": {
+      "communication_kernel": 1153.3182079999997,
+      "compute_kernel": 39821.30034698029,
+      "d2d_copy": 16.46161400000001,
+      "d2h_copy": 52.805404,
+      "h2d_copy": 3366.8717540000584,
+      "memset": 41.29805900000279
+    },
+    "aggregate_nccl_duration_ms": {
+      "allgather": 49.518685000000005,
+      "allreduce": 1101.805436,
+      "broadcast": 1.9940869999999997
+    },
+    "aggregate_selected_annotation_duration_ms": {
+      "pipeline_forward": 44308.84844
+    },
+    "aggregate_selected_cpu_op_duration_ms": {
+      "aten::_to_copy": 3084.0926579999996,
+      "aten::copy_": 14169.761318000026,
+      "aten::to": 3221.442636999962
+    },
+    "note": "Durations are summed device-engine work across ranks and may overlap; they are not wall time.",
+    "per_rank": [
+      {
+        "copy_gib": {
+          "d2d_copy": 15.2926428578794,
+          "d2h_copy": 2.413311878219247,
+          "h2d_copy": 85.97171865217388
+        },
+        "duration_ms": {
+          "communication_kernel": 487.47022499999997,
+          "compute_kernel": 19988.41260898987,
+          "d2d_copy": 8.234051000000008,
+          "d2h_copy": 52.521849,
+          "h2d_copy": 1683.4189670000314,
+          "memset": 21.017346000001414
+        },
+        "event_counts": {
+          "compute_kernel": 271504,
+          "d2d_copy": 414,
+          "d2h_copy": 110,
+          "h2d_copy": 2967,
+          "memset": 18906,
+          "nccl_allgather": 140,
+          "nccl_allreduce": 323,
+          "nccl_broadcast": 7
+        },
+        "kernel_span_ms": 23057.024399414062,
+        "nccl_duration_ms": {
+          "allgather": 24.072470000000006,
+          "allreduce": 463.0469710000001,
+          "broadcast": 0.350784
+        },
+        "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-a/profiles/20260826-073428_tp2-registered-a/trace_rank0.json",
+        "rank": "0",
+        "selected_annotation_duration_ms": {
+          "pipeline_forward": 22161.304969999997
+        },
+        "selected_cpu_op_duration_ms": {
+          "aten::_to_copy": 1537.876567,
+          "aten::copy_": 7080.052020000068,
+          "aten::to": 1606.327090999968
+        }
+      },
+      {
+        "copy_gib": {
+          "d2d_copy": 15.292642828077078,
+          "d2h_copy": 0.00028792954981327057,
+          "h2d_copy": 85.97143202088773
+        },
+        "duration_ms": {
+          "communication_kernel": 665.8479829999997,
+          "compute_kernel": 19832.887737990426,
+          "d2d_copy": 8.227563000000004,
+          "d2h_copy": 0.2835550000000001,
+          "h2d_copy": 1683.452787000027,
+          "memset": 20.280713000001374
+        },
+        "event_counts": {
+          "compute_kernel": 271504,
+          "d2d_copy": 411,
+          "d2h_copy": 108,
+          "h2d_copy": 2954,
+          "memset": 18906,
+          "nccl_allgather": 140,
+          "nccl_allreduce": 323,
+          "nccl_broadcast": 7
+        },
+        "kernel_span_ms": 23056.18689746094,
+        "nccl_duration_ms": {
+          "allgather": 25.446214999999995,
+          "allreduce": 638.758465,
+          "broadcast": 1.6433029999999997
+        },
+        "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-a/profiles/20260826-073428_tp2-registered-a/trace_rank1.json",
+        "rank": "1",
+        "selected_annotation_duration_ms": {
+          "pipeline_forward": 22147.54347
+        },
+        "selected_cpu_op_duration_ms": {
+          "aten::_to_copy": 1546.2160909999998,
+          "aten::copy_": 7089.709297999957,
+          "aten::to": 1615.1155459999936
+        }
+      }
+    ],
+    "rank_count": 2
+  },
+  "shutdown_s": 30.100676868110895
+}

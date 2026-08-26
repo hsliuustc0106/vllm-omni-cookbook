@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "date": "2026-08-26",
+  "source": {
+    "repository": "https://github.com/vllm-project/vllm-omni",
+    "commit": "497c537c6f70e44f376b491bf7b50395cf2cba5d",
+    "vllm_version": "0.27.0",
+    "vllm_omni_distribution": "0.27.0rc2.dev60+ge2721dc97",
+    "python": "3.12.13",
+    "torch": "2.13.0+cu129",
+    "cuda": "12.9"
+  },
+  "model": {
+    "id": "MiniMaxAI/MiniMax-H3",
+    "partition": "FL2VA",
+    "snapshot": "42ed227ee7df40d41602854ae760620d6eb651fe"
+  },
+  "hardware": {
+    "cookbook_name": "NVIDIA H200",
+    "internal_telemetry_name": "NVIDIA L20X",
+    "gpu_count": 4,
+    "numa_domain": 0,
+    "gpu_fabric": "NV18 between every selected pair"
+  },
+  "files": {
+    "README.md": "ee2a450f253c7ac524db9949c894c304ce2b98499a2d43fb3702b7ad21c43e05",
+    "commands.md": "29a0a673dad8e6ec0e236536f3767cae0963054e5d72fa1a27992752a124ec42",
+    "profile-registered-engine-a.json": "1d7b20fc12105fea58497cafb7d20f33768a621e5702d9da3367fcb1825ac74a",
+    "profile-registered-engine-b.json": "735edd65c4702e82a961a77a03bfbad07704787880aa760b3d673fa231bafa65",
+    "profile-staged-engine-a.json": "fcba3d86265963d5e807a6b051e28ba3f60e72787fb23fb52efb78b75e58f82d",
+    "profile-staged-engine-b.json": "89b09e60fec6a1128e3f08c4172a60ab1e12fe8dfc8dfec1ee403a4d4aaa073d",
+    "tp1-report.md": "4985535c9dece6ef6eb39944e4a704796aacb0e8c4ce519ff78d190f43ac99a3",
+    "tp1-summary.json": "7c6e511857add41da0525426689a5850a7b04fee8da697d1991a912ebda41384",
+    "tp2-report.md": "cb34c81b2b53417840a10202a224b00f4fe7e0406a1257f23c20a69ebef3e71f",
+    "tp2-summary.json": "5515bb6772528a35278bd45eab840e33cc69afc99648658e375547eb3f67df72",
+    "tp2-test-plan.md": "74e8c4d98058a3da4773f2cdf1ad4ff22823ecbde17fc5c4774a363208aff949"
+  },
+  "scope": {
+    "primary_matrix_complete": true,
+    "tp2_resident_zero_profile_complete": false,
+    "existing_path_latency_statistic": false,
+    "steady_registered_staged_output_parity": true
+  }
+}
