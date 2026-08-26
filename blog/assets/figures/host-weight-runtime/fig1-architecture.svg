@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Host Weight Runtime architecture for two independent TP2 engines</title>
+  <desc id="desc">A router sends independent request streams to two TP2 engines. Matching tensor-parallel ranks map the same TP-coordinate Host Weight Runtime artifacts. Each worker either copies directly from registered mmap pages to rotating HBM buffers or falls back to bounded pinned staging. There is no cross-engine collective.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef6f8"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#475569"/>
+    </marker>
+    <marker id="teal-arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#0891b2"/>
+    </marker>
+    <style>
+      .title{font:700 27px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#0f172a}
+      .sub{font:400 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#64748b}
+      .h{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#0f172a}
+      .label{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#334155}
+      .small{font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#475569}
+      .mono{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#0f172a}
+      .box{fill:#fff;stroke:#cbd5e1;stroke-width:1.5}
+      .engine{fill:#fff;stroke:#0f766e;stroke-width:2}
+      .rank0{fill:#e0f2fe;stroke:#0284c7;stroke-width:1.5}
+      .rank1{fill:#ede9fe;stroke:#7c3aed;stroke-width:1.5}
+      .store{fill:#ecfeff;stroke:#0891b2;stroke-width:2}
+      .artifact0{fill:#bae6fd;stroke:#0284c7;stroke-width:1.5}
+      .artifact1{fill:#ddd6fe;stroke:#7c3aed;stroke-width:1.5}
+      .note{fill:#fff7ed;stroke:#ea580c;stroke-width:1.3}
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <text x="54" y="52" class="title">One TP2 layout, two independently scheduled engines</text>
+  <text x="54" y="78" class="sub">Semantic identity chooses the artifact; DLO transport chooses registered direct H2D or bounded staging.</text>
+
+  <rect x="420" y="102" width="360" height="70" rx="14" class="box"/>
+  <text x="600" y="130" text-anchor="middle" class="h">vLLM Router / Dynamo / operator</text>
+  <text x="600" y="152" text-anchor="middle" class="small">owns request routing—not HWR, leases, or DLO collectives</text>
+
+  <path d="M540 172 C500 194 370 190 320 214" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M660 172 C700 194 830 190 880 214" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="383" y="192" class="small">request stream A</text>
+  <text x="720" y="192" class="small">request stream B</text>
+
+  <rect x="70" y="214" width="500" height="210" rx="18" class="engine"/>
+  <text x="94" y="246" class="h">Engine A · DP1 × TP2</text>
+  <text x="94" y="268" class="small">its two ranks synchronize only inside Engine A</text>
+  <rect x="100" y="292" width="205" height="100" rx="12" class="rank0"/>
+  <text x="202" y="322" text-anchor="middle" class="h">TP rank 0 · GPU 0</text>
+  <text x="202" y="347" text-anchor="middle" class="mono">artifact(tp=0)</text>
+  <text x="202" y="372" text-anchor="middle" class="small">7 mapped payload files</text>
+  <rect x="335" y="292" width="205" height="100" rx="12" class="rank1"/>
+  <text x="437" y="322" text-anchor="middle" class="h">TP rank 1 · GPU 1</text>
+  <text x="437" y="347" text-anchor="middle" class="mono">artifact(tp=1)</text>
+  <text x="437" y="372" text-anchor="middle" class="small">7 mapped payload files</text>
+
+  <rect x="630" y="214" width="500" height="210" rx="18" class="engine"/>
+  <text x="654" y="246" class="h">Engine B · DP1 × TP2</text>
+  <text x="654" y="268" class="small">can start, stop, and serve independently from Engine A</text>
+  <rect x="660" y="292" width="205" height="100" rx="12" class="rank0"/>
+  <text x="762" y="322" text-anchor="middle" class="h">TP rank 0 · GPU 2</text>
+  <text x="762" y="347" text-anchor="middle" class="mono">artifact(tp=0)</text>
+  <text x="762" y="372" text-anchor="middle" class="small">same device / inode set</text>
+  <rect x="895" y="292" width="205" height="100" rx="12" class="rank1"/>
+  <text x="997" y="322" text-anchor="middle" class="h">TP rank 1 · GPU 3</text>
+  <text x="997" y="347" text-anchor="middle" class="mono">artifact(tp=1)</text>
+  <text x="997" y="372" text-anchor="middle" class="small">same device / inode set</text>
+
+  <rect x="92" y="454" width="1016" height="164" rx="18" class="store"/>
+  <text x="116" y="484" class="h">Node-local Host Weight Runtime store · immutable final-layout BF16</text>
+  <text x="116" y="505" class="small">exact model revision + producer/restorer ABI + TP/SP layout; DP rank and device ID are excluded</text>
+  <rect x="140" y="528" width="310" height="62" rx="11" class="artifact0"/>
+  <text x="295" y="553" text-anchor="middle" class="h">TP-coordinate artifact 0</text>
+  <text x="295" y="575" text-anchor="middle" class="small">mapped by A-TP0 and B-TP0</text>
+  <rect x="470" y="528" width="310" height="62" rx="11" class="artifact1"/>
+  <text x="625" y="553" text-anchor="middle" class="h">TP-coordinate artifact 1</text>
+  <text x="625" y="575" text-anchor="middle" class="small">mapped by A-TP1 and B-TP1</text>
+  <rect x="800" y="520" width="280" height="78" rx="11" class="note"/>
+  <text x="940" y="545" text-anchor="middle" class="label">Per worker, transport chooses</text>
+  <text x="940" y="567" text-anchor="middle" class="mono">registered mmap → HBM</text>
+  <text x="940" y="587" text-anchor="middle" class="small">or mmap → 2 pinned slots → HBM</text>
+
+  <path d="M295 528 C270 474 220 450 202 392" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#teal-arrow)"/>
+  <path d="M295 528 C420 470 700 452 762 392" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#teal-arrow)"/>
+  <path d="M625 528 C570 472 480 450 437 392" fill="none" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <path d="M625 528 C750 468 955 450 997 392" fill="none" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#arrow)"/>
+
+  <rect x="106" y="461" width="690" height="51" rx="7" fill="#ecfeff"/>
+  <text x="116" y="484" class="h">Node-local Host Weight Runtime store · immutable final-layout BF16</text>
+  <text x="116" y="505" class="small">exact model revision + producer/restorer ABI + TP/SP layout; DP rank and device ID are excluded</text>
+
+  <rect x="180" y="642" width="840" height="42" rx="12" class="note"/>
+  <text x="600" y="668" text-anchor="middle" class="label">No cross-engine process group · no cross-engine DLO collective · no shared request schedule</text>
+</svg>

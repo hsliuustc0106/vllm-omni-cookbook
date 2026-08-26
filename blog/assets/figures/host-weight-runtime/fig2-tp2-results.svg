@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Host Weight Runtime TP2 benchmark results</title>
+  <desc id="desc">Three panels compare pair proportional set size, warm second-engine startup, and concurrent pair latency. A fourth strip attributes the registered-mmap path to lower CPU copy work with unchanged H2D and NVLink payload.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#f0fdfa"/>
+    </linearGradient>
+    <style>
+      .title{font:700 27px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#0f172a}
+      .sub{font:400 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#64748b}
+      .h{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#0f172a}
+      .label{font:600 12.5px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#334155}
+      .value{font:700 14px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#0f172a}
+      .small{font:400 11.5px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#64748b}
+      .panel{fill:#fff;stroke:#cbd5e1;stroke-width:1.4}
+      .grid{stroke:#e2e8f0;stroke-width:1}
+      .existing{fill:#94a3b8}
+      .staged{fill:#f59e0b}
+      .registered{fill:#0891b2}
+      .good{fill:#ecfdf5;stroke:#10b981;stroke-width:1.3}
+      .warn{fill:#fff7ed;stroke:#ea580c;stroke-width:1.3}
+    </style>
+  </defs>
+
+  <rect width="1200" height="760" fill="url(#bg)"/>
+  <text x="52" y="50" class="title">What HWR changes for two independent TP2 engines</text>
+  <text x="52" y="76" class="sub">MiniMax-H3 FL2VA · 4×H200 · 1344×768 · two denoiser evaluations · no-AllGather DLO</text>
+
+  <rect x="48" y="104" width="350" height="310" rx="16" class="panel"/>
+  <text x="70" y="136" class="h">Pair host memory · lower is better</text>
+  <text x="70" y="158" class="small">aggregate process-tree PSS after warmup</text>
+  <line x1="94" y1="358" x2="372" y2="358" class="grid"/>
+  <line x1="94" y1="199" x2="372" y2="199" class="grid"/>
+  <text x="84" y="363" text-anchor="end" class="small">0</text>
+  <text x="84" y="204" text-anchor="end" class="small">400 GiB</text>
+  <rect x="112" y="204" width="62" height="154" rx="6" class="existing"/>
+  <rect x="206" y="257" width="62" height="101" rx="6" class="staged"/>
+  <rect x="300" y="260" width="62" height="98" rx="6" class="registered"/>
+  <text x="143" y="192" text-anchor="middle" class="value">388.06</text>
+  <text x="237" y="245" text-anchor="middle" class="value">254.08</text>
+  <text x="331" y="248" text-anchor="middle" class="value">245.98</text>
+  <text x="143" y="382" text-anchor="middle" class="label">existing</text>
+  <text x="237" y="382" text-anchor="middle" class="label">staged</text>
+  <text x="331" y="382" text-anchor="middle" class="label">registered</text>
+  <text x="237" y="403" text-anchor="middle" class="small">registered: −142.08 GiB vs existing</text>
+
+  <rect x="425" y="104" width="350" height="310" rx="16" class="panel"/>
+  <text x="447" y="136" class="h">Warm second-engine startup</text>
+  <text x="447" y="158" class="small">process-to-ready, three balanced starts per mode</text>
+  <line x1="480" y1="358" x2="744" y2="358" class="grid"/>
+  <line x1="480" y1="199" x2="744" y2="199" class="grid"/>
+  <text x="470" y="363" text-anchor="end" class="small">0</text>
+  <text x="470" y="204" text-anchor="end" class="small">200 s</text>
+  <rect x="526" y="218" width="76" height="140" rx="7" class="existing"/>
+  <rect x="642" y="238" width="76" height="120" rx="7" class="registered"/>
+  <text x="564" y="207" text-anchor="middle" class="value">176.18 s</text>
+  <text x="680" y="227" text-anchor="middle" class="value">150.45 s</text>
+  <text x="564" y="382" text-anchor="middle" class="label">HWR disabled</text>
+  <text x="680" y="382" text-anchor="middle" class="label">registered HWR</text>
+  <text x="612" y="403" text-anchor="middle" class="small">−25.73 s · conservative CI excludes zero</text>
+
+  <rect x="802" y="104" width="350" height="310" rx="16" class="panel"/>
+  <text x="824" y="136" class="h">Concurrent pair wall time</text>
+  <text x="824" y="158" class="small">three waves; registered result is stable</text>
+  <line x1="850" y1="358" x2="1126" y2="358" class="grid"/>
+  <line x1="850" y1="199" x2="1126" y2="199" class="grid"/>
+  <text x="840" y="363" text-anchor="end" class="small">0</text>
+  <text x="840" y="204" text-anchor="end" class="small">45 s</text>
+  <rect x="900" y="236" width="76" height="122" rx="7" class="staged"/>
+  <rect x="1020" y="256" width="76" height="102" rx="7" class="registered"/>
+  <text x="938" y="224" text-anchor="middle" class="value">34.61 s</text>
+  <text x="1058" y="244" text-anchor="middle" class="value">28.86 s</text>
+  <text x="938" y="382" text-anchor="middle" class="label">staged HWR</text>
+  <text x="1058" y="382" text-anchor="middle" class="label">registered HWR</text>
+  <text x="998" y="403" text-anchor="middle" class="small">−16.6% mean; CI crosses zero</text>
+
+  <rect x="48" y="446" width="1104" height="210" rx="16" class="panel"/>
+  <text x="70" y="480" class="h">Profile attribution · registration changes host transport, not bytes or collectives</text>
+  <rect x="72" y="510" width="246" height="112" rx="12" class="good"/>
+  <text x="195" y="539" text-anchor="middle" class="label">CPU aten::copy_ rank-work</text>
+  <text x="195" y="569" text-anchor="middle" class="value">33.91 → 14.10 s</text>
+  <text x="195" y="594" text-anchor="middle" class="small">−19.82 s · −58.4%</text>
+  <rect x="337" y="510" width="246" height="112" rx="12" class="panel"/>
+  <text x="460" y="539" text-anchor="middle" class="label">H2D payload</text>
+  <text x="460" y="569" text-anchor="middle" class="value">171.943 GiB</text>
+  <text x="460" y="594" text-anchor="middle" class="small">unchanged</text>
+  <rect x="602" y="510" width="246" height="112" rx="12" class="panel"/>
+  <text x="725" y="539" text-anchor="middle" class="label">NVLink Tx / Rx</text>
+  <text x="725" y="569" text-anchor="middle" class="value">263.058 / 263.058</text>
+  <text x="725" y="594" text-anchor="middle" class="small">GiB · unchanged</text>
+  <rect x="867" y="510" width="261" height="112" rx="12" class="warn"/>
+  <text x="997" y="539" text-anchor="middle" class="label">Existing-path capacity probe</text>
+  <text x="997" y="569" text-anchor="middle" class="value">913.23 / 921.00 GiB</text>
+  <text x="997" y="594" text-anchor="middle" class="small">99.16% cgroup memory · not latency control</text>
+
+  <text x="52" y="697" class="small">Source: vLLM-Omni 497c537c · one excluded warmup · PSS from process-tree smaps · profile durations are summed rank-engine work.</text>
+  <text x="52" y="718" class="small">The existing path completed one 803.91 s wave, then hit a 600 s async-output watchdog; it is capacity evidence only.</text>
+</svg>

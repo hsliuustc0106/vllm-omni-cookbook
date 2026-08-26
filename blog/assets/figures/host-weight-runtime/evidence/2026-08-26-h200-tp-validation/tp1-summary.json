@@ -1,0 +1,709 @@
+{
+  "correctness": {
+    "active_children": {
+      "checkpoint-1": [],
+      "checkpoint-2": [],
+      "checkpoint-3": [],
+      "checkpoint-peer-gpu0": [],
+      "engine-a-required": [],
+      "hwr-staged-diagnostic": [],
+      "prewarm-preferred": [],
+      "registered-1": [],
+      "registered-2": [],
+      "registered-3": []
+    },
+    "all_comparison_outputs_match": true,
+    "checkpoint_hashes": [
+      [
+        "487b11a88a6fb7ea06bc142a78bc2137a7a66b4fc0727c6bfc42045b1fd87b6f",
+        "bd07a1a3992c489b67462049ab935b99428c590c3252598e87af9bb643a4bebc"
+      ]
+    ],
+    "output_contract": {
+      "audio_dtype": "float32",
+      "audio_shape": [
+        1,
+        2,
+        142400
+      ],
+      "video_dtype": "float32",
+      "video_shape": [
+        107,
+        256,
+        256,
+        3
+      ]
+    },
+    "registered_hashes": [
+      [
+        "487b11a88a6fb7ea06bc142a78bc2137a7a66b4fc0727c6bfc42045b1fd87b6f",
+        "bd07a1a3992c489b67462049ab935b99428c590c3252598e87af9bb643a4bebc"
+      ]
+    ],
+    "staged_hash": [
+      "487b11a88a6fb7ea06bc142a78bc2137a7a66b4fc0727c6bfc42045b1fd87b6f",
+      "bd07a1a3992c489b67462049ab935b99428c590c3252598e87af9bb643a4bebc"
+    ]
+  },
+  "hbm": {
+    "checkpoint-1": 15088.0,
+    "checkpoint-2": 15088.0,
+    "checkpoint-3": 15088.0,
+    "checkpoint-peer-gpu0": 15088.0,
+    "engine-a-required": 15088.0,
+    "hwr-staged-diagnostic": 15088.0,
+    "registered-1": 15088.0,
+    "registered-2": 15088.0,
+    "registered-3": 15088.0
+  },
+  "head_sha": "497c537c6f70e44f376b491bf7b50395cf2cba5d",
+  "lifecycle": {
+    "checkpoint_mmap_consumers": {
+      "checkpoint-1": {
+        "allocated_bounded_staging": true,
+        "checkpoint_mmap_selected": true,
+        "realized_mmap_views": true,
+        "released_mmap_handles": true
+      },
+      "checkpoint-2": {
+        "allocated_bounded_staging": true,
+        "checkpoint_mmap_selected": true,
+        "realized_mmap_views": true,
+        "released_mmap_handles": true
+      },
+      "checkpoint-3": {
+        "allocated_bounded_staging": true,
+        "checkpoint_mmap_selected": true,
+        "realized_mmap_views": true,
+        "released_mmap_handles": true
+      },
+      "checkpoint-peer-gpu0": {
+        "allocated_bounded_staging": true,
+        "checkpoint_mmap_selected": true,
+        "realized_mmap_views": true,
+        "released_mmap_handles": true
+      }
+    },
+    "hwr_consumers": {
+      "engine-a-required": {
+        "bounded_staging_fallback": false,
+        "consumed_hwr_lease": true,
+        "registered_direct_h2d": true,
+        "released_hwr_lease": true,
+        "skipped_ordinary_dit_materialization": true,
+        "unregistered_mmap": true
+      },
+      "hwr-staged-diagnostic": {
+        "bounded_staging_fallback": true,
+        "consumed_hwr_lease": true,
+        "registered_direct_h2d": false,
+        "released_hwr_lease": true,
+        "skipped_ordinary_dit_materialization": true,
+        "unregistered_mmap": false
+      },
+      "registered-1": {
+        "bounded_staging_fallback": false,
+        "consumed_hwr_lease": true,
+        "registered_direct_h2d": true,
+        "released_hwr_lease": true,
+        "skipped_ordinary_dit_materialization": true,
+        "unregistered_mmap": true
+      },
+      "registered-2": {
+        "bounded_staging_fallback": false,
+        "consumed_hwr_lease": true,
+        "registered_direct_h2d": true,
+        "released_hwr_lease": true,
+        "skipped_ordinary_dit_materialization": true,
+        "unregistered_mmap": true
+      },
+      "registered-3": {
+        "bounded_staging_fallback": false,
+        "consumed_hwr_lease": true,
+        "registered_direct_h2d": true,
+        "released_hwr_lease": true,
+        "skipped_ordinary_dit_materialization": true,
+        "unregistered_mmap": true
+      }
+    },
+    "monitor": {
+      "command": [
+        "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+        "/tmp/hwr-tp-validation-497c537c/tools/run_tp1_validation.py",
+        "--physical-gpus",
+        "0,1",
+        "--store",
+        "/tmp/hwr-tp-validation-497c537c/store-tp1",
+        "--source-root",
+        "/home/hsliu/tmp/vllm-omni-hwr-tp-validation",
+        "--timeout",
+        "4200"
+      ],
+      "elapsed_s": 2252.8865540400147,
+      "numa_snapshot_done": false,
+      "quiesced": false,
+      "return_code": 0,
+      "root_pid": 3721641,
+      "sample_count": 1009,
+      "started_unix_s": 1787695784.3303823,
+      "timed_out": false
+    },
+    "profiler_callback_errors": {
+      "checkpoint-1": 1,
+      "hwr-staged-diagnostic": 1,
+      "registered-1": 1
+    }
+  },
+  "memory": {
+    "checkpoint-mmap-pair": {
+      "elapsed_s": 1947.3168285377324,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 15991.0,
+          "memory_util_percent": 0.0,
+          "power_w": 120.99,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 0.0,
+          "index": 1,
+          "memory_used_mib": 15991.0,
+          "memory_util_percent": 0.0,
+          "power_w": 120.83,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 0.13122940063476562,
+      "private_dirty_gib": 140.9819221496582,
+      "process_count": 5,
+      "pss_anon_gib": 3.9291000366210938,
+      "pss_file_gib": 62.54424285888672,
+      "pss_gib": 203.51290893554688,
+      "pss_shmem_gib": 137.03956604003906,
+      "rss_gib": 265.96803283691406,
+      "sample_offset_s": -2.0784873999655247,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    },
+    "hwr-registered-pair": {
+      "elapsed_s": 814.9422772340477,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 16107.0,
+          "memory_util_percent": 0.0,
+          "power_w": 121.72,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 100.0,
+          "index": 1,
+          "memory_used_mib": 16119.0,
+          "memory_util_percent": 3.0,
+          "power_w": 129.45,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 0.13634109497070312,
+      "private_dirty_gib": 133.0128288269043,
+      "process_count": 5,
+      "pss_anon_gib": 3.958820343017578,
+      "pss_file_gib": 62.570077896118164,
+      "pss_gib": 195.5684642791748,
+      "pss_shmem_gib": 129.03956604003906,
+      "rss_gib": 258.04328536987305,
+      "sample_offset_s": 0.9907987229526043,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    },
+    "hwr-staged-single": {
+      "elapsed_s": 2197.503111883998,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 0.0,
+          "memory_util_percent": 0.0,
+          "power_w": 78.67,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 0.0,
+          "index": 1,
+          "memory_used_mib": 15991.0,
+          "memory_util_percent": 0.0,
+          "power_w": 116.76,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 1.52587890625e-05,
+      "private_clean_gib": 62.4601936340332,
+      "private_dirty_gib": 70.48114776611328,
+      "process_count": 3,
+      "pss_anon_gib": 1.9547500610351562,
+      "pss_file_gib": 62.46982383728027,
+      "pss_gib": 132.94435691833496,
+      "pss_shmem_gib": 68.51978302001953,
+      "rss_gib": 132.97739028930664,
+      "sample_offset_s": -0.06199138984084129,
+      "system_mlocked_gib": 1.52587890625e-05,
+      "vmlck_gib": 1.52587890625e-05,
+      "vmpin_gib": 0.0
+    },
+    "startup-checkpoint-1": {
+      "elapsed_s": 999.2788501828909,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 16107.0,
+          "memory_util_percent": 0.0,
+          "power_w": 122.83,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 99.0,
+          "index": 1,
+          "memory_used_mib": 16003.0,
+          "memory_util_percent": 3.0,
+          "power_w": 132.85,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 123.62012481689453,
+      "private_dirty_gib": 137.00809860229492,
+      "process_count": 5,
+      "pss_anon_gib": 3.954601287841797,
+      "pss_file_gib": 124.30109310150146,
+      "pss_gib": 261.2952604293823,
+      "pss_shmem_gib": 133.03956604003906,
+      "rss_gib": 262.0176696777344,
+      "sample_offset_s": 0.8818296231329441,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    },
+    "startup-checkpoint-2": {
+      "elapsed_s": 1178.8413330987096,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 16107.0,
+          "memory_util_percent": 0.0,
+          "power_w": 124.81,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 0.0,
+          "index": 1,
+          "memory_used_mib": 15991.0,
+          "memory_util_percent": 0.0,
+          "power_w": 117.55,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 123.61396408081055,
+      "private_dirty_gib": 136.98493576049805,
+      "process_count": 5,
+      "pss_anon_gib": 3.9314231872558594,
+      "pss_file_gib": 124.29586601257324,
+      "pss_gib": 261.26685523986816,
+      "pss_shmem_gib": 133.03956604003906,
+      "rss_gib": 261.9903030395508,
+      "sample_offset_s": 0.13858819007873535,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    },
+    "startup-checkpoint-3": {
+      "elapsed_s": 1798.2346235588193,
+      "gpus": [
+        {
+          "gpu_util_percent": 6.0,
+          "index": 0,
+          "memory_used_mib": 16019.0,
+          "memory_util_percent": 0.0,
+          "power_w": 125.27,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 0.0,
+          "index": 1,
+          "memory_used_mib": 15991.0,
+          "memory_util_percent": 0.0,
+          "power_w": 117.57,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 123.61634063720703,
+      "private_dirty_gib": 136.98752212524414,
+      "process_count": 5,
+      "pss_anon_gib": 3.933979034423828,
+      "pss_file_gib": 124.2973279953003,
+      "pss_gib": 261.2708730697632,
+      "pss_shmem_gib": 133.03956604003906,
+      "rss_gib": 261.99342346191406,
+      "sample_offset_s": -0.5067072547972202,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    },
+    "startup-registered-2": {
+      "elapsed_s": 1410.0492513105273,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 16107.0,
+          "memory_util_percent": 0.0,
+          "power_w": 123.61,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 0.0,
+          "index": 1,
+          "memory_used_mib": 15985.0,
+          "memory_util_percent": 0.0,
+          "power_w": 117.54,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 0.15822982788085938,
+      "private_dirty_gib": 132.88565826416016,
+      "process_count": 5,
+      "pss_anon_gib": 3.831645965576172,
+      "pss_file_gib": 62.56826305389404,
+      "pss_gib": 195.43947505950928,
+      "pss_shmem_gib": 129.03956604003906,
+      "rss_gib": 257.8906593322754,
+      "sample_offset_s": 0.32861022651195526,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    },
+    "startup-registered-3": {
+      "elapsed_s": 1655.1409359760582,
+      "gpus": [
+        {
+          "gpu_util_percent": 0.0,
+          "index": 0,
+          "memory_used_mib": 16107.0,
+          "memory_util_percent": 0.0,
+          "power_w": 124.06,
+          "uuid": "GPU-15bcd737-c479-4024-0cba-1fb1e633bb74"
+        },
+        {
+          "gpu_util_percent": 0.0,
+          "index": 1,
+          "memory_used_mib": 16107.0,
+          "memory_util_percent": 0.0,
+          "power_w": 117.31,
+          "uuid": "GPU-8adca4c3-0cee-c825-e344-70b082f0aa56"
+        }
+      ],
+      "locked_smaps_gib": 3.0517578125e-05,
+      "private_clean_gib": 0.15867233276367188,
+      "private_dirty_gib": 132.97477340698242,
+      "process_count": 5,
+      "pss_anon_gib": 3.9207611083984375,
+      "pss_file_gib": 62.569143295288086,
+      "pss_gib": 195.5294704437256,
+      "pss_shmem_gib": 129.03956604003906,
+      "rss_gib": 257.9807815551758,
+      "sample_offset_s": -1.0813086591660976,
+      "system_mlocked_gib": 3.0517578125e-05,
+      "vmlck_gib": 3.0517578125e-05,
+      "vmpin_gib": 0.0
+    }
+  },
+  "physical_gpus": [
+    0,
+    1
+  ],
+  "profiles": {
+    "checkpoint": {
+      "compute_s": 0.5535542740000028,
+      "cpu_copy_s": 3.656631531000004,
+      "h2d_count": 1877,
+      "h2d_device_s": 3.746415372999999,
+      "h2d_gib": 185.33453560620546,
+      "nccl_s": 0.0,
+      "rank_count": 1
+    },
+    "registered": {
+      "compute_s": 0.5537331150000093,
+      "cpu_copy_s": 0.9328721199999981,
+      "h2d_count": 2837,
+      "h2d_device_s": 3.614137334000001,
+      "h2d_gib": 185.33453560620546,
+      "nccl_s": 0.0,
+      "rank_count": 1
+    },
+    "staged": {
+      "compute_s": 0.5533491030000095,
+      "cpu_copy_s": 2.835915124000006,
+      "h2d_count": 1877,
+      "h2d_device_s": 4.266297840000008,
+      "h2d_gib": 185.33453560620546,
+      "nccl_s": 0.0,
+      "rank_count": 1
+    }
+  },
+  "registration": {
+    "engine-a-required": {
+      "gib": 61.73,
+      "ranges": 13,
+      "seconds": 5.306
+    },
+    "registered-1": {
+      "gib": 61.73,
+      "ranges": 13,
+      "seconds": 4.813
+    },
+    "registered-2": {
+      "gib": 61.73,
+      "ranges": 13,
+      "seconds": 4.799
+    },
+    "registered-3": {
+      "gib": 61.73,
+      "ranges": 13,
+      "seconds": 5.008
+    }
+  },
+  "request_latency": {
+    "checkpoint_mmap_s": [
+      9.890870705246925,
+      7.705220941454172,
+      8.065821196883917
+    ],
+    "comparison": {
+      "candidate": {
+        "max": 4.594080593436956,
+        "mean": 4.30550882468621,
+        "min": 4.037290457636118,
+        "stddev": 0.27895252203891296
+      },
+      "conservative_95_ci_seconds": [
+        -7.240824927219464,
+        -1.2560993191314602
+      ],
+      "control": {
+        "max": 9.890870705246925,
+        "mean": 8.553970947861671,
+        "min": 7.705220941454172,
+        "stddev": 1.171743938335745
+      },
+      "delta_percent": -49.66654842611426,
+      "delta_seconds": -4.248462123175462
+    },
+    "registered_s": [
+      4.285155422985554,
+      4.594080593436956,
+      4.037290457636118
+    ],
+    "staged_single_s": 4.926154009997845
+  },
+  "sharing": {
+    "artifact_payload_bytes": 66280492928,
+    "checkpoint_inode_capture_note": "The live mapper filtered on .safetensors paths under the snapshot. Hugging Face resolves those symlinks to extensionless blob paths, so the zero direct count is an instrumentation blind spot; loader logs and aggregate Pss_File provide the checkpoint-mmap evidence.",
+    "checkpoint_inodes": {
+      "checkpoint-3": [],
+      "checkpoint-peer-gpu0": []
+    },
+    "checkpoint_shared_inode_count": 0,
+    "hwr_inodes": {
+      "engine-a-required": [
+        [
+          8388726,
+          4030737546
+        ],
+        [
+          8388726,
+          4043546181
+        ],
+        [
+          8388726,
+          4043546425
+        ],
+        [
+          8388726,
+          4043546426
+        ],
+        [
+          8388726,
+          4043546427
+        ],
+        [
+          8388726,
+          4043546428
+        ],
+        [
+          8388726,
+          4043546429
+        ],
+        [
+          8388726,
+          4043546430
+        ],
+        [
+          8388726,
+          4043546431
+        ],
+        [
+          8388726,
+          4098622456
+        ],
+        [
+          8388726,
+          4098622459
+        ],
+        [
+          8388726,
+          4098622460
+        ],
+        [
+          8388726,
+          4098622462
+        ]
+      ],
+      "registered-1": [
+        [
+          8388726,
+          4030737546
+        ],
+        [
+          8388726,
+          4043546181
+        ],
+        [
+          8388726,
+          4043546425
+        ],
+        [
+          8388726,
+          4043546426
+        ],
+        [
+          8388726,
+          4043546427
+        ],
+        [
+          8388726,
+          4043546428
+        ],
+        [
+          8388726,
+          4043546429
+        ],
+        [
+          8388726,
+          4043546430
+        ],
+        [
+          8388726,
+          4043546431
+        ],
+        [
+          8388726,
+          4098622456
+        ],
+        [
+          8388726,
+          4098622459
+        ],
+        [
+          8388726,
+          4098622460
+        ],
+        [
+          8388726,
+          4098622462
+        ]
+      ]
+    },
+    "hwr_shared_inode_count": 13,
+    "ready_artifact_count": 1
+  },
+  "startup": {
+    "checkpoint_second_engine_s": [
+      102.67445862293243,
+      113.86153783276677,
+      103.43989408016205
+    ],
+    "comparison": {
+      "candidate": {
+        "max": 211.07375163584948,
+        "mean": 203.62298721447587,
+        "min": 196.4880672544241,
+        "stddev": 7.297969958245226
+      },
+      "conservative_95_ci_seconds": [
+        73.09424297632626,
+        120.83447109538466
+      ],
+      "control": {
+        "max": 113.86153783276677,
+        "mean": 106.65863017862041,
+        "min": 102.67445862293243,
+        "stddev": 6.249630538313139
+      },
+      "delta_percent": 90.91093413957218,
+      "delta_seconds": 96.96435703585546
+    },
+    "engine_a_required_engine_init_s": 206.69775504618883,
+    "engine_a_required_process_to_ready_s": 217.88554371520877,
+    "engine_init": {
+      "checkpoint_second_engine_s": [
+        92.2781445197761,
+        103.68090173974633,
+        93.32982243224978
+      ],
+      "comparison": {
+        "candidate": {
+          "max": 200.7304921373725,
+          "mean": 193.27415859078368,
+          "min": 186.38709900528193,
+          "stddev": 7.188622000599596
+        },
+        "conservative_95_ci_seconds": [
+          73.09491515258591,
+          120.59415623446665
+        ],
+        "control": {
+          "max": 103.68090173974633,
+          "mean": 96.4296228972574,
+          "min": 92.2781445197761,
+          "stddev": 6.301768818874736
+        },
+        "delta_percent": 100.43027524509864,
+        "delta_seconds": 96.84453569352628
+      },
+      "registered_second_engine_s": [
+        192.7048846296966,
+        186.38709900528193,
+        200.7304921373725
+      ]
+    },
+    "prewarm_preferred_s": 327.1670695133507,
+    "registered_second_engine_s": [
+      203.30714275315404,
+      196.4880672544241,
+      211.07375163584948
+    ],
+    "staged_diagnostic_engine_init_s": 179.51381048187613,
+    "staged_diagnostic_process_to_ready_s": 189.7977000400424
+  }
+}
