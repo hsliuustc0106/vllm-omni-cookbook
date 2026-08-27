@@ -149,7 +149,8 @@ export function coverHtml(cfg, card) {
   .chip { display:flex; flex-direction:column; gap:12px; }
   .chsep { width:1px; background:rgba(255,255,255,.35); }
   .chip .cv { font-family:"SF Mono",Menlo,monospace; font-size:56px; font-weight:800; letter-spacing:-1px; }
-  .chip .cl { font-size:26px; color:rgba(255,255,255,.85); }`;
+  .chip .cl { font-size:26px; color:rgba(255,255,255,.85); }
+  .footer b { color:#ffe08a; }`;
   const body = `
 <div class="page">
   <span class="cover-kicker">${esc(card.kicker || cfg.brand.kicker)}</span>

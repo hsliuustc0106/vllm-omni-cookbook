@@ -1,0 +1,22 @@
+视频生成提速3.6倍：序列并行4式
+
+2048×2048 的一张图，切成 patch 喂给扩散模型就是几万个 token；几秒视频再多一个量级。Attention 开销随 token 数平方涨，单卡直接 OOM💀
+
+但有个救命的结构性事实：DiT 里只有 attention 是“全局”的，其余全是逐 token 的独立计算。所以把序列切成 S/P 份，除 attention 外一切照旧 —— 只需要约定好 attention 怎么交换信息。
+
+vLLM-Omni 给了 4 种可插拔姿势：
+🔹 Ulysses：all-to-all 用“头”换“序列”，kernel 看到全序列；大图+NVLink 首选
+🔹 Ring：Q 不动，K/V 击鼓传花，通信藏在计算后面；超长序列首选
+🔹 Hybrid：先 Ulysses 后 Ring，8 卡以上不把头切太碎
+🔹 AllGather-KV：两次 all-gather，Q 原地算，零约束最简单
+
+官方文档口径：大图/视频 2–8 卡提速 1.5×–3.6×，23 个模型家族已接好（本篇未独立复测⚠️）
+
+开法简单到离谱：vllm serve --usp 2 就是 Ulysses，--ring 2 就是 Ring，一起给就是 Hybrid✅
+
+小图（<1024px）老实用单卡 —— Ring 的绕圈开销会反噬。
+
+📘 完整拆解（含可交互动图）：主页简介直达
+🔍 GitHub 搜：vllm-omni-cookbook
+
+#大模型 #AI技术分享 #开源项目 #AIGC #深度学习 #GPU #并行计算
