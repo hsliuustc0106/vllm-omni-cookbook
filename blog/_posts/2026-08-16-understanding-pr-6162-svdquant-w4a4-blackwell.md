@@ -4,27 +4,33 @@ title: "Understanding PR #6162 — SVDQuant W4A4 for MiniMax-H3 on Blackwell"
 date: 2026-08-16 12:00:00 +0800
 author: hsliuustc0106
 summary: >-
-  Design explainer of draft PR #6162: how SVDQuant's BF16 low-rank residual
-  makes W4A4 viable for MiniMax-H3's DiT, how the PR dispatches
-  FlashInfer/Nunchaku kernels per GPU, and author-reported B300 numbers.
-  Proposal — not merged.
+  Design explainer of PR #6162: SVDQuant's BF16 low-rank residual
+  makes W4A4 viable for MiniMax-H3's DiT; author-reported B300 numbers.
+  Merged 2026-08-27 as a loader-only phase one — backends and converter
+  deferred.
 tags: [MiniMax-H3, Blackwell]
 category: PR Analysis
 feature: quantization
 math: true
 usage:
-  - label: "Convert"
-    blurb: "once, from the Nunchaku checkpoint"
-    title: "convert_nunchaku_to_svdquant · one-time"
+  - label: "Checkpoint"
+    blurb: "offline-quantized, canonical layout"
+    title: "transformer config.json · quantization_config (auto-detected)"
     code: |
-      python -m vllm_omni.quantization.tools.convert_nunchaku_to_svdquant \
-        --nunchaku-checkpoint ./svdq-fp4_r32-minimax-h3-fl2va.safetensors \
-        --base-pipeline MiniMaxAI/MiniMax-H3 \
-        --output-dir ./MiniMax-H3-SVDQuant-NVFP4-r32
-      # optional: --adaln-curve-checkpoint for the compact AdaLN variant
+      {
+        "quantization_config": {
+          "quant_method": "svdquant",
+          "rank": 32,
+          "precision": "nvfp4",
+          "act_unsigned": false,
+          "modules_to_not_convert": []
+        }
+      }
     note: >-
-      Convert once; the converter embeds quant_method: svdquant in the
-      transformer config.
+      The merged phase one ships no converter — produce the canonical layout
+      offline (packed qweight, FP8 wscales, BF16 proj_down/proj_up,
+      smooth_factor/wcscales; the draft's Nunchaku converter was deferred).
+      K must be divisible by 16 on every TP rank.
   - label: "Serve"
     blurb: "runtime auto-detection"
     title: "vllm serve · converted checkpoint"
@@ -35,35 +41,68 @@ usage:
       automatically kept BF16.
 decisions:
   - when: "Status check"
-    pick: "Draft PR, not merged"
-    why: "Open as of 2026-08-16; MiniMax-H3-only change set, Z-Image support remains in [#3830](https://github.com/vllm-project/vllm-omni/pull/3830)."
+    pick: "Merged 2026-08-27 — loader-only phase one"
+    why: "Commit [`0e44fc74`](https://github.com/vllm-project/vllm-omni/commit/0e44fc7406c8cdaab68065fa35c3533470392d13), 9 files. Dispatch, kernel backends, and converter were deferred to [RFC #6493](https://github.com/vllm-project/vllm-omni/issues/6493); see the review-outcome section."
   - when: "Hopper (SM90)"
     pick: "Not supported"
-    why: "Intentionally out of scope for this PR."
-  - when: "Older FlashInfer stacks"
-    pick: "Compatible fallback"
-    why: "Native 208/208 fusion and fused SwiGLU need flashinfer#4537; older stacks fall back to a slower-but-correct path."
+    why: "Intentionally out of scope for this PR; the merged phase one validates SM103 only."
+  - when: "Kernel availability"
+    pick: "Needs vLLM's stock NVFP4 kernels"
+    why: "The merged path executes through FlashInfer/CUTLASS/FBGEMM NVFP4 layouts and fails at load if a forced backend is unavailable. (The draft's own compat CuTe-DSL path was deferred.)"
   - when: "Reproducing the numbers"
-    pick: "Use the checked-in runner"
-    why: "`benchmarks/diffusion/minimax_h3_quantization.py` reproduces the PR's measurement protocol on any converted checkpoint."
+    pick: "Author-reported only, for now"
+    why: "The draft's checked-in runner (`benchmarks/diffusion/minimax_h3_quantization.py`) did not merge; wait for #6493 to restore a runner."
 ---
 
 ## TL;DR
 
-**[PR #6162](https://github.com/vllm-project/vllm-omni/pull/6162) proposes offline
+**[PR #6162](https://github.com/vllm-project/vllm-omni/pull/6162) proposed offline
 SVDQuant W4A4 support for the MiniMax-H3 FL2VA diffusion transformer: all 208
 transformer linears become NVFP4 weight-and-activation quantized with a rank-32
 BF16 correction, 50 low-token AdaLN projections stay AWQ W4A16, and one
 checkpoint layout serves every supported GPU through runtime dispatch.**
-It is an **open draft PR as of 2026-08-16 — a proposal, not shipped**; every
-number below is author-reported from the PR body (B300, rebased branch head
-`8f15b357`), not yet independently measured in this cookbook.
+**Merged on 2026-08-27
+([`0e44fc74`](https://github.com/vllm-project/vllm-omni/commit/0e44fc7406c8cdaab68065fa35c3533470392d13))
+— but as a loader-only phase one (9 files): the dispatch gate, kernel
+backends, converter, and benchmark runner described below are draft-era
+design and did not land; fusion and its performance validation continue in
+[RFC #6493](https://github.com/vllm-project/vllm-omni/issues/6493).**
+Every number below is author-reported from the PR body (B300, full draft
+implementation at head `8f15b357`), not yet independently measured in this
+cookbook.
 
 | Metric (author-reported, 1×B300) | BF16 | SVDQuant | Δ |
 |---|---:|---:|---:|
 | E2E wall mean (5 s / 50 steps) | 134.599 s | 106.402 s | **1.265×** |
 | Denoise mean | 128.419 s | 99.758 s | **1.287×** |
 | Worker peak memory | 132,070 MiB | 86,840 MiB | **−34.25%** |
+
+## Review outcome (2026-08-27) — what actually merged
+
+The reviewed draft (`8f15b357`, +4,340/−41 across 21 files) was reshaped
+during review into a **loader-only phase one**: 9 files, ~930 added lines.
+
+**Landed** — the checkpoint contract and a compatible execution path:
+
+- [`svdquant_config.py`](https://github.com/vllm-project/vllm-omni/blob/0e44fc7406c8cdaab68065fa35c3533470392d13/vllm_omni/quantization/svdquant_config.py)
+  (+409) — `DiffusionSVDQuantConfig` plus a single linear method that consumes
+  the canonical NVFP4 layout (packed `qweight`, FP8 `wscales`, BF16
+  `proj_down`/`proj_up`/`smooth_factor`/`wcscales`) and executes NVFP4 GEMM +
+  BF16 rank correction **through vLLM's existing FlashInfer, CUTLASS, and
+  FBGEMM NVFP4 kernel layouts** — no new kernels.
+- `factory.py` / `component_config.py` wiring, a 50-line user guide
+  (`docs/user_guide/quantization/svdquant.md`), and three test files (config,
+  linear execution, TP loading).
+- Validated target: **SM103 only**. The PR calls the merged state "a
+  correctness baseline, not the final performance story".
+
+**Deferred to [RFC #6493](https://github.com/vllm-project/vllm-omni/issues/6493)** —
+the fail-fast dispatch gate, native fused epilogue, Nunchaku consumer-GPU
+path, per-backend load-time repacking, the Nunchaku→SVDQuant converter, the
+AWQ W4A16 Marlin AdaLN path, and the benchmark runner.
+
+Everything below analyzes the draft as it stood at head `8f15b357` — the
+design record the phase one was cut from.
 
 ## Background
 
@@ -113,14 +152,14 @@ that accompanies this post — it runs a real power-iteration SVD in the browser
 
 Around that core, the PR makes four load-bearing engineering decisions:
 
-**1. One on-disk layout, many kernels.** The checkpoint stores a canonical
+**1. One on-disk layout, many kernels.** *(The checkpoint contract landed; per-backend load-time repacking was deferred.)* The checkpoint stores a canonical
 row-major NVFP4 (or INT4) format — `qweight [N, K/2]` packed nibbles, FP8 block
 scales, the `proj_down [K,R]` / `proj_up [N,R]` pair, `smooth_factor`, and outer
 scales. Backends repack into whatever fragment layout their kernel wants at
 load time (bit-preserving permutations, verified by round-trip tests), so a
 checkpoint never has to be republished per architecture.
 
-**2. Fail-fast hardware dispatch.** `svdquant_dispatch.py` picks the kernel
+**2. Fail-fast hardware dispatch.** *(Draft-only — deferred in the merged phase one.)* `svdquant_dispatch.py` picks the kernel
 family from compute capability *before* weights load, and rejects unsupported
 combinations with an actionable error rather than silently degrading: Hopper
 SM90 is explicitly unsupported; SM100/103 require FlashInfer NVFP4; consumer
@@ -129,7 +168,7 @@ the PyPI `nunchaku` package is an unrelated Bayesian-statistics library).
 
 ![Figure 3 — dispatch: which GPU family gets which kernel backend]({{ site.baseurl }}/assets/figures/pr-6162-svdquant/fig5.png)
 
-**3. Feature-detected fusion, always a correct fallback.** On SM100/SM103 the
+**3. Feature-detected fusion, always a correct fallback.** *(Draft-only — the merged path reuses stock NVFP4 kernels; native fusion is RFC #6493.)* On SM100/SM103 the
 native `flashinfer.svdquant_linear` fuses residual GEMM + rank-up + per-output
 alpha + bias into one epilogue; per-output alpha matters for H3 QKV layers
 whose three shards carry different outer scales. Every new native API is
@@ -139,7 +178,7 @@ CuTe-DSL path whose Triton epilogue reproduces the same math
 SwiGLU preprocessing depend on [flashinfer#4537](https://github.com/flashinfer-ai/flashinfer/pull/4537);
 without it the checkpoint still loads and runs through the compat path.
 
-**4. Precision where it pays.** The 50 low-token AdaLN modulation projections
+**4. Precision where it pays.** *(The skip routing landed as `modules_to_not_convert`; the AWQ W4A16 Triton/Marlin path was deferred.)* The 50 low-token AdaLN modulation projections
 are bandwidth-bound, so 4-bit activations buy nothing there — they stay AWQ
 W4A16 (Triton kernel with a Marlin fast path on SM100/103), and
 precision-sensitive condition/final projections stay BF16. An optional
@@ -184,9 +223,9 @@ All numbers below are **author-reported in the
 [PR body](https://github.com/vllm-project/vllm-omni/pull/6162)**, measured on
 1× NVIDIA B300 SXM6 (SM103, 275 GiB, driver 610.43.02), vLLM 0.26.0, TP=DP=1,
 fully resident eager, CUDNN attention, 1344×768, 5 s @ 24 fps, 50 steps, seed
-1101, one warmup + three measured requests. They are **not yet reproduced in
-this cookbook** — treat them as the PR's evidence, pending merge and
-independent runs.
+1101, one warmup + three measured requests. They describe the **full draft
+implementation**; the merged loader-only phase one is a correctness baseline,
+so treat them as the design's evidence, pending #6493 and independent runs.
 
 The headline table is in the TL;DR. Two secondary results are worth
 understanding:
@@ -206,7 +245,9 @@ its output hash intentionally differs from the old overflowed path.
 
 ## How to use it
 
-If and when the PR lands, the workflow is convert-once, serve-anywhere:
+If and when the deferred kernel work lands, the full story becomes
+convert-once, serve-anywhere. For now, the merged phase one is load-only:
+bring an offline-quantized checkpoint and `vllm serve` auto-detects it:
 
 {% include usage-cookbook.html modes=page.usage %}
 
@@ -219,28 +260,29 @@ reproduces the PR's measurement protocol on any converted checkpoint.
 
 ## Limitations & follow-ups
 
-- **Draft PR, not merged** (as of 2026-08-16). Rebased onto main as a
-  MiniMax-H3-only change set; Z-Image support remains in
+- **Merged 2026-08-27 as a loader-only phase one** (commit
+  [`0e44fc74`](https://github.com/vllm-project/vllm-omni/commit/0e44fc7406c8cdaab68065fa35c3533470392d13),
+  9 files). The draft's dispatch gate, native fusion, Nunchaku path,
+  converter, and benchmark runner were deferred — fusion and performance
+  validation continue in
+  [RFC #6493](https://github.com/vllm-project/vllm-omni/issues/6493).
+  Z-Image support remains in
   [#3830](https://github.com/vllm-project/vllm-omni/pull/3830).
 - Scope: FL2VA partition only — no Ref2VA conversion. Hopper SM90 is
   intentionally unsupported.
-- Native 208/208 fusion and fused SwiGLU need flashinfer#4537; older stacks
-  fall back to the compatible path (slower, still correct).
-- Open review threads worth watching: the component-routing fallback
-  (`ComponentQuantizationConfig.get_quant_method` returning
-  `UnquantizedLinearMethod` for unscoped components) is now pinned by an
-  updated test, but its interaction with embedding-type layers under a
-  `None`-resolved prefix
-  ([discussion](https://github.com/vllm-project/vllm-omni/pull/6162#discussion_r3789735883))
-  and the fp16-declared/BF16-required activation contract
-  ([discussion](https://github.com/vllm-project/vllm-omni/pull/6162#discussion_r3789736149))
-  were still open at the time of writing. The earlier ask for a native E2E at
-  head has been answered in the PR body.
+- Native 208/208 fusion and fused SwiGLU preprocessing (draft; dependent on
+  [flashinfer#4537](https://github.com/flashinfer-ai/flashinfer/pull/4537))
+  were deferred along with the rest of the kernel work.
+- The draft's open review threads (the component-routing fallback under a
+  `None`-resolved prefix, the fp16-declared/BF16-required activation
+  contract) were resolved during review — the outcome was the scope
+  reduction above.
 - No cookbook ledger entry yet — this post cites only PR evidence.
 
 ## References
 
-- [PR #6162 — Add MiniMax-H3 SVDQuant W4A4 on Blackwell](https://github.com/vllm-project/vllm-omni/pull/6162) (draft)
+- [PR #6162 — Add MiniMax-H3 SVDQuant W4A4 on Blackwell](https://github.com/vllm-project/vllm-omni/pull/6162) (merged 2026-08-27, loader-only phase one)
+- [RFC #6493 — staged MiniMax-H3 SVDQuant support](https://github.com/vllm-project/vllm-omni/issues/6493) (fusion + performance follow-ups)
 - [SVDQuant: Absorbing Outliers by Low-Rank Components for 4-Bit Diffusion Models](https://arxiv.org/abs/2411.05007)
 - [flashinfer#4537 — native SVDQuant operator](https://github.com/flashinfer-ai/flashinfer/pull/4537)
 - [Nunchaku SVDQuant kernels (release wheels)](https://github.com/nunchaku-ai/nunchaku/releases)
