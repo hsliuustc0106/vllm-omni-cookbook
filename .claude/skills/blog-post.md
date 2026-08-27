@@ -88,4 +88,29 @@ cookbook links absolute; `summary` ≤ 240 chars; placeholders like the
 `[TEMPLATE]` dummy post deleted if this is the first real post. Push a branch,
 open the PR — merging to `main` auto-deploys to GitHub Pages.
 
+## Step 5 — Xiaohongshu note (same PR)
+
+Every post PR also ships its 小红书 note set: `blog/xhs/notes/<post-slug>.mjs`
+(note config) plus the rendered `blog/xhs/out/<post-slug>/` (numbered PNG
+cards + `note.txt`), generated and committed before the PR opens:
+
+```bash
+cd blog/xhs && node generate.mjs <post-slug>   # fails on limit violations
+```
+
+- Reuse the post's own figures as card bodies, in post order; SVGs are fine
+  (headless Chrome rasterizes them). Captions in the config are Chinese —
+  lift them from the `.zh.md` alt text, or translate when EN-only. Note copy
+  is always Chinese regardless of post language.
+- Calibration = 小红书读者 persona: layman reader, number-forward hook, one
+  analogy per concept, no unexplained jargon — and carry the honesty caveats
+  into the note body (author-reported / upstream-doc numbers, draft status).
+- Hard limits (the generator fails the build): `note.title` ≤ 20 chars,
+  body + hashtags ≤ 1000. Cover uses the post's `feature:` color from
+  `blog/_config.yml` (darken it for `colorDeep`/`colorDarkest`). Closing
+  card + CTA point to the bio link and `GitHub 搜 vllm-omni-cookbook`;
+  never put QR codes in cards.
+- Publishing is out of scope for the PR — notes are posted manually later,
+  ≤ 1/day. Full authoring + publish checklist: `blog/xhs/README.md`.
+
 Full long-form skill (Cursor): `.cursor/skills/cookbook-blog-post/SKILL.md`
