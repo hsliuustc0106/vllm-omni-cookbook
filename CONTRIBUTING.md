@@ -34,11 +34,12 @@ skill for blog posts (`blog-post.md`) and condensed stubs for the rest.
 
 ## How to Add a New Blog Post
 
-1. Copy [`blog/TEMPLATE.md`](blog/TEMPLATE.md) → `blog/_posts/YYYY-MM-DD-<slug>.md`
+1. Copy [`blog/TEMPLATE.md`](blog/TEMPLATE.md) → `blog/_posts/YYYY-MM-DD-<slug>.md` (plus the `.zh.md` pair)
 2. Write for users: TL;DR → Background → What the PR does → Key changes → Measured impact → How to use it → Limitations → References
 3. Cite numbers only from the cookbook ledgers or upstream perf JSON, with absolute GitHub URLs
 4. Figures go in `blog/assets/figures/<slug>/`; preview locally with `bundle exec jekyll serve`
-5. Merging to `main` auto-deploys the blog
+5. Ship the 小红书 note in the same PR: `cd blog/xhs && node generate.mjs <slug>` commits `notes/<slug>.mjs` + the rendered `out/<slug>/` card set (calibration and limits: [`blog/xhs/README.md`](blog/xhs/README.md); the generator fails on violations)
+6. Merging to `main` auto-deploys the blog
 
 ## How to Add a New Cookbook Release
 
