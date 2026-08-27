@@ -1,0 +1,21 @@
+一个flag，显存直接省一半
+
+想给视频生成模型省显存，以前的路径都很重：跑离线量化工具、发布第二个几十 GB 的 checkpoint、还得保持两边同步😫
+
+vLLM-Omni 的“在线量化”把这一步删了：加载 BF16 checkpoint 的现场，把每层顺手量化成 FP8（W8A8）——
+🔹 不用校准：激活 scale 每次前向现算（dynamic）
+🔹 不用第二个文件：量化权重只存在于显存
+🔹 权重字节直接砍半：2 字节 → 1 字节
+
+最直观的例子：LTX-2.5 BF16 双阶段 1920×1088 要 ~114GB，80G 的 H100 根本装不下；--quantization fp8 一个 flag，单卡就 fit 了✅
+
+Qwen-Image 实测峰值显存 99.0 → 85.8 GB（−13.4%，2×B200）。为什么只降 13%？权重减半只是峰值的一部分，激活/VAE/attention 工作区都不变。
+
+两个诚实的提醒⚠️：
+1️⃣ 省的是显存，不一定是速度 —— Blackwell 上 bias 是独立 kernel，装可选的 quack 包融合后才快
+2️⃣ 质量按模型验证 —— 敏感层 ignored_layers 留 BF16，先和 BF16 同 seed 对比再上线
+
+📘 完整拆解：主页简介直达
+🔍 GitHub 搜：vllm-omni-cookbook
+
+#大模型 #AI技术分享 #开源项目 #AIGC #深度学习 #GPU #模型量化
