@@ -6,6 +6,8 @@ Read it live at **[hsliuustc0106.github.io/vllm-omni-cookbook](https://hsliuustc
 
 Whenever an important PR, feature, or model is finalized, it gets a **PR Analysis** post explaining it for users: the problem it solves, the design, the key code changes, and the benchmark evidence. Posts have no fixed cadence — they publish when something important lands. The blog is a self-contained Jekyll site in [`blog/`](blog/) (same stack as [vllm.ai/blog](https://vllm.ai/blog)), redeployed to GitHub Pages automatically on every push that touches `blog/`. New posts start from [`blog/TEMPLATE.md`](blog/TEMPLATE.md).
 
+Every post also ships with a ready-to-post **小红书 (Xiaohongshu) 图文笔记**: a hook cover, the post's own figures with Chinese captions, the key numbers, and a ≤ 1000-character note — generated from `blog/xhs/notes/<slug>.mjs` into `blog/xhs/out/<slug>/` and carried in the same PR as the post. Notes are posted manually on Xiaohongshu at a ≤ 1/day cadence; the workflow lives in [`blog/xhs/README.md`](blog/xhs/README.md).
+
 Local preview (needs Ruby ≥ 3, e.g. `brew install ruby`):
 `cd blog && bundle install && bundle exec jekyll serve`
 
@@ -17,6 +19,7 @@ Behind the posts, this repo maintains the **vLLM-Omni performance cookbook** —
 |-------|------|------|
 | **Blog posts** | `blog/_posts/` | One deep-dive "PR Analysis" post per important PR/feature — the user-facing narrative |
 | **Blog site** | [`blog/`](blog/) | Self-contained Jekyll site (config, template, figures) deployed to GitHub Pages |
+| **Xiaohongshu notes** | [`blog/xhs/`](blog/xhs/) | Per-post 小红书 图文笔记 generator + rendered card sets (shipped in the same PR as the post) |
 | **Per model** | `{category}/{model}/index.md` | Cookbook ledger — one `## vX.Y.Z` section per **even** release (metrics, delta vs prior even release, optimization notes) |
 | **Per release** | `SUMMARY.md` | Cross-model cookbook snapshot for each **even** release only |
 | **Update notes** | [`notes/`](notes/) | Chronological feature, RFC, and PR updates with no fixed cadence |
