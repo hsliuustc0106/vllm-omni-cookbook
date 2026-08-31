@@ -1,0 +1,1631 @@
+{
+  "artifacts": [
+    {
+      "directory": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7",
+      "payload_bytes": 33140865968,
+      "ready": {
+        "artifact_content_sha256": "ead8979d0cd48daf832c0cb177ddc5d2d07522ac0b455eb4953424f4473a112f",
+        "integrity_mode": "full_checksum",
+        "manifest_sha256": "1ab7c3621cceac7572a8d2d327b2cc4e858424641cc5c45567ad98cab051d03a",
+        "publication_id": "14025619b4e94bd4b1afae1c5a9111cf",
+        "schema_version": 1
+      },
+      "sequence_parallel_size": 1,
+      "tensor_parallel_rank": 0,
+      "tensor_parallel_size": 2
+    },
+    {
+      "directory": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1",
+      "payload_bytes": 33140865968,
+      "ready": {
+        "artifact_content_sha256": "97b95d4e515315a6e2ac7e0fb817aa070c92ac9ca1a77cd1ee5e220529d64b17",
+        "integrity_mode": "full_checksum",
+        "manifest_sha256": "c0d6a31564fdde10b4038bb72b5e4f1629a1dbf6ce9db8b7996377690df855ec",
+        "publication_id": "3458accdd9014c65910131e6f5bb2995",
+        "schema_version": 1
+      },
+      "sequence_parallel_size": 1,
+      "tensor_parallel_rank": 1,
+      "tensor_parallel_size": 2
+    }
+  ],
+  "cgroup_capacity": {
+    "end_failcnt": 382802,
+    "limit_gib": 921.0,
+    "monitor_was_user_stopped": true,
+    "peak_cache_gib": 823.1923599243164,
+    "peak_percent": 99.15589281842193,
+    "peak_shmem_gib": 525.2614974975586,
+    "peak_usage_gib": 913.225772857666,
+    "sample_count": 138,
+    "start_failcnt": 382802,
+    "start_usage_gib": 566.7311820983887
+  },
+  "correctness": {
+    "hbm_peak_mib": {
+      "registered": 30286.0,
+      "staged": 30286.0
+    },
+    "output_contract": {
+      "audio_dtype": "float32",
+      "audio_shape": [
+        1,
+        2,
+        278400
+      ],
+      "video_dtype": "float32",
+      "video_shape": [
+        209,
+        768,
+        1344,
+        3
+      ]
+    },
+    "steady_output_count": 16,
+    "steady_outputs_exact_match": true,
+    "steady_unique_digest_count": 1,
+    "warmup_matches_steady": false,
+    "warmup_output_count": 4,
+    "warmup_unique_digest_count": 1,
+    "warmups_exact_match_each_other": true
+  },
+  "hardware": {
+    "git_status": "",
+    "gpu_info": "0, NVIDIA L20X, 143771, 00000000:08:00.0\n1, NVIDIA L20X, 143771, 00000000:7E:00.0\n2, NVIDIA L20X, 143771, 00000000:A2:00.0\n3, NVIDIA L20X, 143771, 00000000:C6:00.0\n",
+    "mounts": {
+      "model": "/workspace bindroot-97c67-wvodjlvi:cpfs-070zafjb8or1v8upnuc-000001.ap-southeast-1.cpfs.aliyuncs.com:/[/data02/560986/public] fuse.aliyun-alinas-efc rw,relatime,user_id=0,group_id=0,default_permissions,allow_other,max_read=1048576",
+      "root": "/      overlay overlay rw,relatime,lowerdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106867/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106866/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106865/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106864/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106863/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106862/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106861/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106860/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106859/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106858/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106857/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106856/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106855/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106854/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106853/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106852/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106851/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106850/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106849/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106848/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106847/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106846/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106845/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106844/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106843/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106842/fs,upperdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106868/fs,workdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106868/work,index=off",
+      "source": "/      overlay overlay rw,relatime,lowerdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106867/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106866/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106865/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106864/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106863/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106862/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106861/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106860/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106859/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106858/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106857/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106856/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106855/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106854/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106853/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106852/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106851/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106850/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106849/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106848/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106847/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106846/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106845/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106844/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106843/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106842/fs,upperdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106868/fs,workdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106868/work,index=off",
+      "venv": "/      overlay overlay rw,relatime,lowerdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106867/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106866/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106865/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106864/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106863/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106862/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106861/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106860/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106859/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106858/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106857/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106856/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106855/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106854/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106853/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106852/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106851/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106850/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106849/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106848/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106847/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106846/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106845/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106844/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106843/fs:/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106842/fs,upperdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106868/fs,workdir=/data/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/106868/work,index=off"
+    },
+    "numa_binding": {
+      "cpu_allowed": "0-55,112-167"
+    },
+    "physical_gpus": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "source_sha": "497c537c6f70e44f376b491bf7b50395cf2cba5d",
+    "topology": "\t\u001b[4mGPU0\tGPU1\tGPU2\tGPU3\tNIC0\tNIC1\tNIC2\tNIC3\tNIC4\tNIC5\tNIC6\tNIC7\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tNV18\tNV18\tNV18\tPIX\tNODE\tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t0-55,112-167\t0\t\tN/A\nGPU1\tNV18\t X \tNV18\tNV18\tNODE\tPIX\tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t0-55,112-167\t0\t\tN/A\nGPU2\tNV18\tNV18\t X \tNV18\tNODE\tNODE\tPIX\tNODE\tSYS\tSYS\tSYS\tSYS\t0-55,112-167\t0\t\tN/A\nGPU3\tNV18\tNV18\tNV18\t X \tNODE\tNODE\tNODE\tPIX\tSYS\tSYS\tSYS\tSYS\t0-55,112-167\t0\t\tN/A\nNIC0\tPIX\tNODE\tNODE\tNODE\t X \tNODE\tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC1\tNODE\tPIX\tNODE\tNODE\tNODE\t X \tNODE\tNODE\tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC2\tNODE\tNODE\tPIX\tNODE\tNODE\tNODE\t X \tNODE\tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC3\tNODE\tNODE\tNODE\tPIX\tNODE\tNODE\tNODE\t X \tSYS\tSYS\tSYS\tSYS\t\t\t\t\nNIC4\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\t X \tNODE\tNODE\tNODE\t\t\t\t\nNIC5\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tNODE\t X \tNODE\tNODE\t\t\t\t\nNIC6\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tNODE\tNODE\t X \tNODE\t\t\t\t\nNIC7\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tSYS\tNODE\tNODE\tNODE\t X \t\t\t\t\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks\n\nNIC Legend:\n\n  NIC0: mlx5_bond_0\n  NIC1: mlx5_bond_1\n  NIC2: mlx5_bond_2\n  NIC3: mlx5_bond_3\n  NIC4: mlx5_bond_4\n  NIC5: mlx5_bond_5\n  NIC6: mlx5_bond_6\n  NIC7: mlx5_bond_7\n\n"
+  },
+  "head_sha": "497c537c6f70e44f376b491bf7b50395cf2cba5d",
+  "latency": {
+    "existing_capacity": {
+      "completed_pair_wall_s": 803.909237306565,
+      "engine_a_s": 801.0692077614367,
+      "engine_b_s": 803.3774862326682,
+      "next_wave_failure": "600-second async-output timeout",
+      "statistical_policy": "not included in n=3 transport comparison"
+    },
+    "registered": {
+      "combined_throughput_req_s": [
+        0.06939975205342558,
+        0.06927364100980442,
+        0.06923142964870795
+      ],
+      "combined_throughput_stats": {
+        "count": 3,
+        "max": 0.06939975205342558,
+        "mean": 0.06930160757064598,
+        "min": 0.06923142964870795,
+        "stddev": 8.757684840447431e-05
+      },
+      "engine_a_s": [
+        28.818546764552593,
+        28.87101025506854,
+        28.888613309711218
+      ],
+      "engine_b_s": [
+        28.81646405905485,
+        28.857777267694473,
+        28.87359134480357
+      ],
+      "pair_wall_s": [
+        28.818546764552593,
+        28.87101025506854,
+        28.888613309711218
+      ],
+      "pair_wall_stats": {
+        "count": 3,
+        "max": 28.888613309711218,
+        "mean": 28.85939010977745,
+        "min": 28.818546764552593,
+        "stddev": 0.036449979698978265
+      }
+    },
+    "registered_vs_staged": {
+      "candidate": {
+        "count": 3,
+        "max": 28.888613309711218,
+        "mean": 28.85939010977745,
+        "min": 28.818546764552593,
+        "stddev": 0.036449979698978265
+      },
+      "conservative_95_ci_s": [
+        -16.941645523658455,
+        5.437793270499572
+      ],
+      "control": {
+        "count": 3,
+        "max": 39.81180915236473,
+        "mean": 34.61131623635689,
+        "min": 31.968813322484493,
+        "stddev": 4.503957208405552
+      },
+      "delta_percent": -16.618628679996355,
+      "delta_s": -5.751926126579441
+    },
+    "staged": {
+      "combined_throughput_req_s": [
+        0.050236350534730835,
+        0.062396020474927094,
+        0.06256097090076686
+      ],
+      "combined_throughput_stats": {
+        "count": 3,
+        "max": 0.06256097090076686,
+        "mean": 0.05839778063680826,
+        "min": 0.050236350534730835,
+        "stddev": 0.007068486977003484
+      },
+      "engine_a_s": [
+        39.81180915236473,
+        32.05332623422146,
+        31.968813322484493
+      ],
+      "engine_b_s": [
+        38.71336643025279,
+        31.89797669649124,
+        31.917689107358456
+      ],
+      "pair_wall_s": [
+        39.81180915236473,
+        32.05332623422146,
+        31.968813322484493
+      ],
+      "pair_wall_stats": {
+        "count": 3,
+        "max": 39.81180915236473,
+        "mean": 34.61131623635689,
+        "min": 31.968813322484493,
+        "stddev": 4.503957208405552
+      }
+    }
+  },
+  "lifecycle": {
+    "active_children_empty": true,
+    "engine_b_survived_engine_a_teardown": {
+      "registered": true,
+      "staged": true
+    },
+    "log_contracts": {
+      "registered": {
+        "a": {
+          "consume_lease_count": 2,
+          "profiler_callback_warning_count": 0,
+          "registration_count": 2,
+          "release_lease_count": 2,
+          "skip_ordinary_dit_count": 2,
+          "staging_fallback_count": 0,
+          "traceback_count": 0,
+          "unregistration_count": 2
+        },
+        "b": {
+          "consume_lease_count": 2,
+          "profiler_callback_warning_count": 0,
+          "registration_count": 2,
+          "release_lease_count": 2,
+          "skip_ordinary_dit_count": 2,
+          "staging_fallback_count": 0,
+          "traceback_count": 0,
+          "unregistration_count": 2
+        }
+      },
+      "staged": {
+        "a": {
+          "consume_lease_count": 2,
+          "profiler_callback_warning_count": 0,
+          "registration_count": 0,
+          "release_lease_count": 2,
+          "skip_ordinary_dit_count": 2,
+          "staging_fallback_count": 2,
+          "traceback_count": 0,
+          "unregistration_count": 0
+        },
+        "b": {
+          "consume_lease_count": 2,
+          "profiler_callback_warning_count": 0,
+          "registration_count": 0,
+          "release_lease_count": 2,
+          "skip_ordinary_dit_count": 2,
+          "staging_fallback_count": 2,
+          "traceback_count": 0,
+          "unregistration_count": 0
+        }
+      }
+    },
+    "monitor_success": true,
+    "pair_return_codes": {
+      "registered": {
+        "a": 0,
+        "b": 0
+      },
+      "staged": {
+        "a": 0,
+        "b": 0
+      }
+    },
+    "preserved_failed_capacity_attempt": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-disabled-r20",
+    "preserved_user_stopped_retry": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-disabled-r20-retry-async2400",
+    "task_gpu_processes_after_cleanup": []
+  },
+  "memory": {
+    "existing_capacity": {
+      "diffusion_worker_count": 4,
+      "hbm_initialized_mib_by_gpu": {
+        "0": 33085.0,
+        "1": 33077.0,
+        "2": 33085.0,
+        "3": 33077.0
+      },
+      "locked_gib": 9.1552734375e-05,
+      "monitor": {
+        "command": [
+          "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+          "/tmp/hwr-tp-validation-497c537c/tools/tp2_pair_runner.py",
+          "--output-dir",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-disabled-r20",
+          "--model",
+          "/workspace/model/hub/models--MiniMaxAI--MiniMax-H3/snapshots/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA",
+          "--store",
+          "/tmp/hwr-tp-validation-497c537c/store-tp2",
+          "--source-root",
+          "/home/hsliu/tmp/vllm-omni-hwr-tp-validation",
+          "--driver",
+          "/tmp/hwr-tp-validation-497c537c/tools/benchmark_driver.py",
+          "--python",
+          "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+          "--mode",
+          "disabled",
+          "--engine-a-devices",
+          "0,1",
+          "--engine-b-devices",
+          "2,3",
+          "--warmup-waves",
+          "1",
+          "--measure-waves",
+          "3",
+          "--profile-wave",
+          "--resident-layers",
+          "20",
+          "--steps",
+          "3",
+          "--duration",
+          "8.7",
+          "--width",
+          "1344",
+          "--height",
+          "768",
+          "--aspect-ratio",
+          "16:9",
+          "--prompt",
+          "In a snowy blue-purple forest, Ori carefully walks past a sleeping giant; footsteps crunch in the snow while the creature breathes and softly snorts.",
+          "--seed",
+          "1101",
+          "--observer-ready-file",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-disabled-r20/observer.ready",
+          "--observer-release-file",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-disabled-r20/observer.release",
+          "--teardown-a-before-b-profile",
+          "--timeout",
+          "7140.0"
+        ],
+        "elapsed_s": 1996.8873076960444,
+        "numa_snapshot_done": true,
+        "quiesced": true,
+        "return_code": 1,
+        "root_pid": 134022,
+        "sample_count": 156,
+        "started_unix_s": 1787702293.8845057,
+        "timed_out": false
+      },
+      "numa_pages": {
+        "all": {
+          "0": 99174877,
+          "1": 121665
+        },
+        "anonymous": {
+          "0": 2583515,
+          "1": 232
+        },
+        "file": {
+          "0": 96663258,
+          "1": 121665
+        }
+      },
+      "private_clean_gib": 0.2559700012207031,
+      "private_dirty_gib": 387.1674919128418,
+      "process_count": 9,
+      "pss_anon_gib": 21.037479400634766,
+      "pss_file_gib": 0.9182806015014648,
+      "pss_gib": 388.05845165252686,
+      "pss_shmem_gib": 366.1026859283447,
+      "rss_gib": 390.9531669616699,
+      "sample_time_unix_s": 1787702792.5139947,
+      "shared_clean_gib": 3.529529571533203,
+      "system_mlocked_gib": 9.1552734375e-05,
+      "vmlck_gib": 9.1552734375e-05,
+      "vmpin_gib": 0.0
+    },
+    "registered": {
+      "diffusion_worker_count": 4,
+      "hbm_initialized_mib_by_gpu": {
+        "0": 33043.0,
+        "1": 33035.0,
+        "2": 33043.0,
+        "3": 33035.0
+      },
+      "locked_gib": 9.1552734375e-05,
+      "monitor": {
+        "command": [
+          "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+          "/tmp/hwr-tp-validation-497c537c/tools/tp2_pair_runner.py",
+          "--output-dir",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20",
+          "--model",
+          "/workspace/model/hub/models--MiniMaxAI--MiniMax-H3/snapshots/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA",
+          "--store",
+          "/tmp/hwr-tp-validation-497c537c/store-tp2",
+          "--source-root",
+          "/home/hsliu/tmp/vllm-omni-hwr-tp-validation",
+          "--driver",
+          "/tmp/hwr-tp-validation-497c537c/tools/benchmark_driver.py",
+          "--python",
+          "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+          "--mode",
+          "registered",
+          "--engine-a-devices",
+          "0,1",
+          "--engine-b-devices",
+          "2,3",
+          "--warmup-waves",
+          "1",
+          "--measure-waves",
+          "3",
+          "--profile-wave",
+          "--resident-layers",
+          "20",
+          "--steps",
+          "3",
+          "--duration",
+          "8.7",
+          "--width",
+          "1344",
+          "--height",
+          "768",
+          "--aspect-ratio",
+          "16:9",
+          "--prompt",
+          "In a snowy blue-purple forest, Ori carefully walks past a sleeping giant; footsteps crunch in the snow while the creature breathes and softly snorts.",
+          "--seed",
+          "1101",
+          "--observer-ready-file",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/observer.ready",
+          "--observer-release-file",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/observer.release",
+          "--teardown-a-before-b-profile",
+          "--timeout",
+          "7140.0"
+        ],
+        "elapsed_s": 919.3041573278606,
+        "numa_snapshot_done": true,
+        "quiesced": true,
+        "return_code": 0,
+        "root_pid": 4148651,
+        "sample_count": 132,
+        "started_unix_s": 1787700426.4215775,
+        "timed_out": false
+      },
+      "numa_pages": {
+        "all": {
+          "0": 78179711,
+          "1": 121282
+        },
+        "anonymous": {
+          "0": 2606534,
+          "1": 232
+        },
+        "file": {
+          "0": 75645784,
+          "1": 121282
+        },
+        "filtered_file": {
+          "0": 32364136
+        }
+      },
+      "private_clean_gib": 0.2572975158691406,
+      "private_dirty_gib": 183.25008010864258,
+      "process_count": 9,
+      "pss_anon_gib": 21.11907958984375,
+      "pss_file_gib": 62.753414154052734,
+      "pss_gib": 245.9751853942871,
+      "pss_shmem_gib": 162.10268592834473,
+      "rss_gib": 311.0086975097656,
+      "sample_time_unix_s": 1787700779.5128229,
+      "shared_clean_gib": 127.50114440917969,
+      "system_mlocked_gib": 9.1552734375e-05,
+      "vmlck_gib": 9.1552734375e-05,
+      "vmpin_gib": 0.0
+    },
+    "staged": {
+      "diffusion_worker_count": 4,
+      "hbm_initialized_mib_by_gpu": {
+        "0": 32985.0,
+        "1": 32977.0,
+        "2": 32985.0,
+        "3": 32977.0
+      },
+      "locked_gib": 9.1552734375e-05,
+      "monitor": {
+        "command": [
+          "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+          "/tmp/hwr-tp-validation-497c537c/tools/tp2_pair_runner.py",
+          "--output-dir",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20",
+          "--model",
+          "/workspace/model/hub/models--MiniMaxAI--MiniMax-H3/snapshots/42ed227ee7df40d41602854ae760620d6eb651fe/FL2VA",
+          "--store",
+          "/tmp/hwr-tp-validation-497c537c/store-tp2",
+          "--source-root",
+          "/home/hsliu/tmp/vllm-omni-hwr-tp-validation",
+          "--driver",
+          "/tmp/hwr-tp-validation-497c537c/tools/benchmark_driver.py",
+          "--python",
+          "/tmp/venvs/vllm-omni-pr3-8b1bbdfb/bin/python",
+          "--mode",
+          "staged",
+          "--engine-a-devices",
+          "0,1",
+          "--engine-b-devices",
+          "2,3",
+          "--warmup-waves",
+          "1",
+          "--measure-waves",
+          "3",
+          "--profile-wave",
+          "--resident-layers",
+          "20",
+          "--steps",
+          "3",
+          "--duration",
+          "8.7",
+          "--width",
+          "1344",
+          "--height",
+          "768",
+          "--aspect-ratio",
+          "16:9",
+          "--prompt",
+          "In a snowy blue-purple forest, Ori carefully walks past a sleeping giant; footsteps crunch in the snow while the creature breathes and softly snorts.",
+          "--seed",
+          "1101",
+          "--observer-ready-file",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20/observer.ready",
+          "--observer-release-file",
+          "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20/observer.release",
+          "--teardown-a-before-b-profile",
+          "--timeout",
+          "7140.0"
+        ],
+        "elapsed_s": 946.9558190405369,
+        "numa_snapshot_done": true,
+        "quiesced": true,
+        "return_code": 0,
+        "root_pid": 42812,
+        "sample_count": 134,
+        "started_unix_s": 1787701346.6875806,
+        "timed_out": false
+      },
+      "numa_pages": {
+        "all": {
+          "0": 80297539,
+          "1": 121547
+        },
+        "anonymous": {
+          "0": 2638166,
+          "1": 232
+        },
+        "file": {
+          "0": 77731925,
+          "1": 121547
+        },
+        "filtered_file": {
+          "0": 32364136
+        }
+      },
+      "private_clean_gib": 0.2601051330566406,
+      "private_dirty_gib": 191.37550354003906,
+      "process_count": 9,
+      "pss_anon_gib": 21.2454833984375,
+      "pss_file_gib": 62.731855392456055,
+      "pss_gib": 254.08003044128418,
+      "pss_shmem_gib": 170.10268592834473,
+      "rss_gib": 319.09371185302734,
+      "sample_time_unix_s": 1787701706.1347678,
+      "shared_clean_gib": 127.45792770385742,
+      "system_mlocked_gib": 9.1552734375e-05,
+      "vmlck_gib": 9.1552734375e-05,
+      "vmpin_gib": 0.0
+    }
+  },
+  "profiles": {
+    "registered": {
+      "children": {
+        "a": {
+          "compute_s": 39.821300346980294,
+          "cpu_copy_s": 14.169761318000026,
+          "cpu_to_copy_s": 3.0840926579999994,
+          "h2d_count": 5921,
+          "h2d_device_s": 3.3668717540000586,
+          "h2d_gib": 171.9431506730616,
+          "nccl_by_collective_s": {
+            "allgather": 0.04951868500000001,
+            "allreduce": 1.101805436,
+            "broadcast": 0.001994087
+          },
+          "nccl_s": 1.1533182080000002,
+          "nvlink_rx_gib": 263.0580806732178,
+          "nvlink_tx_gib": 263.05807876586914,
+          "per_rank": [
+            {
+              "copy_gib": {
+                "d2d_copy": 15.2926428578794,
+                "d2h_copy": 2.413311878219247,
+                "h2d_copy": 85.97171865217388
+              },
+              "duration_ms": {
+                "communication_kernel": 487.47022499999997,
+                "compute_kernel": 19988.41260898987,
+                "d2d_copy": 8.234051000000008,
+                "d2h_copy": 52.521849,
+                "h2d_copy": 1683.4189670000314,
+                "memset": 21.017346000001414
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 414,
+                "d2h_copy": 110,
+                "h2d_copy": 2967,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 23057.024399414062,
+              "nccl_duration_ms": {
+                "allgather": 24.072470000000006,
+                "allreduce": 463.0469710000001,
+                "broadcast": 0.350784
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-a/profiles/20260826-073428_tp2-registered-a/trace_rank0.json",
+              "rank": "0",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 22161.304969999997
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1537.876567,
+                "aten::copy_": 7080.052020000068,
+                "aten::to": 1606.327090999968
+              }
+            },
+            {
+              "copy_gib": {
+                "d2d_copy": 15.292642828077078,
+                "d2h_copy": 0.00028792954981327057,
+                "h2d_copy": 85.97143202088773
+              },
+              "duration_ms": {
+                "communication_kernel": 665.8479829999997,
+                "compute_kernel": 19832.887737990426,
+                "d2d_copy": 8.227563000000004,
+                "d2h_copy": 0.2835550000000001,
+                "h2d_copy": 1683.452787000027,
+                "memset": 20.280713000001374
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 411,
+                "d2h_copy": 108,
+                "h2d_copy": 2954,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 23056.18689746094,
+              "nccl_duration_ms": {
+                "allgather": 25.446214999999995,
+                "allreduce": 638.758465,
+                "broadcast": 1.6433029999999997
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-a/profiles/20260826-073428_tp2-registered-a/trace_rank1.json",
+              "rank": "1",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 22147.54347
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1546.2160909999998,
+                "aten::copy_": 7089.709297999957,
+                "aten::to": 1615.1155459999936
+              }
+            }
+          ],
+          "profile_wall_s": 28.904940083622932,
+          "rank_count": 2
+        },
+        "b": {
+          "compute_s": 39.450851690981295,
+          "cpu_copy_s": 14.02195374799988,
+          "cpu_to_copy_s": 3.0733682429999645,
+          "h2d_count": 5921,
+          "h2d_device_s": 3.365565286000046,
+          "h2d_gib": 171.9431506730616,
+          "nccl_by_collective_s": {
+            "allgather": 0.049311614000000004,
+            "allreduce": 1.180694779,
+            "broadcast": 0.001412928
+          },
+          "nccl_s": 1.231419321,
+          "nvlink_rx_gib": 263.0580778121948,
+          "nvlink_tx_gib": 263.0580835342407,
+          "per_rank": [
+            {
+              "copy_gib": {
+                "d2d_copy": 15.2926428578794,
+                "d2h_copy": 2.413311878219247,
+                "h2d_copy": 85.97171865217388
+              },
+              "duration_ms": {
+                "communication_kernel": 507.38610900000015,
+                "compute_kernel": 19853.041196990158,
+                "d2d_copy": 8.240766000000004,
+                "d2h_copy": 52.565755,
+                "h2d_copy": 1682.8665110000193,
+                "memset": 20.800657000001294
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 414,
+                "d2h_copy": 110,
+                "h2d_copy": 2967,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 22907.37943652344,
+              "nccl_duration_ms": {
+                "allgather": 24.459602000000007,
+                "allreduce": 482.5774500000002,
+                "broadcast": 0.349057
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-b/profiles/20260826-073828_tp2-registered-b/trace_rank0.json",
+              "rank": "0",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 21978.003281
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1541.955509999994,
+                "aten::copy_": 7022.51456099992,
+                "aten::to": 1607.7936499999944
+              }
+            },
+            {
+              "copy_gib": {
+                "d2d_copy": 15.292642828077078,
+                "d2h_copy": 0.00028792954981327057,
+                "h2d_copy": 85.97143202088773
+              },
+              "duration_ms": {
+                "communication_kernel": 724.0332119999999,
+                "compute_kernel": 19597.81049399114,
+                "d2d_copy": 8.231304000000009,
+                "d2h_copy": 0.2841920000000001,
+                "h2d_copy": 1682.6987750000267,
+                "memset": 19.97822900000145
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 411,
+                "d2h_copy": 108,
+                "h2d_copy": 2954,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 22907.744133789063,
+              "nccl_duration_ms": {
+                "allgather": 24.852012,
+                "allreduce": 698.1173289999998,
+                "broadcast": 1.063871
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-registered-r20/engine-b/profiles/20260826-073828_tp2-registered-b/trace_rank1.json",
+              "rank": "1",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 21978.383102000003
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1531.41273299997,
+                "aten::copy_": 6999.439186999959,
+                "aten::to": 1597.4392130000092
+              }
+            }
+          ],
+          "profile_wall_s": 28.934528168290854,
+          "rank_count": 2
+        }
+      },
+      "compute_s": 39.636076018980795,
+      "cpu_copy_s": 14.095857532999954,
+      "cpu_to_copy_s": 3.078730450499982,
+      "h2d_count": 5921.0,
+      "h2d_device_s": 3.3662185200000523,
+      "h2d_gib": 171.9431506730616,
+      "nccl_by_collective_s": {
+        "allgather": 0.049415149500000005,
+        "allreduce": 1.1412501074999999,
+        "broadcast": 0.0017035075
+      },
+      "nccl_s": 1.1923687645,
+      "nvlink_rx_gib": 263.0580792427063,
+      "nvlink_tx_gib": 263.05808115005493,
+      "profile_wall_s": 28.919734125956893
+    },
+    "staged": {
+      "children": {
+        "a": {
+          "compute_s": 39.7367042849807,
+          "cpu_copy_s": 34.13313433700041,
+          "cpu_to_copy_s": 3.0891210819999873,
+          "h2d_count": 4361,
+          "h2d_device_s": 3.352806650000046,
+          "h2d_gib": 171.9431506730616,
+          "nccl_by_collective_s": {
+            "allgather": 0.07570147300000002,
+            "allreduce": 1.127548149,
+            "broadcast": 0.001683687
+          },
+          "nccl_s": 1.2049333090000003,
+          "nvlink_rx_gib": 263.05807876586914,
+          "nvlink_tx_gib": 263.0580778121948,
+          "per_rank": [
+            {
+              "copy_gib": {
+                "d2d_copy": 15.2926428578794,
+                "d2h_copy": 2.413311878219247,
+                "h2d_copy": 85.97171865217388
+              },
+              "duration_ms": {
+                "communication_kernel": 593.1000900000003,
+                "compute_kernel": 19918.10003899027,
+                "d2d_copy": 8.238692000000007,
+                "d2h_copy": 52.49431800000001,
+                "h2d_copy": 1676.5643850000192,
+                "memset": 20.77814600000135
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 414,
+                "d2h_copy": 110,
+                "h2d_copy": 2187,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 25945.71986328125,
+              "nccl_duration_ms": {
+                "allgather": 51.09971800000002,
+                "allreduce": 541.8026760000001,
+                "broadcast": 0.197696
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20/engine-a/profiles/20260826-075013_tp2-staged-a/trace_rank0.json",
+              "rank": "0",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 24946.550008000002
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1545.2360549999783,
+                "aten::copy_": 17041.89417100018,
+                "aten::to": 1611.500437999978
+              }
+            },
+            {
+              "copy_gib": {
+                "d2d_copy": 15.292642828077078,
+                "d2h_copy": 0.00028792954981327057,
+                "h2d_copy": 85.97143202088773
+              },
+              "duration_ms": {
+                "communication_kernel": 611.8332190000004,
+                "compute_kernel": 19818.604245990435,
+                "d2d_copy": 8.233798000000002,
+                "d2h_copy": 0.285091,
+                "h2d_copy": 1676.242265000027,
+                "memset": 20.120552000001627
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 411,
+                "d2h_copy": 108,
+                "h2d_copy": 2174,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 25945.808201171876,
+              "nccl_duration_ms": {
+                "allgather": 24.601755,
+                "allreduce": 585.7454730000001,
+                "broadcast": 1.4859909999999998
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20/engine-a/profiles/20260826-075013_tp2-staged-a/trace_rank1.json",
+              "rank": "1",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 24946.55339
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1543.8850270000091,
+                "aten::copy_": 17091.24016600023,
+                "aten::to": 1610.7113479999846
+              }
+            }
+          ],
+          "profile_wall_s": 31.957700163125992,
+          "rank_count": 2
+        },
+        "b": {
+          "compute_s": 39.34166130698212,
+          "cpu_copy_s": 33.693980462999924,
+          "cpu_to_copy_s": 3.085794422999996,
+          "h2d_count": 4361,
+          "h2d_device_s": 3.3595094870000475,
+          "h2d_gib": 171.9431506730616,
+          "nccl_by_collective_s": {
+            "allgather": 0.084116785,
+            "allreduce": 1.212530189,
+            "broadcast": 0.0015344640000000001
+          },
+          "nccl_s": 1.298181438,
+          "nvlink_rx_gib": 263.0580778121948,
+          "nvlink_tx_gib": 263.05807971954346,
+          "per_rank": [
+            {
+              "copy_gib": {
+                "d2d_copy": 15.2926428578794,
+                "d2h_copy": 2.413311878219247,
+                "h2d_copy": 85.97171865217388
+              },
+              "duration_ms": {
+                "communication_kernel": 574.2332419999994,
+                "compute_kernel": 19794.845395991055,
+                "d2d_copy": 8.230269000000002,
+                "d2h_copy": 52.58105200000001,
+                "h2d_copy": 1679.9215560000225,
+                "memset": 21.115454000001293
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 414,
+                "d2h_copy": 110,
+                "h2d_copy": 2187,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 25782.52578515625,
+              "nccl_duration_ms": {
+                "allgather": 58.137526999999984,
+                "allreduce": 515.8463390000001,
+                "broadcast": 0.24937600000000004
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20/engine-b/profiles/20260826-075414_tp2-staged-b/trace_rank0.json",
+              "rank": "0",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 24697.874046999998
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1550.1128889999918,
+                "aten::copy_": 16833.21073499984,
+                "aten::to": 1615.7486739999954
+              }
+            },
+            {
+              "copy_gib": {
+                "d2d_copy": 15.292642828077078,
+                "d2h_copy": 0.00028792954981327057,
+                "h2d_copy": 85.97143202088773
+              },
+              "duration_ms": {
+                "communication_kernel": 723.9481959999998,
+                "compute_kernel": 19546.815910991067,
+                "d2d_copy": 8.233472000000004,
+                "d2h_copy": 0.28464100000000014,
+                "h2d_copy": 1679.5879310000253,
+                "memset": 20.456604000001285
+              },
+              "event_counts": {
+                "compute_kernel": 271504,
+                "d2d_copy": 411,
+                "d2h_copy": 108,
+                "h2d_copy": 2174,
+                "memset": 18906,
+                "nccl_allgather": 140,
+                "nccl_allreduce": 323,
+                "nccl_broadcast": 7
+              },
+              "kernel_span_ms": 25783.0553359375,
+              "nccl_duration_ms": {
+                "allgather": 25.979258,
+                "allreduce": 696.6838500000001,
+                "broadcast": 1.285088
+              },
+              "path": "/tmp/hwr-tp-validation-497c537c/runs/tp2/pair-staged-r20/engine-b/profiles/20260826-075414_tp2-staged-b/trace_rank1.json",
+              "rank": "1",
+              "selected_annotation_duration_ms": {
+                "pipeline_forward": 24698.385725
+              },
+              "selected_cpu_op_duration_ms": {
+                "aten::_to_copy": 1535.6815340000037,
+                "aten::copy_": 16860.769728000083,
+                "aten::to": 1603.644817000015
+              }
+            }
+          ],
+          "profile_wall_s": 31.767621111124754,
+          "rank_count": 2
+        }
+      },
+      "compute_s": 39.53918279598141,
+      "cpu_copy_s": 33.91355740000017,
+      "cpu_to_copy_s": 3.0874577524999918,
+      "h2d_count": 4361.0,
+      "h2d_device_s": 3.3561580685000467,
+      "h2d_gib": 171.9431506730616,
+      "nccl_by_collective_s": {
+        "allgather": 0.07990912900000001,
+        "allreduce": 1.170039169,
+        "broadcast": 0.0016090755
+      },
+      "nccl_s": 1.2515573735000003,
+      "nvlink_rx_gib": 263.058078289032,
+      "nvlink_tx_gib": 263.05807876586914,
+      "profile_wall_s": 31.862660637125373
+    }
+  },
+  "scope_boundary": {
+    "reason": "User requested faster completion after GPUs were reallocated; no TP2 per-layer scaling claim is made.",
+    "tp2_resident_zero_profile_run": false
+  },
+  "sharing": {
+    "registered": {
+      "cross_rank_shared_count": 0,
+      "process_rows": [
+        {
+          "engine": "a",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409274,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409275,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409276,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409277,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368544,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368545,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368546,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-0",
+          "physical_gpu": 0,
+          "pid": 4150180,
+          "tp_rank": 0
+        },
+        {
+          "engine": "a",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368328,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368329,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368330,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368331,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368332,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368333,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368334,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-1",
+          "physical_gpu": 1,
+          "pid": 4150182,
+          "tp_rank": 1
+        },
+        {
+          "engine": "b",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409274,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409275,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409276,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409277,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368544,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368545,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368546,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-0",
+          "physical_gpu": 2,
+          "pid": 4164245,
+          "tp_rank": 0
+        },
+        {
+          "engine": "b",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368328,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368329,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368330,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368331,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368332,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368333,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368334,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-1",
+          "physical_gpu": 3,
+          "pid": 4164251,
+          "tp_rank": 1
+        }
+      ],
+      "rank_matched_sharing": {
+        "tp0": {
+          "engine_a_count": 7,
+          "engine_b_count": 7,
+          "identical": true,
+          "shared_count": 7
+        },
+        "tp1": {
+          "engine_a_count": 7,
+          "engine_b_count": 7,
+          "identical": true,
+          "shared_count": 7
+        }
+      }
+    },
+    "staged": {
+      "cross_rank_shared_count": 0,
+      "process_rows": [
+        {
+          "engine": "a",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409274,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409275,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409276,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409277,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368544,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368545,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368546,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-0",
+          "physical_gpu": 0,
+          "pid": 44114,
+          "tp_rank": 0
+        },
+        {
+          "engine": "a",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368328,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368329,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368330,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368331,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368332,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368333,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368334,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-1",
+          "physical_gpu": 1,
+          "pid": 44127,
+          "tp_rank": 1
+        },
+        {
+          "engine": "b",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409274,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409275,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409276,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1886409277,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368544,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368545,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 1893368546,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/52f06f3622ba30eadde495b28ea9c7d5d124d3183fcaa465bb45dec89ac894c7/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-0",
+          "physical_gpu": 2,
+          "pid": 58980,
+          "tp_rank": 0
+        },
+        {
+          "engine": "b",
+          "mapped_weight_files": [
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368328,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00001-of-00007.safetensors",
+              "size": 5165123976
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368329,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00002-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368330,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00003-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368331,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00004-of-00007.safetensors",
+              "size": 5164672104
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368332,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00005-of-00007.safetensors",
+              "size": 5164672096
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368333,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00006-of-00007.safetensors",
+              "size": 5164672072
+            },
+            {
+              "backing": "hwr",
+              "device": 8388726,
+              "inode": 2200368334,
+              "mapped_path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "path": "/tmp/hwr-tp-validation-497c537c/store-tp2/artifacts/a3519876b2d9e5ae00ee36a8004c1a331263a2af44cd9821ee74e3d20bb3bfa1/model-00007-of-00007.safetensors",
+              "size": 2152381528
+            }
+          ],
+          "name": "vLLM-Omni::DiffusionWorker-1",
+          "physical_gpu": 3,
+          "pid": 59034,
+          "tp_rank": 1
+        }
+      ],
+      "rank_matched_sharing": {
+        "tp0": {
+          "engine_a_count": 7,
+          "engine_b_count": 7,
+          "identical": true,
+          "shared_count": 7
+        },
+        "tp1": {
+          "engine_a_count": 7,
+          "engine_b_count": 7,
+          "identical": true,
+          "shared_count": 7
+        }
+      }
+    }
+  },
+  "source_clean": true,
+  "startup": {
+    "cold_preferred_engine_init_s": 233.13952704146504,
+    "disabled_engine_init_s": [
+      161.40874346718192,
+      172.02976297214627,
+      162.85173201188445
+    ],
+    "disabled_process_to_ready_s": [
+      172.17960346117616,
+      182.87654364854097,
+      173.47870049253106
+    ],
+    "first_warm_registered_process_to_ready_s": 151.44533095136285,
+    "order": [
+      "registered",
+      "disabled",
+      "disabled",
+      "registered",
+      "registered",
+      "disabled"
+    ],
+    "process_to_ready_comparison": {
+      "candidate": {
+        "count": 3,
+        "max": 151.14405084773898,
+        "mean": 150.44664888083935,
+        "min": 149.55728252977133,
+        "stddev": 0.8106146848647234
+      },
+      "conservative_95_ci_s": [
+        -40.37217321134412,
+        -11.091094095142665
+      ],
+      "control": {
+        "count": 3,
+        "max": 182.87654364854097,
+        "mean": 176.17828253408274,
+        "min": 172.17960346117616,
+        "stddev": 5.8371174172117115
+      },
+      "delta_percent": -14.605451525085368,
+      "delta_s": -25.731633653243392
+    },
+    "registered_engine_init_s": [
+      138.94214175641537,
+      140.27174684777856,
+      140.27069026604295
+    ],
+    "registered_process_to_ready_s": [
+      149.55728252977133,
+      150.63861326500773,
+      151.14405084773898
+    ]
+  },
+  "status": "primary_complete_optional_tp2_r0_omitted_for_time"
+}
