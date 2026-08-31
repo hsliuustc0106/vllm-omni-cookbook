@@ -1,0 +1,745 @@
+[
+  {
+    "test_name": "glm_image_1gpu_overlap",
+    "description": "1GPU overlap DiT eager",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.6,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                }
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": true,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_1gpu_overlap_dit_cudagraph",
+    "description": "1GPU overlap DiT cudagraph",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.6,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                }
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_2gpu_artp2_usp2_dit_cudagraph",
+    "description": "2GPU AR TP2 + DiT USP2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.6,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 2
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 1,
+                  "sequence_parallel_size": 2,
+                  "ulysses_degree": 2,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_2gpu_artp2_tp2_dit_cudagraph",
+    "description": "2GPU AR TP2 + DiT TP2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.6,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 2
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 2,
+                  "sequence_parallel_size": 1,
+                  "ulysses_degree": 1,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_2gpu_artp2_cfg2_dit_cudagraph",
+    "description": "2GPU AR TP2 + DiT CFG2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.6,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 2
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 1,
+                  "sequence_parallel_size": 1,
+                  "ulysses_degree": 1,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 2
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_2gpu_artp2_ring2_dit_cudagraph",
+    "description": "2GPU AR TP2 + DiT Ring2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.6,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 2
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 1,
+                  "sequence_parallel_size": 2,
+                  "ulysses_degree": 1,
+                  "ring_degree": 2,
+                  "cfg_parallel_size": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_tp4_usp4_dit_cudagraph",
+    "description": "4GPU AR TP4 + DiT USP4",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.4,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 4
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 1,
+                  "sequence_parallel_size": 4,
+                  "ulysses_degree": 4,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_tp4_tp4_dit_cudagraph",
+    "description": "4GPU AR TP4 + DiT TP4",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.4,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 4
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 4,
+                  "sequence_parallel_size": 1,
+                  "ulysses_degree": 1,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_artp4_cfg2_usp2_dit_cudagraph",
+    "description": "4GPU AR TP4 + DiT CFG2xUSP2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.4,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 4
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 1,
+                  "sequence_parallel_size": 2,
+                  "ulysses_degree": 2,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 2
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_artp4_cfg2_ring2_dit_cudagraph",
+    "description": "4GPU AR TP4 + DiT CFG2xRing2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.4,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 4
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 1,
+                  "sequence_parallel_size": 2,
+                  "ulysses_degree": 1,
+                  "ring_degree": 2,
+                  "cfg_parallel_size": 2
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  },
+  {
+    "test_name": "glm_image_4gpu_artp4_cfg2_tp2_dit_cudagraph",
+    "description": "4GPU AR TP4 + DiT CFG2xTP2",
+    "server_type": "vllm-omni",
+    "server_params": {
+      "model": "zai-org/GLM-Image",
+      "serve_args": {
+        "enable-diffusion-pipeline-profiler": true,
+        "stage-init-timeout": 900,
+        "init-timeout": 1800,
+        "deploy-config-inline": {
+          "type": "yaml",
+          "content": {
+            "async_chunk": false,
+            "stages": [
+              {
+                "stage_id": 0,
+                "max_num_seqs": 1,
+                "gpu_memory_utilization": 0.4,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "max_num_batched_tokens": 32768,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "temperature": 0.9,
+                  "top_p": 0.75,
+                  "top_k": 16512,
+                  "stop_token_ids": [
+                    16385
+                  ],
+                  "max_tokens": 4353,
+                  "seed": 42,
+                  "detokenize": false
+                },
+                "tensor_parallel_size": 4
+              },
+              {
+                "stage_id": 1,
+                "max_num_batched_tokens": 32768,
+                "max_num_seqs": 1,
+                "enforce_eager": false,
+                "trust_remote_code": true,
+                "enable_prefix_caching": false,
+                "devices": "0,1,2,3",
+                "default_sampling_params": {
+                  "seed": 42,
+                  "num_inference_steps": 50,
+                  "guidance_scale": 1.5,
+                  "height": 1024,
+                  "width": 1024
+                },
+                "parallel_config": {
+                  "tensor_parallel_size": 2,
+                  "sequence_parallel_size": 1,
+                  "ulysses_degree": 1,
+                  "ring_degree": 1,
+                  "cfg_parallel_size": 2
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "benchmark_params": {
+      "$ref": "glm_image_1024_1472x1088_steps50_t2i_i2i_n10.json"
+    }
+  }
+]

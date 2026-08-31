@@ -17,6 +17,7 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 | Qwen-Image-Edit | diffusion | I2I E2E (512² single, 4×H200 retro) | **14.51 s** | **−1.2%** vs v0.20† |
 | Qwen-Image-Edit | diffusion | I2I E2E (1536² single, 4×H200 retro) | **57.23 s** | **−0.8%** vs v0.20† |
 | Qwen-Image-Edit | diffusion | I2I E2E (1536² USP2, 4×H200 retro) | **19.03 s** | **−0.1%** vs v0.20† |
+| GLM-Image  | diffusion  | T2I E2E (1024², 1×H800 retro, cudagraph) | **24.87 s** | **−0.5%** vs v0.20 |
 
 ### Highlights
 
@@ -24,6 +25,7 @@ Cross-model headline metrics **per even stable release** (v0.14, v0.16, v0.18, v
 - **WAN2.2:** Pipeline parallel ([#2322](https://github.com/vllm-project/vllm-omni/pull/2322)), NPU MXFP8 quantization ([#3140](https://github.com/vllm-project/vllm-omni/pull/3140)). See [diffusion/wan2.2/index.md](diffusion/wan2.2/index.md).
 - **Qwen-Image-Edit:** First cookbook ledger; H200 retro v0.20→v0.22 within ~1% on standardized i2i workloads. See [diffusion/qwen-image-edit/index.md](diffusion/qwen-image-edit/index.md#h200-retro-comparison).
   - † v0.20 retro runs used checkpoint `Qwen/Qwen-Image-Edit-2509`, while v0.22 used `2511`. See [Qwen-Image-Edit index](diffusion/qwen-image-edit/index.md#h200-retro-comparison) for details.
+- **GLM-Image:** Fresh v0.22.0 release run matches v0.20.0 within ~1% on the focused H800 t2i/i2i matrix. See [diffusion/glm-image/index.md](diffusion/glm-image/index.md).
 
 ---
 
