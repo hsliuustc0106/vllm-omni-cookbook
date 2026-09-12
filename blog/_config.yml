@@ -90,6 +90,10 @@ features:
     label_zh: LoRA 适配器
     docs: diffusion/lora.md   # user_guide path — no design doc yet
     color: "#c026d3"
+  - slug: host_path
+    label: Host hot path
+    label_zh: 主机热路径
+    color: "#b45309"
 
 header_pages:
   - about.md

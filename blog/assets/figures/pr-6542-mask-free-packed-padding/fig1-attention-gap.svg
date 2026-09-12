@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="620" viewBox="0 0 1280 620" role="img" aria-labelledby="title desc">
+  <title id="title">One attention call before vs after PR #6542</title>
+  <desc id="desc">Before PR #6542, every attention call runs mask reduction, prefix comparison, nonzero searches, and ten device-to-host scalar reads between the Ulysses all-to-all and the TRTLLM FMHA kernel, a 499.683 microsecond p50 gap. After, the backend reads the producer's host-side PackedPaddingMetadata integers and starts FMHA directly, a 0.352 microsecond p50 gap with zero intermediate kernels and zero copies.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.step{fill:#eff6ff;stroke:#2563eb;stroke-width:2}.slow{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.fast{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.host{fill:#fffbeb;stroke:#b45309;stroke-width:2}.fmha{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}.brace{stroke:#b35900;stroke-width:3;fill:none}.braceG{stroke:#15803d;stroke-width:3;fill:none}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.mono{font:16px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.warn{font:700 17px system-ui,sans-serif;fill:#b35900}.ok{font:700 17px system-ui,sans-serif;fill:#15803d}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.step{fill:#172554}.slow{fill:#431407}.fast{fill:#052e16}.host{fill:#451a03}.fmha{fill:#2e1065}.title,.head,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}.warn{fill:#fdba74}.ok{fill:#86efac}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="620" rx="24"/>
+  <text class="title" x="640" y="52" text-anchor="middle">One packed attention call — before vs after PR #6542</text>
+
+  <rect class="panel" x="55" y="84" width="1170" height="200" rx="20"/>
+  <text class="head" x="85" y="120">Before — packed-mask validation (#5779), every layer · every step</text>
+  <rect class="step" x="85" y="140" width="200" height="64" rx="12"/>
+  <text class="text" x="185" y="168" text-anchor="middle">Ulysses</text>
+  <text class="text" x="185" y="190" text-anchor="middle">all-to-all</text>
+  <rect class="slow" x="345" y="140" width="180" height="64" rx="12"/>
+  <text class="text" x="435" y="168" text-anchor="middle">mask sum</text>
+  <text class="small" x="435" y="190" text-anchor="middle">GPU reduction</text>
+  <rect class="slow" x="585" y="140" width="180" height="64" rx="12"/>
+  <text class="text" x="675" y="168" text-anchor="middle">prefix compare</text>
+  <text class="small" x="675" y="190" text-anchor="middle">+ nonzero ×2</text>
+  <rect class="slow" x="825" y="140" width="180" height="64" rx="12"/>
+  <text class="text" x="915" y="168" text-anchor="middle">.item() reads</text>
+  <text class="small" x="915" y="190" text-anchor="middle">10 D2H syncs / call</text>
+  <rect class="fmha" x="1065" y="140" width="130" height="64" rx="12"/>
+  <text class="text" x="1130" y="178" text-anchor="middle">FMHA</text>
+  <path class="line" d="M285 172 H340"/>
+  <path class="line" d="M525 172 H580"/>
+  <path class="line" d="M765 172 H820"/>
+  <path class="line" d="M1005 172 H1060"/>
+  <path class="brace" d="M345 225 V240 H1005 V225"/>
+  <text class="warn" x="675" y="266" text-anchor="middle">gap p50 499.683 µs · p95 698.308 µs — stream serialized after all-to-all</text>
+
+  <rect class="panel" x="55" y="308" width="1170" height="180" rx="20"/>
+  <text class="head" x="85" y="344">After — packed-padding fast path (#6542)</text>
+  <rect class="step" x="85" y="364" width="200" height="64" rx="12"/>
+  <text class="text" x="185" y="392" text-anchor="middle">Ulysses</text>
+  <text class="text" x="185" y="414" text-anchor="middle">all-to-all</text>
+  <rect class="host" x="425" y="364" width="330" height="64" rx="12"/>
+  <text class="text" x="590" y="392" text-anchor="middle">read host ints — packed_padding</text>
+  <text class="small" x="590" y="414" text-anchor="middle">PackedPaddingMetadata · zero device reads</text>
+  <rect class="fmha" x="895" y="364" width="130" height="64" rx="12"/>
+  <text class="text" x="960" y="402" text-anchor="middle">FMHA</text>
+  <path class="line" d="M285 396 H420"/>
+  <path class="line" d="M755 396 H890"/>
+  <path class="braceG" d="M285 449 V464 H1025 V449"/>
+  <text class="ok" x="655" y="490" text-anchor="middle">gap p50 0.352 µs — zero intermediate GPU activities, zero D2H copies</text>
+
+  <text class="small" x="640" y="548" text-anchor="middle">The producer has always known the valid-token boundary on the host — PR #6542 adds PackedPaddingMetadata so the backend can read it instead of re-counting on the GPU.</text>
+  <text class="small" x="640" y="576" text-anchor="middle">4x B300 SXM6 · TP1/Ulysses4/Ring1 · starship 1344×768 · 243 frames · 49 updates · Nsight Systems (upstream PR measurements)</text>
+</svg>
