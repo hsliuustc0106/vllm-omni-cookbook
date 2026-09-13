@@ -10,6 +10,67 @@ summary: >-
 tags: [MiniMax-H3, FP8, H100, DLO]
 category: PR Analysis
 feature: offloader
+lang: en
+pair: /zh/2026-08-19-pr-6279-dlo-online-fp8-allgather/
+usage:
+  - label: "Serve · DP2/SP2"
+    blurb: "Four GPUs, two DLO groups of two ranks"
+    title: "vllm serve · MiniMax-H3 Ref2VA, online FP8 + DLO AllGather"
+    code: |
+      MODEL=/path/to/MiniMax-H3/Ref2VA
+
+      CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve "$MODEL" \
+        --omni \
+        --task-type ref2va \
+        --num-gpus 4 \
+        --usp 2 \
+        --quantization fp8 \
+        --enable-distributed-layerwise-offload
+    note: >-
+      All ranks must run the same denoising-step count and enter the weight
+      collective in lockstep — one scheduler, one synchronized wave.
+  - label: "Serve · DP4/SP1"
+    blurb: "Four GPUs, one DLO group"
+    title: "vllm serve · same job with --usp 1"
+    code: |
+      MODEL=/path/to/MiniMax-H3/Ref2VA
+
+      CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve "$MODEL" \
+        --omni \
+        --task-type ref2va \
+        --num-gpus 4 \
+        --usp 1 \
+        --quantization fp8 \
+        --enable-distributed-layerwise-offload
+  - label: "Independent replicas"
+    blurb: "Keep online FP8, drop the collective"
+    title: "vllm serve · online FP8 with rank-local host tensors"
+    code: |
+      MODEL=/path/to/MiniMax-H3/Ref2VA
+
+      CUDA_VISIBLE_DEVICES=0,1 vllm serve "$MODEL" \
+        --omni \
+        --task-type ref2va \
+        --num-gpus 2 \
+        --quantization fp8 \
+        --enable-distributed-layerwise-offload \
+        --dlo-no-use-allgather
+    note: >-
+      Each rank keeps a full rank-local host copy instead of a DLO shard —
+      host memory per replica goes up, scheduling stays independent.
+decisions:
+  - when: "One synchronized job wants online FP8 and DLO together"
+    pick: "--quantization fp8 + DLO AllGather"
+    why: "Finalized per-tensor FP8 weights and scales are DLO-sharded and reconstructed per layer; host PSS peak drops 39.0% (DP2/SP2) / 15.0% (DP4/SP1) versus native BF16."
+  - when: "Replicas schedule requests independently"
+    pick: "--dlo-no-use-allgather"
+    why: "AllGather is a synchronized weight collective: every rank must enter the same wave in the same block order."
+  - when: "Fidelity or raw latency dominates"
+    pick: "measure before switching"
+    why: "In the paired H100 run, native BF16 was faster (9.2% / 2.7%) and led fidelity by ~0.005 SSIM / 3.84 dB PSNR."
+  - when: "Startup host memory is the binding constraint"
+    pick: "stay BF16-mmap or wait for the runtime cache"
+    why: "Each rank still materializes the finalized FP8 model through the ordinary loader before keeping its DLO shard; the cache contract is tracked in #6231."
 ---
 
 ## TL;DR
@@ -247,4 +308,4 @@ rank-local host tensors rather than DLO's sharded collective path.
 - [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/284e05c88b7b46be9fae6d822bf22075840cbfbb/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md)
 - [FP8 quantization guide](https://github.com/vllm-project/vllm-omni/blob/284e05c88b7b46be9fae6d822bf22075840cbfbb/docs/user_guide/quantization/fp8.md)
 - [RFC #6231 — DLO runtime-cache compatibility](https://github.com/vllm-project/vllm-omni/issues/6231)
-- [Online quantization deep dive](https://github.com/hsliuustc0106/vllm-omni-cookbook/blob/main/blog/_posts/2026-08-18-online-quantization-fp8.md)
+- [Online quantization deep dive]({{ site.baseurl }}/2026-08-18-online-quantization-fp8/)
