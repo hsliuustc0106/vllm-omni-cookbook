@@ -47,19 +47,27 @@ usage:
     note: >-
       A 50-step B300 allocation test with this single-rank topology peaked
       at 26.50 GiB — a capacity proxy, not a consumer-GPU latency claim.
-  - label: "Offline · all tasks"
-    blurb: "T2VA, FL2VA, Ref2VA runner"
-    title: "run_h3_2gpu_all_tasks.sh"
+  - label: "Serve · 2× RTX 4090"
+    blurb: "24 GB cards, 12 resident blocks, 1024×576"
+    title: "vllm serve · the 24 GiB sibling"
     code: |
-      RUN_ROOT=/path/to/run-root \
-      MODEL_ROOT=/path/to/MiniMax-H3 \
-      GPU_IDS=0,1 \
-      PROFILE=rtx5090 \
-      bash examples/offline_inference/minimax_h3/run_h3_2gpu_all_tasks.sh
+      export VLLM_WORKER_MULTIPROC_METHOD=spawn
+      export VLLM_OMNI_VIDEO_SYNC_TIMEOUT=14400
+
+      CUDA_VISIBLE_DEVICES=0,1 vllm serve /path/to/MiniMax-H3/FL2VA \
+        --omni --trust-remote-code --host 0.0.0.0 --port 8000 \
+        --task-type fl2va \
+        --num-gpus 2 --tensor-parallel-size 2 --text-encoder-tp-size 2 \
+        --usp 1 --ring 1 --vae-patch-parallel-size 2 \
+        --vae-parallel-mode tile --vae-use-tiling \
+        --enable-distributed-layerwise-offload --dlo-no-use-allgather \
+        --dlo-resident-layers 12 --enforce-eager \
+        --diffusion-attention-backend CUDNN_ATTN
     note: >-
-      PROFILE=rtx4090 selects the conservative 24 GB defaults
-      (1024×576, 12 resident layers). DLO_RESIDENT_LAYERS=N overrides
-      either profile.
+      Target-validated upstream on 2× RTX 4090: T2VA in 7 min 9 s at 15.3 GiB
+      peak per GPU (repeat 434.9/429.3 s, identical peaks). The long sync
+      timeout is not optional — DLO streams over PCIe every step. A single
+      4090 is not covered (the one-GPU profile peaks at 26.50 GiB).
 decisions:
   - when: "Two 24–32 GB workstation cards are all you have"
     pick: "DLO + --dlo-no-use-allgather"
@@ -96,6 +104,10 @@ always-used items within arm's reach.
 |---|---:|---:|---:|---|---|
 | `rtx5090` | 2 × 32 GB | 1344×768 | 20 | `CUDNN_ATTN` | target-hardware validated |
 | `rtx4090` | 2 × 24 GB | 1024×576 | 12 | `CUDNN_ATTN` | capacity-proxy starting point |
+
+(The `rtx4090` row is the status at merge time. Upstream has since validated
+that profile on target hardware — 2× and 4× RTX 4090, T2VA in 7 min 9 s /
+4 min 29 s at ~15 GiB per GPU — see [Measured impact](#measured-impact).)
 
 On 2 × RTX 5090, one full 50-step T2VA request at 1344×768 completed in
 **8 min 38 s** client-side with a sampled peak of **~22.6 GiB per GPU** and a
@@ -265,6 +277,27 @@ knowing: raising `--dlo-resident-layers` improves latency but does **not**
 reduce host RAM, because resident layers retain their pinned CPU master
 copies.
 
+**Post-merge update (from the current upstream recipe):** the 24 GB profile
+has since been validated on target hardware. The dedicated
+[RTX 4090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-4090.md)
+reports, at vLLM-Omni `0.26.1.dev55+g81b48e83e` on RTX 4090 (24,564 MiB,
+driver 580.126.09), 1024×576, 124 frames, 60 steps:
+
+| GPUs | Topology | Task | Client E2E | Peak per GPU | Repeats |
+|---:|---|---|---:|---:|---|
+| 2 | TP2×USP1 | T2VA | 7 min 9 s | 15.3 GiB | 434.9 / 429.3 s; identical peaks; outputs within 115 bytes |
+| 2 | TP2×USP1 | Ref2VA | 14 min 52 s | 14.6 GiB | 891.9 / 892.1 s |
+| 4 | TP2×USP2 | T2VA | 4 min 29 s | 15.2 GiB | 273.8 / 269.5 s (peaks 15,560 / 15,612 MiB) |
+| 4 | TP2×USP2 | Ref2VA | 9 min 5 s | 16.1 GiB | single run (follow-ups hit a since-fixed 30 s async-output wait) |
+
+These peaks are rank-0 CUDA reserved high-water marks read from response
+headers — a tighter measurement than the sampled `nvidia-smi` figure above.
+Four GPUs came in ~1.6× faster than two at the same per-GPU peak, because
+Ulysses shards activations but not the resident DiT weights. A single 4090
+remains uncovered: the one-GPU profile peaks at 26.50 GiB, over the 24 GiB
+budget, and upstream points single-card users at model-level CPU offload
+instead.
+
 For what DLO costs versus a resident deployment at the datacenter scale, the
 H100 four-GPU matrix in the [#6279 online-FP8 post]({{ site.baseurl }}/2026-08-19-pr-6279-dlo-online-fp8-allgather/) is the closest paired measurement on this blog.
 
@@ -311,8 +344,11 @@ match current upstream recipes either way.
 - **This is capacity, not speed.** 8 min 38 s for a five-second 50-step video
   is the streaming price; lower resident counts reduce HBM further and
   increase CPU-to-GPU transfer time. No A/B latency benchmark exists.
-- **The 24 GB (`rtx4090`) profile is a capacity proxy** — validated on B300
-  allocation runs, not on target 4090 hardware, and starting from 1024×576.
+- **The 24 GB profile was a capacity proxy at merge time** — validated on B300
+  allocation runs, not target hardware. It has since been target-validated on
+  2× and 4× RTX 4090 (see Measured impact), but a single 4090 is not covered:
+  the one-GPU profile peaks at 26.50 GiB, over the 24 GiB budget — upstream
+  points single-card users at model-level CPU offload instead.
 - **Host RAM is the real footprint.** 200 GiB minimum per partition; resident
   layers keep pinned CPU masters, so the knob trades HBM, not host memory.
   Multiple independent engines on one host should look at
@@ -339,8 +375,8 @@ match current upstream recipes either way.
 - [PR #5802 — Fix DLO AllGather size mismatch for heterogeneous blocks](https://github.com/vllm-project/vllm-omni/pull/5802) (merged 2026-08-05)
 - [PR #5864 — Fix DLO DP concurrent request execution](https://github.com/vllm-project/vllm-omni/pull/5864) (merged 2026-08-08)
 - [MiniMax-H3 RTX 5090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-5090.md) (upstream, current)
+- [MiniMax-H3 RTX 4090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-4090.md) (upstream, current — includes the target-hardware validation; the #5764-era `run_h3_2gpu_all_tasks.sh` all-task runner has since been removed from `examples/`)
 - [MiniMax-H3 recipe hub](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3.md) (upstream, current)
-- [All-task 2-GPU runner](https://github.com/vllm-project/vllm-omni/blob/main/examples/offline_inference/minimax_h3/run_h3_2gpu_all_tasks.sh) (upstream, current)
 - [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md) (upstream, current — documents both the new `diffusion_offload_config` and the compatibility flags)
 - [RFC #6648 — Unify the offloader protocol and user interface](https://github.com/vllm-project/vllm-omni/issues/6648) (open; J0 = #5929 and J1 = #7209 merged)
 - [Host Weight Runtime post — PR #6591]({{ site.baseurl }}/2026-08-26-understanding-pr-6591-host-weight-runtime/)

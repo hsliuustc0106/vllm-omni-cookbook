@@ -46,18 +46,27 @@ usage:
     note: >-
       同拓扑的 50 步 B300 显存实测峰值 26.50 GiB——容量 proxy，不是消费卡
       延迟结论。
-  - label: "Offline · 全任务"
-    blurb: "T2VA、FL2VA、Ref2VA 一键脚本"
-    title: "run_h3_2gpu_all_tasks.sh"
+  - label: "Serve · 2× RTX 4090"
+    blurb: "24 GB 卡，12 个常驻 block，1024×576"
+    title: "vllm serve · 24 GiB 的兄弟档"
     code: |
-      RUN_ROOT=/path/to/run-root \
-      MODEL_ROOT=/path/to/MiniMax-H3 \
-      GPU_IDS=0,1 \
-      PROFILE=rtx5090 \
-      bash examples/offline_inference/minimax_h3/run_h3_2gpu_all_tasks.sh
+      export VLLM_WORKER_MULTIPROC_METHOD=spawn
+      export VLLM_OMNI_VIDEO_SYNC_TIMEOUT=14400
+
+      CUDA_VISIBLE_DEVICES=0,1 vllm serve /path/to/MiniMax-H3/FL2VA \
+        --omni --trust-remote-code --host 0.0.0.0 --port 8000 \
+        --task-type fl2va \
+        --num-gpus 2 --tensor-parallel-size 2 --text-encoder-tp-size 2 \
+        --usp 1 --ring 1 --vae-patch-parallel-size 2 \
+        --vae-parallel-mode tile --vae-use-tiling \
+        --enable-distributed-layerwise-offload --dlo-no-use-allgather \
+        --dlo-resident-layers 12 --enforce-eager \
+        --diffusion-attention-backend CUDNN_ATTN
     note: >-
-      PROFILE=rtx4090 选择保守的 24 GB 默认值（1024×576、12 个常驻层）。
-      DLO_RESIDENT_LAYERS=N 可覆盖任一 profile。
+      上游已在 2× RTX 4090 真机验证：T2VA 7 分 9 秒、单卡峰值 15.3 GiB
+      （复测 434.9/429.3 s，峰值一致）。长同步超时不是可选项——DLO 每步
+      都走 PCIe 流式搬运。单张 4090 不在覆盖范围（单卡 profile 峰值
+      26.50 GiB）。
 decisions:
   - when: "手里只有两张 24–32 GB 工作站卡"
     pick: "DLO + --dlo-no-use-allgather"
@@ -92,6 +101,10 @@ decisions:
 |---|---:|---:|---:|---|---|
 | `rtx5090` | 2 × 32 GB | 1344×768 | 20 | `CUDNN_ATTN` | 目标硬件实测 |
 | `rtx4090` | 2 × 24 GB | 1024×576 | 12 | `CUDNN_ATTN` | 容量 proxy 起点值 |
+
+（`rtx4090` 一行是合并时点的状态。上游后来在目标硬件上完成了验证——2× 与
+4× RTX 4090，T2VA 分别 7 分 9 秒 / 4 分 29 秒，单卡约 15 GiB——见
+[实测影响](#measured-impact)。）
 
 在 2 × RTX 5090 上，一个完整的 50 步 T2VA 请求（1344×768）以客户端计时
 **8 分 38 秒**跑完，每张 GPU 采样峰值约 **22.6 GiB**，H.264 + 32 kHz 立体声
@@ -235,6 +248,25 @@ benchmark；显存值是 `nvidia-smi` 采样峰值，不是 CUDA allocator 高�
 反直觉的行为值得知道：调高 `--dlo-resident-layers` 改善延迟，但**不会**降低
 host RAM，因为常驻层保留 pinned CPU master 拷贝。
 
+**合并后的更新（来自当前上游 recipe）：**24 GB profile 后来在目标硬件上完成
+了验证。专门的
+[RTX 4090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-4090.md)
+报告了在 RTX 4090（24,564 MiB、驱动 580.126.09）、vLLM-Omni
+`0.26.1.dev55+g81b48e83e`、1024×576、124 帧、60 步下的数据：
+
+| GPUs | Topology | Task | Client E2E | Peak per GPU | Repeats |
+|---:|---|---|---:|---:|---|
+| 2 | TP2×USP1 | T2VA | 7 min 9 s | 15.3 GiB | 434.9 / 429.3 s；峰值一致；输出相差 115 字节以内 |
+| 2 | TP2×USP1 | Ref2VA | 14 min 52 s | 14.6 GiB | 891.9 / 892.1 s |
+| 4 | TP2×USP2 | T2VA | 4 min 29 s | 15.2 GiB | 273.8 / 269.5 s（峰值 15,560 / 15,612 MiB） |
+| 4 | TP2×USP2 | Ref2VA | 9 min 5 s | 16.1 GiB | 单次运行（后续请求撞上后来已修复的 30 秒 async-output 等待） |
+
+这里的峰值取自响应头的 rank-0 CUDA reserved 高水位——比上面的
+`nvidia-smi` 采样值更严格的测量。四卡比两卡快约 1.6 倍而单卡峰值不变，因为
+Ulysses 切分 activation、不切分常驻 DiT 权重。单张 4090 仍不在覆盖范围：
+单卡 profile 峰值 26.50 GiB，超出 24 GiB 预算，上游让单卡用户改用
+model-level CPU offload。
+
 至于 DLO 相对常驻部署在数据中心规模下的代价，本博客最接近的配对测量是
 [#6279 online FP8 文]({{ site.baseurl }}/zh/2026-08-19-pr-6279-dlo-online-fp8-allgather/)里的四卡 H100 矩阵。
 
@@ -275,8 +307,10 @@ config 表达——上面的命令与当前上游 recipe 一致。
 - **这是容量，不是速度。** 五秒 50 步的视频要 8 分 38 秒，这就是流式的价
   码；降低常驻层数进一步省 HBM、增加 CPU 到 GPU 的传输时间。没有 A/B 延迟
   benchmark。
-- **24 GB（`rtx4090`）profile 是容量 proxy**——在 B300 显存实测上验证，没有
-  在目标 4090 硬件上验证，起点是 1024×576。
+- **24 GB profile 在合并时点是容量 proxy**——只在 B300 显存实测上验证过，
+  没上过目标硬件。后来上游已在 2× 与 4× RTX 4090 上完成真机验证（见实测
+  影响），但单张 4090 仍不覆盖：单卡 profile 峰值 26.50 GiB，超出 24 GiB
+  预算——上游让单卡用户改用 model-level CPU offload。
 - **host RAM 才是真正的 footprint。** 每分区最低 200 GiB；常驻层保留
   pinned CPU master，这个开关换的是 HBM，不是 host 内存。同一台 host 上的
   多台独立引擎请看
@@ -302,8 +336,8 @@ config 表达——上面的命令与当前上游 recipe 一致。
 - [PR #5802 — Fix DLO AllGather size mismatch for heterogeneous blocks](https://github.com/vllm-project/vllm-omni/pull/5802)（2026-08-05 合并）
 - [PR #5864 — Fix DLO DP concurrent request execution](https://github.com/vllm-project/vllm-omni/pull/5864)（2026-08-08 合并）
 - [MiniMax-H3 RTX 5090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-5090.md)（上游，当前版）
+- [MiniMax-H3 RTX 4090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-4090.md)（上游，当前版——含真机验证数据；#5764 时代的 `run_h3_2gpu_all_tasks.sh` 全任务脚本后来已从 `examples/` 移除）
 - [MiniMax-H3 recipe 汇总](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3.md)（上游，当前版）
-- [双卡全任务脚本](https://github.com/vllm-project/vllm-omni/blob/main/examples/offline_inference/minimax_h3/run_h3_2gpu_all_tasks.sh)（上游，当前版）
 - [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md)（上游，当前版——同时记录新的 `diffusion_offload_config` 与 compatibility 旗标）
 - [RFC #6648 — Unify the offloader protocol and user interface](https://github.com/vllm-project/vllm-omni/issues/6648)（OPEN；J0 = #5929、J1 = #7209 已合并）
 - [Host Weight Runtime 文 — PR #6591]({{ site.baseurl }}/zh/2026-08-26-understanding-pr-6591-host-weight-runtime/)
