@@ -249,6 +249,23 @@ host RAM，因为常驻层保留 pinned CPU master 拷贝。
 完整的容量表与两条 serve 命令见上游
 [RTX 5090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-5090.md)。
 
+一条接口说明，因为这个领域在本 PR 合并之后又动了：offload 家族正在
+[RFC #6648](https://github.com/vllm-project/vllm-omni/issues/6648) 下统一。
+[#5929](https://github.com/vllm-project/vllm-omni/pull/5929)（2026-09-05 合并）
+引入了统一语法——
+`--diffusion-offload-config '{"mode":"layer","components":["dit","text_encoder"],"layer_options":{"dit":{"weight_transfer":"rank-local","resident_layers":20}}}'`
+——`components` 选择搬什么、`mode` 选整模块换入还是逐层流式、`weight_transfer`
+选 rank-local 还是 AllGather；上文使用的 legacy DLO 旗标
+（`--enable-distributed-layerwise-offload`、`--dlo-no-use-allgather`、
+`--dlo-resident-layers`）保留为文档化的 compatibility alias，行为不变。
+[#7209](https://github.com/vllm-project/vllm-omni/pull/7209)（2026-09-09 合并）
+接着把拓扑解析集中到一个纯函数 `resolve_offload_plan()`——接受同样的配置，
+但非法配置现在会在任何组件被搬动之前失败，而不是中途失败。对
+MiniMax-H3 的全拓扑双卡 recipe，上游
+[user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md)
+仍然指向本文使用的 compatibility 旗标；Host Weight Runtime 目前还不能用新
+config 表达——上面的命令与当前上游 recipe 一致。
+
 ## 怎么选 {#decision-cards}
 
 {% include decision-cards.html items=page.decisions %}
@@ -287,7 +304,8 @@ host RAM，因为常驻层保留 pinned CPU master 拷贝。
 - [MiniMax-H3 RTX 5090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-5090.md)（上游，当前版）
 - [MiniMax-H3 recipe 汇总](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3.md)（上游，当前版）
 - [双卡全任务脚本](https://github.com/vllm-project/vllm-omni/blob/main/examples/offline_inference/minimax_h3/run_h3_2gpu_all_tasks.sh)（上游，当前版）
-- [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md)（上游，当前版）
+- [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md)（上游，当前版——同时记录新的 `diffusion_offload_config` 与 compatibility 旗标）
+- [RFC #6648 — Unify the offloader protocol and user interface](https://github.com/vllm-project/vllm-omni/issues/6648)（OPEN；J0 = #5929、J1 = #7209 已合并）
 - [Host Weight Runtime 文 — PR #6591]({{ site.baseurl }}/zh/2026-08-26-understanding-pr-6591-host-weight-runtime/)
 - [Online FP8 with DLO AllGather 文 — PR #6279]({{ site.baseurl }}/zh/2026-08-19-pr-6279-dlo-online-fp8-allgather/)
 - [系列 RFC #37 — MiniMax-H3 optimization blog series](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)

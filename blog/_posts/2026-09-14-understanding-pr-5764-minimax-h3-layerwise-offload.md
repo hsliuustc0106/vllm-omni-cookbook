@@ -281,6 +281,27 @@ behavior these recipes rely on. The full capacity tables and both serve
 commands live in the upstream
 [RTX 5090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-5090.md).
 
+One interface note, because this area moved after the PR merged: the offload
+family has been unifying under
+[RFC #6648](https://github.com/vllm-project/vllm-omni/issues/6648).
+[#5929](https://github.com/vllm-project/vllm-omni/pull/5929) (merged
+2026-09-05) introduced one grammar —
+`--diffusion-offload-config '{"mode":"layer","components":["dit","text_encoder"],"layer_options":{"dit":{"weight_transfer":"rank-local","resident_layers":20}}}'` —
+where `components` selects what moves, `mode` picks module-swap vs
+layer-streaming, and `weight_transfer` picks rank-local vs AllGather; the
+legacy DLO flags used above (`--enable-distributed-layerwise-offload`,
+`--dlo-no-use-allgather`, `--dlo-resident-layers`) remain documented
+compatibility aliases with identical behavior.
+[#7209](https://github.com/vllm-project/vllm-omni/pull/7209) (merged
+2026-09-09) then centralized topology resolution behind one pure
+`resolve_offload_plan()` — same accepted configurations, but invalid ones now
+fail before any component is moved rather than midway. For MiniMax-H3's
+full-topology two-GPU recipes, the upstream
+[user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md)
+still points at the compatibility flags used here, and Host Weight Runtime
+cannot yet be expressed through the new config at all — the commands above
+match current upstream recipes either way.
+
 ## How to choose {#decision-cards}
 
 {% include decision-cards.html items=page.decisions %}
@@ -320,7 +341,8 @@ commands live in the upstream
 - [MiniMax-H3 RTX 5090 recipe](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3-5090.md) (upstream, current)
 - [MiniMax-H3 recipe hub](https://github.com/vllm-project/vllm-omni/blob/main/recipes/MiniMaxAI/MiniMax-H3.md) (upstream, current)
 - [All-task 2-GPU runner](https://github.com/vllm-project/vllm-omni/blob/main/examples/offline_inference/minimax_h3/run_h3_2gpu_all_tasks.sh) (upstream, current)
-- [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md) (upstream, current)
+- [DLO user guide](https://github.com/vllm-project/vllm-omni/blob/main/docs/user_guide/diffusion/offloader/distributed_layerwise_offload.md) (upstream, current — documents both the new `diffusion_offload_config` and the compatibility flags)
+- [RFC #6648 — Unify the offloader protocol and user interface](https://github.com/vllm-project/vllm-omni/issues/6648) (open; J0 = #5929 and J1 = #7209 merged)
 - [Host Weight Runtime post — PR #6591]({{ site.baseurl }}/2026-08-26-understanding-pr-6591-host-weight-runtime/)
 - [Online FP8 with DLO AllGather post — PR #6279]({{ site.baseurl }}/2026-08-19-pr-6279-dlo-online-fp8-allgather/)
 - [Series RFC #37 — MiniMax-H3 optimization blog series](https://github.com/hsliuustc0106/vllm-omni-cookbook/issues/37)
