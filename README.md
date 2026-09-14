@@ -36,6 +36,7 @@ feature blog, the performance-tracing history, and the related update notes.
 | WAN2.2      | [diffusion](diffusion/wan2.2/)    | DiT image/video generation |
 | Qwen-Image  | [diffusion](diffusion/qwen-image/) | Text-to-image (DiT)       |
 | Qwen-Image-Edit | [diffusion](diffusion/qwen-image-edit/) | Image-to-image editing (DiT) |
+| GLM-Image   | [diffusion](diffusion/glm-image/)  | Text-to-image / image editing (multi-stage AR + DiT) |
 
 ## Update Notes
 
