@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="620" viewBox="0 0 1280 620" role="img" aria-labelledby="title desc">
+  <title id="title">The stacked-params substring bug in _prepare_lora_delta, before vs after PR #6516</title>
+  <desc id="desc">Before PR #6516, _prepare_lora_delta matched stacked-params mapping rules by substring containment, so the rule ".qkv_proj" also matched the generation-tower name "...qkv_proj_mot_gen"; both rules fired, their shard deltas were concatenated, and the resulting delta was twice the height of the target parameter. After the PR, the match is on the name tail (endswith) and stops at the first hit, so exactly one rule contributes and the delta has the parameter's shape.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.box{fill:#eff6ff;stroke:#2563eb;stroke-width:2}.boxG{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.boxBad{fill:#fef2f2;stroke:#dc2626;stroke-width:2}.key{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.stack{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.mono{font:16px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.monoS{font:14px ui-monospace,SFMono-Regular,monospace;fill:#334155}.bad{font:700 17px system-ui,sans-serif;fill:#b91c1c}.ok{font:700 17px system-ui,sans-serif;fill:#15803d}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.box{fill:#172554}.boxG{fill:#052e16}.boxBad{fill:#450a0a}.key{fill:#2e1065}.stack{fill:#431407}.title,.head,.mono{fill:#f8fafc}.text,.small,.monoS{fill:#cbd5e1}.bad{fill:#fca5a5}.ok{fill:#86efac}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="620" rx="24"/>
+  <text class="title" x="640" y="52" text-anchor="middle">Fusing a distilled LoRA delta — before vs after PR #6516</text>
+
+  <rect class="panel" x="40" y="84" width="600" height="500" rx="20"/>
+  <text class="head" x="70" y="122">Before — substring matching, both rules fire</text>
+
+  <rect class="key" x="70" y="146" width="540" height="52" rx="10"/>
+  <text class="mono" x="86" y="178">base_key = "…self_attn.qkv_proj_mot_gen"</text>
+
+  <rect class="box" x="70" y="224" width="262" height="74" rx="10"/>
+  <text class="monoS" x="86" y="252">rule 1: param ".qkv_proj"</text>
+  <text class="monoS" x="86" y="276">shards: .q .k .v</text>
+  <text class="bad" x="306" y="250">substring ✓ fires</text>
+
+  <rect class="box" x="70" y="318" width="262" height="74" rx="10"/>
+  <text class="monoS" x="86" y="346">rule 2: ".qkv_proj_mot_gen"</text>
+  <text class="monoS" x="86" y="370">shards: .q_gen .k_gen .v_gen</text>
+  <text class="bad" x="306" y="344">also fires</text>
+
+  <rect class="stack" x="70" y="418" width="500" height="64" rx="10"/>
+  <text class="text" x="86" y="444">concat(q,k,v, q_gen,k_gen,v_gen) →</text>
+  <text class="text" x="86" y="468">delta with <tspan class="bad">2× the height</tspan> of the parameter</text>
+
+  <rect class="boxBad" x="70" y="506" width="500" height="54" rx="10"/>
+  <text class="bad" x="86" y="539">delta shape ≠ parameter shape → the adapter never applies</text>
+
+  <rect class="panel" x="660" y="84" width="580" height="500" rx="20"/>
+  <text class="head" x="690" y="122">After — match the tail, stop at the first hit</text>
+
+  <rect class="key" x="690" y="146" width="520" height="52" rx="10"/>
+  <text class="mono" x="706" y="178">base_key = "…self_attn.qkv_proj_mot_gen"</text>
+
+  <rect class="box" x="690" y="224" width="286" height="74" rx="10"/>
+  <text class="monoS" x="706" y="252">rule 1: param ".qkv_proj"</text>
+  <text class="monoS" x="706" y="276">endswith? ".…mot_gen"</text>
+  <text class="ok" x="992" y="250">✗ skip</text>
+
+  <rect class="boxG" x="690" y="318" width="286" height="74" rx="10"/>
+  <text class="monoS" x="706" y="346">rule 2: ".qkv_proj_mot_gen"</text>
+  <text class="monoS" x="706" y="370">endswith? ✓ first hit → break</text>
+  <text class="ok" x="992" y="344">✓ used</text>
+
+  <rect class="stack" x="690" y="418" width="500" height="64" rx="10"/>
+  <text class="text" x="706" y="444">concat(q_gen,k_gen,v_gen) →</text>
+  <text class="text" x="706" y="468">delta with <tspan class="ok">exactly the parameter's height</tspan></text>
+
+  <rect class="boxG" x="690" y="506" width="500" height="54" rx="10"/>
+  <text class="ok" x="706" y="539">588 checkpoint keys fuse into 168 parameters</text>
+
+  <path class="line" d="M620,330 L676,330"/>
+  <text class="small" x="648" y="316" text-anchor="middle">endswith</text>
+  <text class="small" x="648" y="360" text-anchor="middle">+ break</text>
+</svg>
