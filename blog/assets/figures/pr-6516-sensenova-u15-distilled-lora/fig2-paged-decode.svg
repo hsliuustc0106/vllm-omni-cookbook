@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="700" viewBox="0 0 1280 700" role="img" aria-labelledby="title desc">
+  <title id="title">Three ways to give CUDA graphs a static decode shape — PR #6516 kept the paged cache</title>
+  <desc id="desc">Option 1, the status quo: DynamicCache.update grows K and V with torch.cat on every decode step, so the buffer shape changes each step and a CUDA graph has nothing static to capture. Option 2, padding to a bucket and masking the tail: shapes become static but the mask costs 7.96 to 11.55 ms per step against 1.03 ms unmasked at real decode shapes, so the mask costs more than the graph saves. Option 3, the paged cache PR #6516 adopted: bucket-sized K/V buffers plus a block_table, with flash_attn_varlen_func reading only the valid prefix through the seqused_k tensor — shapes stay fixed for capture while the kernel attends to exactly the valid tokens, and one capture serves every length in the bucket.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.kv{fill:#dbeafe;stroke:#2563eb;stroke-width:2}.kvG{fill:#dcfce7;stroke:#16a34a;stroke-width:2}.slot{fill:#f1f5f9;stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:5 4}.mask{fill:#fee2e2;stroke:#dc2626;stroke-width:2}.tensor{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 21px system-ui,sans-serif;fill:#0f172a}.text{font:17px system-ui,sans-serif;fill:#334155}.small{font:14px system-ui,sans-serif;fill:#475569}.mono{font:15px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.bad{font:700 16px system-ui,sans-serif;fill:#b91c1c}.ok{font:700 16px system-ui,sans-serif;fill:#15803d}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.kv{fill:#1e3a5f}.kvG{fill:#14532d}.slot{fill:#1f2937;stroke:#64748b}.mask{fill:#450a0a}.tensor{fill:#2e1065}.title,.head,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}.bad{fill:#fca5a5}.ok{fill:#86efac}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="700" rx="24"/>
+  <text class="title" x="640" y="50" text-anchor="middle">Why CUDA graphs needed a paged KV cache</text>
+
+  <rect class="panel" x="40" y="86" width="386" height="560" rx="20"/>
+  <text class="head" x="64" y="122">① Status quo — no static shape</text>
+  <text class="small" x="64" y="148">DynamicCache.update: torch.cat every step</text>
+  <rect class="kv" x="64" y="172" width="180" height="34" rx="6"/>
+  <text class="mono" x="74" y="195">K · step 12 · len 512</text>
+  <rect class="kv" x="64" y="222" width="195" height="34" rx="6"/>
+  <text class="mono" x="74" y="245">K · step 13 · len 513</text>
+  <rect class="kv" x="64" y="272" width="210" height="34" rx="6"/>
+  <text class="mono" x="74" y="295">K · step 14 · len 514</text>
+  <text class="text" x="290" y="195">↔ grows</text>
+  <text class="text" x="290" y="245">↔ grows</text>
+  <text class="text" x="290" y="295">↔ grows</text>
+  <text class="text" x="64" y="352">Every step allocates a new,</text>
+  <text class="text" x="64" y="376">longer buffer and copies.</text>
+  <rect class="mask" x="64" y="404" width="340" height="66" rx="10"/>
+  <text class="bad" x="80" y="432">Shape changes every step →</text>
+  <text class="bad" x="80" y="456">a CUDA graph cannot capture it</text>
+  <text class="small" x="64" y="510">A graph records one fixed sequence of</text>
+  <text class="small" x="64" y="532">kernel launches at fixed addresses and</text>
+  <text class="small" x="64" y="554">shapes — anything that changes shape</text>
+  <text class="small" x="64" y="576">per step is out of reach.</text>
+
+  <rect class="panel" x="446" y="86" width="386" height="560" rx="20"/>
+  <text class="head" x="470" y="122">② Bucket + tail mask — too slow</text>
+  <text class="small" x="470" y="148">Pad to a fixed bucket, mask the unused tail</text>
+  <rect class="kvG" x="470" y="172" width="130" height="34" rx="6"/>
+  <text class="mono" x="480" y="195">valid · 513</text>
+  <rect class="mask" x="600" y="172" width="186" height="34" rx="6"/>
+  <text class="mono" x="612" y="195">padded · 503</text>
+  <text class="small" x="470" y="232">K stays a fixed 1024-slot buffer…</text>
+  <rect class="mask" x="470" y="258" width="340" height="66" rx="10"/>
+  <text class="bad" x="486" y="286">…but the attention mask must zero</text>
+  <text class="bad" x="486" y="310">hundreds of slots every single step</text>
+  <rect class="kvG" x="470" y="356" width="150" height="40" rx="8"/>
+  <text class="ok" x="486" y="382">masked: 7.96–11.55 ms</text>
+  <rect class="kv" x="470" y="412" width="150" height="40" rx="8"/>
+  <text class="text" x="486" y="438">unmasked: 1.03 ms</text>
+  <text class="text" x="470" y="494">Measured at real decode shapes:</text>
+  <text class="text" x="470" y="518">the mask costs more than the</text>
+  <text class="text" x="470" y="542">graph saves. Dropped.</text>
+  <text class="small" x="470" y="590">Same idea, wrong instrument —</text>
+  <text class="small" x="470" y="612">the padding belongs in the kernel,</text>
+  <text class="small" x="470" y="634">not in a tensor the model carries.</text>
+
+  <rect class="panel" x="852" y="86" width="388" height="560" rx="20"/>
+  <text class="head" x="876" y="122">③ Paged cache — kept ✅</text>
+  <text class="small" x="876" y="148">flash_attn_varlen_func + block_table + seqused_k</text>
+  <rect class="kvG" x="876" y="172" width="64" height="34" rx="6"/>
+  <rect class="kvG" x="942" y="172" width="64" height="34" rx="6"/>
+  <rect class="kvG" x="1008" y="172" width="64" height="34" rx="6"/>
+  <rect class="slot" x="1074" y="172" width="64" height="34" rx="6"/>
+  <rect class="slot" x="1140" y="172" width="64" height="34" rx="6"/>
+  <text class="mono" x="880" y="195" font-size="13">blk 0</text>
+  <text class="mono" x="946" y="195" font-size="13">blk 1</text>
+  <text class="mono" x="1012" y="195" font-size="13">blk 2</text>
+  <text class="small" x="1078" y="195">free</text>
+  <text class="small" x="1144" y="195">free</text>
+  <text class="text" x="876" y="240">Bucket-sized K/V pool, written block by block.</text>
+  <rect class="tensor" x="876" y="266" width="166" height="40" rx="8"/>
+  <text class="mono" x="890" y="291">block_table [0,1,2,…]</text>
+  <rect class="tensor" x="1056" y="266" width="150" height="40" rx="8"/>
+  <text class="mono" x="1072" y="291">seqused_k = 513</text>
+  <path class="line" d="M960,308 L940,340"/>
+  <path class="line" d="M1130,308 L1090,340"/>
+  <text class="text" x="876" y="366">The kernel reads only the valid prefix;</text>
+  <text class="text" x="876" y="390">the length is a device tensor, not a shape.</text>
+  <rect class="kvG" x="876" y="418" width="328" height="94" rx="10"/>
+  <text class="ok" x="892" y="448">Shapes fixed → capture once per bucket</text>
+  <text class="ok" x="892" y="472">Valid prefix honored → no mask cost</text>
+  <text class="ok" x="892" y="496">Buckets: 512 · 1024 · 2048 · 4096 · 8192</text>
+  <text class="small" x="876" y="546">Re-capture only on bucket growth:</text>
+  <text class="small" x="876" y="568">30–34 ms, ~1–2× per request; a think</text>
+  <text class="small" x="876" y="590">request crosses 512 once and re-uses</text>
+  <text class="small" x="876" y="612">the capture for every step after it.</text>
+</svg>

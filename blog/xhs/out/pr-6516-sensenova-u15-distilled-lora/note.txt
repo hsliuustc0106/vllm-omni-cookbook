@@ -1,0 +1,18 @@
+加载成功的LoRA，其实没生效
+
+商汤 SenseNova-U1.5-8B-MoT 进 vLLM-Omni（PR #6516）。一个"模型支持"PR 的自我升级：
+
+🔧 bug1：官方 8 步蒸馏 LoRA 加载打印成功，实际一个权重没改——main 上带不带 --lora-path 只差 0.48%。根因是子串匹配：".qkv_proj" 是 ".qkv_proj_mot_gen" 的子串，两条映射规则同时命中，拼出的 delta 是参数高度的两倍。改成按尾部匹配、首个命中即停：588 个键真正融进 168 个参数。
+
+🐌 bug2：评审用 Nsight 一测，think 解码 86% 的空闲根本不在任何 CUDA 调用里——纯 Python 派发。解法：分页 KV 缓存（flash_attn_varlen 的 seqused_k）让形状静态化，再包一层 CUDA graph。
+
+📊 A800 实测：think 解码 16.1s→3.5s；GPU 利用率 62.7%→97.7%；kernel 发射 −67.9%；1024² 八步出图约 0.9s。
+
+⚠️ 诚实说明：数字全部来自 PR 评审线程（作者 A800 / 评审人 L20X、H200），非独立基准；graph 捕获按请求发生、think 文本跨后端可能差一个 token；只在 80GB 级显卡验证过。
+
+💡 记得：这个 LoRA 配 CFG 1.0，配 4.0 会过曝色带化。
+
+📘 完整拆解：主页简介直达
+🔍 GitHub 搜：vllm-omni-cookbook
+
+#大模型 #AI技术分享 #开源项目 #vLLM #推理优化 #LoRA

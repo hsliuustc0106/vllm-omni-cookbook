@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Three decode arms on SenseNova-U1.5: the paged cache alone buys nothing, the CUDA graph buys the time</title>
+  <desc id="desc">Think mode on, 8 steps, 1x A800. Arm A (paged=0, exact-length cache, SDPA): wall 8259.5 ms, kernel 5179.2 ms, idle 3080.3 ms, GPU busy 62.71 percent, 206149 launches. Arm B (paged cache, flash_attn_varlen, no graph): wall 8323.3 ms, kernel 5136.6 ms, idle 3186.7 ms, busy 61.71 percent, 185245 launches. Arm C (paged=1, same as B plus CUDA graph): wall 5196.9 ms, kernel 5076.9 ms, idle 120.0 ms, busy 97.69 percent, same 185245 launches. Kernel time is flat across arms; the idle that disappears is host dispatch. On the decode loop A to B is minus 1.10 percent and B to C is minus 45.79 percent.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.kern{fill:#dcfce7;stroke:#16a34a;stroke-width:2}.idle{fill:#ffedd5;stroke:#ea580c;stroke-width:2}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 20px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:14px system-ui,sans-serif;fill:#475569}.mono{font:15px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.ok{font:700 17px system-ui,sans-serif;fill:#15803d}.dim{font:700 17px system-ui,sans-serif;fill:#64748b}.busy{font:700 22px system-ui,sans-serif;fill:#0f172a}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.kern{fill:#14532d}.idle{fill:#431407}.title,.head,.mono,.busy{fill:#f8fafc}.text,.small{fill:#cbd5e1}.ok{fill:#86efac}.dim{fill:#94a3b8}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="640" rx="24"/>
+  <text class="title" x="640" y="50" text-anchor="middle">Think decode, 8 steps, 1× A800 — kernel vs idle</text>
+  <text class="small" x="640" y="78" text-anchor="middle">each arm differs from the previous by exactly one thing; think output is 1,233 chars in every run</text>
+
+  <!-- scale: 8500 ms over 900 px from x=330 → 0.10588 px/ms -->
+  <!-- gridlines -->
+  <line x1="330" y1="110" x2="330" y2="540" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="547" y1="110" x2="547" y2="540" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="764" y1="110" x2="764" y2="540" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="982" y1="110" x2="982" y2="540" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="1199" y1="110" x2="1199" y2="540" stroke="#e2e8f0" stroke-width="1"/>
+  <text class="small" x="330" y="562" text-anchor="middle">0</text>
+  <text class="small" x="547" y="562" text-anchor="middle">2,050</text>
+  <text class="small" x="764" y="562" text-anchor="middle">4,100</text>
+  <text class="small" x="982" y="562" text-anchor="middle">6,150</text>
+  <text class="small" x="1199" y="562" text-anchor="middle">8,200 ms</text>
+
+  <!-- Arm A: kernel 5179.2 → 548px, idle 3080.3 → 326px -->
+  <text class="head" x="60" y="160">A · paged=0</text>
+  <text class="small" x="60" y="184">exact-length cache · SDPA · no graph</text>
+  <rect class="kern" x="330" y="138" width="548" height="52" rx="6"/>
+  <rect class="idle" x="878" y="138" width="326" height="52" rx="6"/>
+  <text class="mono" x="344" y="170">kernel 5,179.2 ms</text>
+  <text class="mono" x="892" y="170">idle 3,080.3 ms</text>
+  <text class="dim" x="60" y="212">GPU busy 62.71% · 206,149 launches · wall 8,259.5 ms</text>
+
+  <!-- Arm B: kernel 5136.6 → 544px, idle 3186.7 → 337px -->
+  <text class="head" x="60" y="300">B · paged cache</text>
+  <text class="small" x="60" y="324">flash_attn_varlen · still no graph</text>
+  <rect class="kern" x="330" y="278" width="544" height="52" rx="6"/>
+  <rect class="idle" x="874" y="278" width="337" height="52" rx="6"/>
+  <text class="mono" x="344" y="310">kernel 5,136.6 ms</text>
+  <text class="mono" x="888" y="310">idle 3,186.7 ms</text>
+  <text class="dim" x="60" y="352">GPU busy 61.71% · 185,245 launches · wall 8,323.3 ms · decode Δ vs A: −1.10%</text>
+
+  <!-- Arm C: kernel 5076.9 → 538px, idle 120.0 → 13px -->
+  <text class="head" x="60" y="440">C · paged=1</text>
+  <text class="small" x="60" y="464">same as B + CUDA graph</text>
+  <rect class="kern" x="330" y="418" width="538" height="52" rx="6"/>
+  <rect class="idle" x="868" y="418" width="13" height="52" rx="4"/>
+  <text class="mono" x="344" y="450">kernel 5,076.9 ms</text>
+  <text class="mono" x="892" y="450">idle 120.0 ms</text>
+  <text class="ok" x="60" y="492">GPU busy 97.69% · same 185,245 launches · wall 5,196.9 ms</text>
+
+  <rect class="panel" x="60" y="530" width="1160" height="76" rx="14"/>
+  <text class="text" x="84" y="562">Kernel time is flat across the three arms — the idle that disappears is host dispatch, not device work.</text>
+  <text class="text" x="84" y="588">On the decode loop: A→B −1.10%, B→C <tspan class="ok">−45.79%</tspan>. The paged cache buys the static shape; the graph buys the time.</text>
+</svg>
