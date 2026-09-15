@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">How PR #5779 made TRTLLM attention accept MiniMax-H3's packed sequences</title>
+  <desc id="desc">MiniMax-H3 packs 58,758 valid tokens into a 58,816-row aligned tensor. PR #5779 has the TRTLLM backend verify the prefix-valid structural mask and the packed cu_seqlens metadata, trim Q/K/V to the valid prefix, run the ragged FMHA kernel on real tokens only, then zero-restore the aligned shape for the Ulysses all-to-all. A second panel shows the two failure modes prevented: SAGE quantizing padding garbage into non-finite output, and the 14-token token refiner being shorter than one SAGE K quantization block of 16, which now routes to dense TRTLLM.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.step{fill:#eff6ff;stroke:#2563eb;stroke-width:2}.slow{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.fast{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.host{fill:#fffbeb;stroke:#b45309;stroke-width:2}.fmha{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.mono{font:16px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.warn{font:700 17px system-ui,sans-serif;fill:#b35900}.ok{font:700 17px system-ui,sans-serif;fill:#15803d}.real{fill:#86efac;stroke:#16a34a;stroke-width:2}.pad{fill:#e2e8f0;stroke:#94a3b8;stroke-width:2;stroke-dasharray:6 4}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.step{fill:#172554}.slow{fill:#431407}.fast{fill:#052e16}.host{fill:#451a03}.fmha{fill:#2e1065}.title,.head,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}.warn{fill:#fdba74}.ok{fill:#86efac}.real{fill:#14532d}.pad{fill:#334155}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="640" rx="24"/>
+  <text class="title" x="640" y="52" text-anchor="middle">PR #5779 — TRTLLM attention meets H3's packed sequence</text>
+
+  <rect class="panel" x="55" y="84" width="1170" height="270" rx="20"/>
+  <text class="head" x="85" y="120">The packed path — one attention call</text>
+
+  <rect class="real" x="85" y="140" width="1000" height="34" rx="6"/>
+  <rect class="pad" x="1089" y="140" width="106" height="34" rx="6"/>
+  <text class="text" x="585" y="163" text-anchor="middle">58,758 real tokens</text>
+  <text class="small" x="1120" y="131" text-anchor="middle">58 pad rows (exaggerated)</text>
+  <text class="small" x="85" y="194">packed tensor: 58,816 aligned rows — a multiple of 64, so Ulysses buffers stay fixed-size</text>
+
+  <rect class="host" x="85" y="216" width="190" height="64" rx="12"/>
+  <text class="text" x="180" y="244" text-anchor="middle">prefix-valid mask</text>
+  <text class="small" x="180" y="266" text-anchor="middle">+ cu_seqlens metadata</text>
+  <rect class="step" x="325" y="216" width="170" height="64" rx="12"/>
+  <text class="text" x="410" y="244" text-anchor="middle">trim Q/K/V</text>
+  <text class="small" x="410" y="266" text-anchor="middle">to the valid prefix</text>
+  <rect class="fmha" x="545" y="216" width="230" height="64" rx="12"/>
+  <text class="text" x="660" y="244" text-anchor="middle">ragged TRTLLM FMHA</text>
+  <text class="small" x="660" y="266" text-anchor="middle">sees real tokens only</text>
+  <rect class="step" x="825" y="216" width="170" height="64" rx="12"/>
+  <text class="text" x="910" y="244" text-anchor="middle">zero-restore</text>
+  <text class="small" x="910" y="266" text-anchor="middle">back to 58,816 rows</text>
+  <rect class="step" x="1045" y="216" width="150" height="64" rx="12"/>
+  <text class="text" x="1120" y="244" text-anchor="middle">Ulysses</text>
+  <text class="small" x="1120" y="266" text-anchor="middle">all-to-all</text>
+  <path class="line" d="M275 248 H320"/>
+  <path class="line" d="M495 248 H540"/>
+  <path class="line" d="M775 248 H820"/>
+  <path class="line" d="M995 248 H1040"/>
+  <text class="small" x="660" y="322" text-anchor="middle">The mask is still verified from device tensors on every call — that per-call cost is what #6542 (Blog 3) removed later.</text>
+
+  <rect class="panel" x="55" y="374" width="1170" height="230" rx="20"/>
+  <text class="head" x="85" y="410">The two failure modes this prevents</text>
+
+  <rect class="slow" x="85" y="430" width="250" height="60" rx="12"/>
+  <text class="text" x="210" y="455" text-anchor="middle">pad tokens passed as a</text>
+  <text class="text" x="210" y="477" text-anchor="middle">"valid" sequence</text>
+  <rect class="slow" x="375" y="430" width="230" height="60" rx="12"/>
+  <text class="text" x="490" y="455" text-anchor="middle">SAGE quantizes the</text>
+  <text class="text" x="490" y="477" text-anchor="middle">garbage values</text>
+  <rect class="fast" x="85" y="510" width="520" height="60" rx="12"/>
+  <text class="ok" x="345" y="535" text-anchor="middle">trim first: padding never reaches attention or quantization</text>
+  <text class="small" x="345" y="557" text-anchor="middle">dense attention tolerated the pad; quantized attention did not</text>
+  <path class="line" d="M335 460 H370"/>
+
+  <rect class="slow" x="645" y="430" width="270" height="60" rx="12"/>
+  <text class="text" x="780" y="455" text-anchor="middle">token refiner: 14 tokens,</text>
+  <text class="text" x="780" y="477" text-anchor="middle">below one K block (16)</text>
+  <rect class="fast" x="645" y="510" width="550" height="60" rx="12"/>
+  <text class="ok" x="920" y="535" text-anchor="middle">auto-routes to dense TRTLLM — SAGE quantizer never invoked</text>
+  <text class="small" x="920" y="557" text-anchor="middle">the recipe's per_role entry pins the same intent explicitly</text>
+  <path class="line" d="M780 490 V505"/>
+</svg>

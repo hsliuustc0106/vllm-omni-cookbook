@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="660" viewBox="0 0 1280 660" role="img" aria-labelledby="title desc">
+  <title id="title">The Q/K prologue before vs after PR #5990</title>
+  <desc id="desc">Before PR #5990, every attention call runs an eager chain per Q and per K: F.rms_norm writes a normalized tensor to HBM, then RoPE splits the first 96 dims, multiplies by cos and sin, and torch.cat reassembles — several kernels and materialized intermediates each time. After, one Triton kernel per tensor loads the slice once, computes RMS normalization in fp32 registers, applies the non-interleaved RoPE pair swap against a shared packed cos/sin table, and stores once. Steady denoising drops from 109.687 to 106.205 seconds, minus 3.18 percent, on 4x B300.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#cbd5e1;stroke-width:2}.step{fill:#eff6ff;stroke:#2563eb;stroke-width:2}.slow{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.fast{fill:#f0fdf4;stroke:#16a34a;stroke-width:2}.host{fill:#fffbeb;stroke:#b45309;stroke-width:2}.fmha{fill:#f5f3ff;stroke:#7c3aed;stroke-width:2}.line{stroke:#64748b;stroke-width:3;fill:none;marker-end:url(#arrow)}.title{font:700 30px system-ui,sans-serif;fill:#0f172a}.head{font:700 22px system-ui,sans-serif;fill:#0f172a}.text{font:18px system-ui,sans-serif;fill:#334155}.small{font:15px system-ui,sans-serif;fill:#475569}.mono{font:16px ui-monospace,SFMono-Regular,monospace;fill:#0f172a}.warn{font:700 17px system-ui,sans-serif;fill:#b35900}.ok{font:700 17px system-ui,sans-serif;fill:#15803d}
+      @media (prefers-color-scheme:dark){.bg{fill:#0f172a}.panel{fill:#111827;stroke:#475569}.step{fill:#172554}.slow{fill:#431407}.fast{fill:#052e16}.host{fill:#451a03}.fmha{fill:#2e1065}.title,.head,.mono{fill:#f8fafc}.text,.small{fill:#cbd5e1}.warn{fill:#fdba74}.ok{fill:#86efac}}
+    </style>
+  </defs>
+  <rect class="bg" width="1280" height="660" rx="24"/>
+  <text class="title" x="640" y="52" text-anchor="middle">PR #5990 — the Q/K prologue, before vs after</text>
+
+  <rect class="panel" x="55" y="84" width="1170" height="250" rx="20"/>
+  <text class="head" x="85" y="120">Before — eager: every intermediate lands in HBM</text>
+  <text class="small" x="1145" y="120" text-anchor="end">same chain runs for K — × 2 per DiT block</text>
+
+  <rect class="step" x="85" y="150" width="150" height="64" rx="12"/>
+  <text class="text" x="160" y="178" text-anchor="middle">Q</text>
+  <text class="small" x="160" y="200" text-anchor="middle">tokens·heads·128</text>
+  <rect class="step" x="285" y="150" width="150" height="64" rx="12"/>
+  <text class="mono" x="360" y="186" text-anchor="middle">F.rms_norm</text>
+  <rect class="slow" x="485" y="150" width="170" height="64" rx="12"/>
+  <text class="text" x="570" y="178" text-anchor="middle">write q_norm</text>
+  <text class="small" x="570" y="200" text-anchor="middle">HBM round-trip</text>
+  <rect class="step" x="705" y="150" width="180" height="64" rx="12"/>
+  <text class="text" x="795" y="178" text-anchor="middle">RoPE: split 96</text>
+  <text class="small" x="795" y="200" text-anchor="middle">into halves of 48</text>
+  <rect class="slow" x="935" y="150" width="120" height="64" rx="12"/>
+  <text class="text" x="995" y="178" text-anchor="middle">×cos/×sin</text>
+  <text class="small" x="995" y="200" text-anchor="middle">+ cat</text>
+  <rect class="step" x="1105" y="150" width="90" height="64" rx="12"/>
+  <text class="text" x="1150" y="186" text-anchor="middle">Q out</text>
+  <path class="line" d="M235 182 H280"/>
+  <path class="line" d="M435 182 H480"/>
+  <path class="line" d="M655 182 H700"/>
+  <path class="line" d="M885 182 H930"/>
+  <path class="line" d="M1055 182 H1100"/>
+  <text class="warn" x="85" y="268">a small tax, repeated: every DiT block × every denoiser forward — 49 forwards per 50-step video</text>
+
+  <rect class="panel" x="55" y="358" width="1170" height="270" rx="20"/>
+  <text class="head" x="85" y="394">After — fused: one Triton pass per tensor</text>
+
+  <rect class="step" x="85" y="424" width="150" height="64" rx="12"/>
+  <text class="text" x="160" y="452" text-anchor="middle">Q</text>
+  <text class="small" x="160" y="474" text-anchor="middle">tokens·heads·128</text>
+  <rect class="fast" x="285" y="424" width="420" height="64" rx="12"/>
+  <text class="mono" x="495" y="452" text-anchor="middle">_rms_norm_rope_kernel</text>
+  <text class="small" x="495" y="474" text-anchor="middle">fp32 RMS in registers · one read, one write</text>
+  <rect class="step" x="755" y="424" width="90" height="64" rx="12"/>
+  <text class="text" x="800" y="452" text-anchor="middle">Q out</text>
+  <text class="small" x="800" y="474" text-anchor="middle">BF16</text>
+  <path class="line" d="M235 456 H280"/>
+  <path class="line" d="M705 456 H750"/>
+
+  <rect class="host" x="885" y="424" width="310" height="64" rx="12"/>
+  <text class="text" x="1040" y="452" text-anchor="middle">rope_table [cos | sin]</text>
+  <text class="small" x="1040" y="474" text-anchor="middle">built once per forward, all blocks share</text>
+
+  <rect class="fast" x="85" y="524" width="520" height="64" rx="12"/>
+  <text class="ok" x="345" y="550" text-anchor="middle">steady denoising 109.687 s → 106.205 s (−3.18%)</text>
+  <text class="small" x="345" y="572" text-anchor="middle">4× B300 · 1344×768 · 243 frames · 50 steps · single request</text>
+  <rect class="step" x="645" y="524" width="550" height="64" rx="12"/>
+  <text class="small" x="920" y="550" text-anchor="middle">gated to BF16 · head_dim 128 · rotary_dim 96 (H3's geometry);</text>
+  <text class="small" x="920" y="572" text-anchor="middle">anything else silently uses the eager reference</text>
+</svg>
